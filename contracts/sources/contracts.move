@@ -52,3 +52,34 @@ fun init(otw: CONTRACTS, ctx: &mut sui::tx_context::TxContext) {
     sui::transfer::public_transfer(publisher, sui::tx_context::sender(ctx));
     sui::transfer::transfer(admin_cap, sui::tx_context::sender(ctx));
 }
+
+// ====== Phase 1: NFTミント ======
+
+/// NFTのバッチミント（運営側が在庫作成）
+/// Kioskに預けるNFTのベクターを返す
+public fun mint_batch(
+    _admin_cap: &AdminCap,  // 管理者権限が必要
+    count: u64,
+    name: String,
+    description: String,
+    blob_id: String,
+    ctx: &mut sui::tx_context::TxContext
+): vector<PremiumTicketNFT> {
+    assert!(count > 0, EInvalidCount);
+
+    let mut nfts = vector::empty<PremiumTicketNFT>();
+    let mut i = 0;
+
+    while (i < count) {
+        let nft = PremiumTicketNFT {
+            id: sui::object::new(ctx),
+            name,
+            description,
+            blob_id,
+        };
+        vector::push_back(&mut nfts, nft);
+        i = i + 1;
+    };
+
+    nfts
+}
