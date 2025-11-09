@@ -1,5 +1,8 @@
 module contracts::contracts;
 
+use sui::transfer_policy::{TransferPolicy, TransferPolicyCap};
+use sui::package::Publisher;
+
 // ====== エラーコード ======
 
 const EInvalidCount: u64 = 0;
@@ -99,4 +102,18 @@ public fun description(nft: &PremiumTicketNFT): String {
 /// NFTのblob_idを取得
 public fun blob_id(nft: &PremiumTicketNFT): String {
     nft.blob_id
+}
+
+// ====== Phase 2: Transfer Policy関数 ======
+
+/// Transfer Policyを作成（収益分配ルール付き）
+/// Publisher権限が必要（デプロイ時にinit関数で取得）
+public fun create_transfer_policy(
+    publisher: &Publisher,
+    ctx: &mut sui::tx_context::TxContext
+): (TransferPolicy<PremiumTicketNFT>, TransferPolicyCap<PremiumTicketNFT>) {
+    // Transfer Policyを作成
+    let (policy, cap) = sui::transfer_policy::new<PremiumTicketNFT>(publisher, ctx);
+
+    (policy, cap)
 }
