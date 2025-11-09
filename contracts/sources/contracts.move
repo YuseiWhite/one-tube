@@ -206,3 +206,19 @@ public fun one_bp(config: &RevenueShareConfig): u16 {
 public fun platform_bp(config: &RevenueShareConfig): u16 {
     config.platform_bp
 }
+
+// ====== テスト専用関数 ======
+
+#[test_only]
+/// テスト用の初期化 - AdminCapとPublisherを作成
+public fun init_for_testing(ctx: &mut sui::tx_context::TxContext) {
+    // ONE_TIME_WITNESSを生成してinit関数を呼び出す
+    let otw = CONTRACTS {};
+    init(otw, ctx);
+}
+
+#[test_only]
+/// テスト用のPublisher作成
+public fun create_publisher_for_testing(ctx: &mut sui::tx_context::TxContext): Publisher {
+    sui::package::test_claim(CONTRACTS {}, ctx)
+}
