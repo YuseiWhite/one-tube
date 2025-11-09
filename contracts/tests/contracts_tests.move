@@ -190,3 +190,67 @@ fun test_non_owner_cannot_access_nft() {
 
     ts::end(scenario);
 }
+
+// ====== Phase 2: Kiosk統合テスト ======
+
+// テスト5: Kioskへの出品と取り下げ
+#[test]
+fun test_kiosk_list_and_delist() {
+    use sui::kiosk;
+
+    let admin = @0xA;
+    let mut scenario = ts::begin(admin);
+
+    // コントラクトを初期化
+    {
+        contracts::init_for_testing(ts::ctx(&mut scenario));
+    };
+
+    // AdminがKioskを作成してNFTを発行
+    ts::next_tx(&mut scenario, admin);
+    {
+        // Kioskを作成
+        let (mut kiosk, kiosk_cap) = kiosk::new(ts::ctx(&mut scenario));
+
+        // NFTを発行
+        let admin_cap = ts::take_from_sender<AdminCap>(&scenario);
+        let mut nfts = contracts::mint_batch(
+            &admin_cap,
+            1,
+            string::utf8(b"Kiosk Test NFT"),
+            string::utf8(b"For Kiosk listing"),
+            string::utf8(b"blob-kiosk-list"),
+            ts::ctx(&mut scenario)
+        );
+
+        let nft = vector::pop_back(&mut nfts);
+        vector::destroy_empty(nfts);
+
+        // NFTのIDを取得（placeする前に）
+        let nft_id = sui::object::id(&nft);
+
+        // NFTをKioskに配置
+        kiosk::place(&mut kiosk, &kiosk_cap, nft);
+
+        // 配置されたことを確認
+        assert!(kiosk::has_item(&kiosk, nft_id), 0);
+
+        // NFTを出品（0.5 SUI = 500,000,000 MIST）
+        kiosk::list<PremiumTicketNFT>(&mut kiosk, &kiosk_cap, nft_id, 500_000_000);
+
+        // 出品後も存在することを確認
+        assert!(kiosk::has_item(&kiosk, nft_id), 1);
+
+        // 出品を取り下げ
+        kiosk::delist<PremiumTicketNFT>(&mut kiosk, &kiosk_cap, nft_id);
+
+        // 取り下げ後もKiosk内に存在することを確認
+        assert!(kiosk::has_item(&kiosk, nft_id), 2);
+
+        ts::return_to_sender(&scenario, admin_cap);
+        sui::transfer::public_share_object(kiosk);
+        sui::transfer::public_transfer(kiosk_cap, admin);
+    };
+
+    ts::end(scenario);
+}
