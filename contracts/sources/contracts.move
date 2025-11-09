@@ -181,3 +181,28 @@ public fun split_revenue(
     // Transfer Requestにレシートを追加（ルール適用完了）
     sui::transfer_policy::add_receipt(RevenueShareRule {}, request);
 }
+
+/// 収益分配設定の取得（読み取り専用）
+public fun get_revenue_share_config(
+    policy: &TransferPolicy<PremiumTicketNFT>
+): &RevenueShareConfig {
+    sui::transfer_policy::get_rule<PremiumTicketNFT, RevenueShareRule, RevenueShareConfig>(
+        RevenueShareRule {},
+        policy
+    )
+}
+
+/// アスリート分配比率を取得
+public fun athlete_bp(config: &RevenueShareConfig): u16 {
+    config.athlete_bp
+}
+
+/// ONE Championship分配比率を取得
+public fun one_bp(config: &RevenueShareConfig): u16 {
+    config.one_bp
+}
+
+/// Platform分配比率を取得
+public fun platform_bp(config: &RevenueShareConfig): u16 {
+    config.platform_bp
+}
