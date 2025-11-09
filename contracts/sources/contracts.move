@@ -117,3 +117,29 @@ public fun create_transfer_policy(
 
     (policy, cap)
 }
+
+/// 収益分配ルールの設定をTransfer Policyに追加
+/// デプロイ後、管理者がこの関数を呼び出して収益分配先を設定
+public fun add_revenue_share_rule(
+    policy: &mut TransferPolicy<PremiumTicketNFT>,
+    cap: &TransferPolicyCap<PremiumTicketNFT>,
+    athlete_address: address,
+    one_address: address,
+    platform_address: address,
+) {
+    // 収益分配設定を作成
+    let config = RevenueShareConfig {
+        athlete_address,
+        one_address,
+        platform_address,
+        athlete_bp: 7000,  // 70%
+        one_bp: 2500,      // 25%
+        platform_bp: 500,  // 5%
+    };
+
+    // 合計が100%であることを検証
+    assert!(config.athlete_bp + config.one_bp + config.platform_bp == 10000, EInvalidBasisPoints);
+
+    // ルールをポリシーに追加
+    sui::transfer_policy::add_rule(RevenueShareRule {}, policy, cap, config);
+}
