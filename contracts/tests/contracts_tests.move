@@ -54,3 +54,39 @@ fun test_mint_batch() {
 
     ts::end(scenario);
 }
+
+// テスト: 管理者のみがミント可能（権限テスト）
+#[test]
+#[expected_failure(abort_code = sui::test_scenario::EEmptyInventory)]
+fun test_mint_requires_admin_cap() {
+    let admin = @0xA;
+    let unauthorized = @0xB;
+    let mut scenario = ts::begin(admin);
+
+    {
+        contracts::init_for_testing(ts::ctx(&mut scenario));
+    };
+
+    // AdminCapなしでミントを試行（失敗が期待される）
+    ts::next_tx(&mut scenario, unauthorized);
+    {
+        // 期待される失敗箇所: 権限のないユーザーがAdminCapの取得を試みる
+        // EEmptyInventoryエラーでabortする（ユーザーがAdminCapを所有していないため）
+        let admin_cap = ts::take_from_sender<AdminCap>(&scenario);
+
+        // ここには到達しない - AdminCapなしではmint_batchを呼び出せない
+        let nfts = contracts::mint_batch(
+            &admin_cap,
+            1,
+            string::utf8(b"Unauthorized"),
+            string::utf8(b"This should fail"),
+            string::utf8(b"fail"),
+            ts::ctx(&mut scenario)
+        );
+
+        vector::destroy_empty(nfts);
+        ts::return_to_sender(&scenario, admin_cap);
+    };
+
+    ts::end(scenario);
+}
