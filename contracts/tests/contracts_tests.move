@@ -142,3 +142,51 @@ fun test_nft_ownership_verification() {
 
     ts::end(scenario);
 }
+
+// テスト: 非所有者はNFTにアクセスできない
+#[test]
+#[expected_failure(abort_code = sui::test_scenario::EEmptyInventory)]
+fun test_non_owner_cannot_access_nft() {
+    let admin = @0xA;
+    let owner = @0xB;
+    let non_owner = @0xC;
+    let mut scenario = ts::begin(admin);
+
+    {
+        contracts::init_for_testing(ts::ctx(&mut scenario));
+    };
+
+    // AdminがNFTを発行して所有者に転送
+    ts::next_tx(&mut scenario, admin);
+    {
+        let admin_cap = ts::take_from_sender<AdminCap>(&scenario);
+        let mut nfts = contracts::mint_batch(
+            &admin_cap,
+            1,
+            string::utf8(b"Restricted NFT"),
+            string::utf8(b"Only owner can access"),
+            string::utf8(b"blob-restricted"),
+            ts::ctx(&mut scenario)
+        );
+
+        let nft = vector::pop_back(&mut nfts);
+        vector::destroy_empty(nfts);
+
+        sui::transfer::public_transfer(nft, owner);
+
+        ts::return_to_sender(&scenario, admin_cap);
+    };
+
+    // 非所有者がNFTを取得しようとする（失敗が期待される）
+    ts::next_tx(&mut scenario, non_owner);
+    {
+        // 期待される失敗箇所: 非所有者が所有していないNFTの取得を試みる
+        // EEmptyInventoryエラーでabortする（non_ownerはNFTを所有していないため）
+        let nft = ts::take_from_sender<PremiumTicketNFT>(&scenario);
+
+        // ここには到達しない
+        ts::return_to_sender(&scenario, nft);
+    };
+
+    ts::end(scenario);
+}
