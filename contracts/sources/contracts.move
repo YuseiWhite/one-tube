@@ -1,5 +1,6 @@
 module contracts::contracts;
 
+use std::string::String;
 use sui::transfer_policy::{TransferPolicy, TransferPolicyCap, TransferRequest};
 use sui::package::Publisher;
 use sui::coin::Coin;
