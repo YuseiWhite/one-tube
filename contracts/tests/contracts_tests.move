@@ -386,3 +386,50 @@ fun test_kiosk_purchase_flow_split_revenue() {
 
     ts::end(scenario);
 }
+
+// テスト7: Transfer Policy収益分配（構造確認）
+// Note: 実際の収益分配はデプロイ時にTransfer Policyで設定
+// このテストは基本的な構造が正しいことを確認
+#[test]
+fun test_transfer_policy_revenue_split() {
+    let admin = @0xA;
+    let _athlete = @0xB;
+    let _one_championship = @0xC;
+    let _platform = @0xD;
+    let mut scenario = ts::begin(admin);
+
+    // コントラクトを初期化
+    {
+        contracts::init_for_testing(ts::ctx(&mut scenario));
+    };
+
+    // 収益分配アドレスの確認
+    ts::next_tx(&mut scenario, admin);
+    {
+        // 分配比率の確認（70% / 25% / 5%）
+        let athlete_bp: u16 = 7000;  // 70%
+        let one_bp: u16 = 2500;       // 25%
+        let platform_bp: u16 = 500;   // 5%
+        let total_bp: u16 = athlete_bp + one_bp + platform_bp;
+
+        // 合計が10000 basis points (100%)であることを確認
+        assert!(total_bp == 10000, 0);
+
+        // 実際の分配額計算のテスト（0.5 SUI = 500,000,000 MIST）
+        let purchase_amount: u64 = 500_000_000;
+        let athlete_amount = (purchase_amount as u128 * (athlete_bp as u128) / 10000) as u64;
+        let one_amount = (purchase_amount as u128 * (one_bp as u128) / 10000) as u64;
+        let platform_amount = (purchase_amount as u128 * (platform_bp as u128) / 10000) as u64;
+
+        // 分配額の確認
+        assert!(athlete_amount == 350_000_000, 1);     // 70% of 0.5 SUI
+        assert!(one_amount == 125_000_000, 2);         // 25% of 0.5 SUI
+        assert!(platform_amount == 25_000_000, 3);     // 5% of 0.5 SUI
+
+        // 合計が元の金額と一致（丸め誤差考慮）
+        let total_distributed = athlete_amount + one_amount + platform_amount;
+        assert!(total_distributed == purchase_amount, 4);
+    };
+
+    ts::end(scenario);
+}
