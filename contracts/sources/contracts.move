@@ -14,3 +14,11 @@ public struct CONTRACTS has drop {}
 public struct AdminCap has key, store {
     id: sui::object::UID,
 }
+
+/// プレミアムチケットNFT - 動画コンテンツへのアクセスを提供
+public struct PremiumTicketNFT has key, store {
+    id: sui::object::UID,
+    name: String,
+    description: String,
+    blob_id: String,  // Walrus BLOB ID（MVP用モック）
+}
