@@ -254,3 +254,135 @@ fun test_kiosk_list_and_delist() {
 
     ts::end(scenario);
 }
+
+// テスト6: Kiosk購入フローと収益分配（Transfer Policy統合版）
+#[test]
+fun test_kiosk_purchase_flow_split_revenue() {
+    use sui::kiosk::{Self, Kiosk};
+    use sui::coin;
+    use sui::sui::SUI;
+    use sui::transfer_policy::TransferPolicy;
+
+    let admin = @0xA;
+    let buyer = @0xB;
+    let athlete = @0xC;
+    let one_championship = @0xD;
+    let platform = @0xE;
+    let mut scenario = ts::begin(admin);
+
+    // コントラクトを初期化（PublisherとAdminCapを取得）
+    {
+        contracts::init_for_testing(ts::ctx(&mut scenario));
+    };
+
+    let nft_id: sui::object::ID;
+
+    // Transfer Policyをセットアップ
+    ts::next_tx(&mut scenario, admin);
+    {
+        let publisher = ts::take_from_sender<sui::package::Publisher>(&scenario);
+        let (mut policy, cap) = contracts::create_transfer_policy(&publisher, ts::ctx(&mut scenario));
+
+        // 収益分配ルールを追加
+        contracts::add_revenue_share_rule(&mut policy, &cap, athlete, one_championship, platform);
+
+        sui::transfer::public_share_object(policy);
+        sui::transfer::public_transfer(cap, admin);
+        ts::return_to_sender(&scenario, publisher);
+    };
+
+    // AdminがKioskを作成してNFTを出品
+    ts::next_tx(&mut scenario, admin);
+    {
+        // Kioskを作成
+        let (mut seller_kiosk, seller_cap) = kiosk::new(ts::ctx(&mut scenario));
+
+        // NFTを発行
+        let admin_cap = ts::take_from_sender<contracts::AdminCap>(&scenario);
+        let mut nfts = contracts::mint_batch(
+            &admin_cap,
+            1,
+            string::utf8(b"Purchase Test NFT"),
+            string::utf8(b"For purchase flow"),
+            string::utf8(b"blob-purchase"),
+            ts::ctx(&mut scenario)
+        );
+
+        let nft = vector::pop_back(&mut nfts);
+        vector::destroy_empty(nfts);
+
+        // NFTのIDを取得
+        nft_id = sui::object::id(&nft);
+
+        // NFTをKioskに配置して出品
+        kiosk::place(&mut seller_kiosk, &seller_cap, nft);
+        kiosk::list<contracts::PremiumTicketNFT>(&mut seller_kiosk, &seller_cap, nft_id, 500_000_000);
+
+        ts::return_to_sender(&scenario, admin_cap);
+        sui::transfer::public_share_object(seller_kiosk);
+        sui::transfer::public_transfer(seller_cap, admin);
+    };
+
+    // Buyerが購入
+    ts::next_tx(&mut scenario, buyer);
+    {
+        let mut seller_kiosk = ts::take_shared<Kiosk>(&scenario);
+        let policy = ts::take_shared<TransferPolicy<contracts::PremiumTicketNFT>>(&scenario);
+
+        // 購入用のコインを作成（0.5 SUI = 500,000,000 MIST）
+        let payment = coin::mint_for_testing<SUI>(500_000_000, ts::ctx(&mut scenario));
+
+        // Kioskから購入（Transfer Requestが作成される）
+        let (nft, mut request) = kiosk::purchase<contracts::PremiumTicketNFT>(
+            &mut seller_kiosk,
+            nft_id,
+            payment
+        );
+
+        // 収益分配を実行（Transfer Requestにレシートを追加）
+        let revenue_payment = coin::mint_for_testing<SUI>(500_000_000, ts::ctx(&mut scenario));
+        contracts::split_revenue(&policy, &mut request, revenue_payment, ts::ctx(&mut scenario));
+
+        // Transfer Requestを確認（ルール適用完了）
+        sui::transfer_policy::confirm_request(&policy, request);
+
+        // NFTをbuyerに転送
+        sui::transfer::public_transfer(nft, buyer);
+
+        ts::return_shared(seller_kiosk);
+        ts::return_shared(policy);
+    };
+
+    // 購入後の検証
+    ts::next_tx(&mut scenario, buyer);
+    {
+        // BuyerがNFTを所有していることを確認
+        let nft = ts::take_from_sender<contracts::PremiumTicketNFT>(&scenario);
+        assert!(contracts::name(&nft) == string::utf8(b"Purchase Test NFT"), 0);
+        ts::return_to_sender(&scenario, nft);
+    };
+
+    // 収益分配の検証
+    ts::next_tx(&mut scenario, athlete);
+    {
+        let coin = ts::take_from_sender<coin::Coin<SUI>>(&scenario);
+        assert!(coin::value(&coin) == 350_000_000, 1); // 70%
+        ts::return_to_sender(&scenario, coin);
+    };
+
+    ts::next_tx(&mut scenario, one_championship);
+    {
+        let coin = ts::take_from_sender<coin::Coin<SUI>>(&scenario);
+        assert!(coin::value(&coin) == 125_000_000, 2); // 25%
+        ts::return_to_sender(&scenario, coin);
+    };
+
+    ts::next_tx(&mut scenario, platform);
+    {
+        let coin = ts::take_from_sender<coin::Coin<SUI>>(&scenario);
+        assert!(coin::value(&coin) == 25_000_000, 3); // 5%
+        ts::return_to_sender(&scenario, coin);
+    };
+
+    ts::end(scenario);
+}
