@@ -18,18 +18,240 @@
 
 ## Claude Code 基本コマンド
 
-OneTubeプロジェクトでは、Claude Codeの3つの主要コマンドを使って開発を進めます。
+OneTubeプロジェクトでは、Claude Codeの4つの主要コマンドを使って開発を進めます。
 
-| コマンド | 役割 | 生成されるファイル |
-|---------|------|------------------|
-| `/specify` | Issue仕様書の作成 | `docs/issues/###-feature-name/spec.md` |
-| `/plan` | 実装計画の生成 | `docs/issues/###-feature-name/plan.md` |
-| `/tasks` | タスクリストの生成 | `docs/issues/###-feature-name/tasks.md` |
+| コマンド | 役割 | ファイル出力 |
+|---------|------|-------------|
+| `/specify` | 機能仕様書の作成 | 任意（チャット履歴推奨） |
+| `/plan` | 実装計画の生成 | 任意（チャット履歴推奨） |
+| `/tasks` | タスクリストの生成 | 任意（TodoWrite推奨） |
+| `/execute` | タスクの実行 | - |
+
+**注**: ファイル保存は完全に任意です。MVP開発では、チャット履歴とClaude Code組み込みTodoリストで管理することを推奨します。
 
 ### コマンドの実行順序
 
 ```
-/specify → /plan → /tasks → 実装開始
+/specify → /plan → /tasks → /execute（繰り返し）
+```
+
+### コマンド詳細
+
+#### `/specify` - 機能仕様書の作成
+- ユーザーの要求から機能仕様を作成
+- OneTube技術スタック（Kiosk、Walrus、Seal）を考慮
+- MVP設計方針に基づいたシンプルな仕様
+
+**ファイル保存先（任意）**:
+- `docs/specs/[機能名]/spec.md`
+- または`docs/[機能名]-spec.md`
+
+#### `/plan` - 実装計画の生成
+- 仕様書から実装計画を作成
+- TDD戦略（Contract → Integration → E2E）を明示
+- 使用する技術とファイルパスを具体化
+
+**ファイル保存先（任意）**:
+- `docs/plans/[機能名]/plan.md`
+- または`docs/[機能名]-plan.md`
+
+#### `/tasks` - タスクリストの生成
+- 実装計画から具体的なタスクに分解
+- TDD順序（テスト → 実装）を維持
+- [P]マークで並列実行可能タスクを明示
+
+**推奨**: Claude Code組み込みTodoリスト（`TodoWrite`ツール）を使用
+- リアルタイム更新
+- チャット内で進捗確認
+- ファイル保存不要
+
+#### `/execute` - タスクの実行
+- Todoリストまたはtasks.mdから次のタスクを実行
+- TDDサイクル（RED → GREEN → Refactor）を遵守
+- `package.json`スクリプトと連携（`pnpm move:test`等）
+
+---
+
+## 開発コマンドリファレンス
+
+OneTubeプロジェクトでは、`package.json`に定義された便利なスクリプトを使って開発を進めます。
+
+### 実装・テストコマンド
+
+#### Move契約テスト
+```bash
+pnpm move:test
+# または: cd contracts && sui move test
+```
+**用途**: Move契約の単体テスト実行
+
+#### フロントエンド開発サーバー
+```bash
+pnpm dev
+# → http://localhost:5173
+```
+**用途**: Vite + Express開発サーバー起動
+
+#### プロダクションビルド
+```bash
+pnpm build
+```
+**用途**: TypeScriptコンパイル、フロントエンドビルド
+
+### デプロイ・シードコマンド
+
+#### Devnetデプロイ
+```bash
+pnpm deploy:devnet
+```
+**実行内容**:
+- Sui Move契約をdevnetにデプロイ
+- Package IDを`.env`に自動保存
+- Kioskの初期化
+
+#### シードデータ投入
+```bash
+pnpm seed:devnet
+```
+**実行内容**:
+- `mint_batch`でNFT一括発行
+- Kioskにデポジット・価格設定
+- Walrus BLOB保存、Seal暗号化
+
+### デモ実行コマンド
+
+#### NFT購入デモ
+```bash
+pnpm demo:purchase
+```
+**実行内容**:
+- Sponsored TransactionでNFT購入
+- Transfer Policy収益分配実行
+
+#### 動画視聴デモ
+```bash
+pnpm demo:view
+```
+**実行内容**:
+- NFT所有権確認
+- Sealセッションキー発行（30秒）
+- 動画URL取得
+
+### 品質管理コマンド
+
+#### Linter/Formatter
+```bash
+pnpm biome:check  # チェックのみ
+pnpm biome:fix    # 自動修正
+pnpm format       # フォーマットのみ
+```
+
+### ワークフロー管理コマンド（Claude Code統合）
+
+#### 品質ゲート（コミット前推奨）
+```bash
+pnpm check:packages
+```
+**実行内容**:
+- ✅ Move契約ビルド＆テスト
+- ✅ TypeScript型チェック
+- ✅ Linter実行
+- ✅ ビルドチェック
+- ✅ タイムアウト保護（各120秒）
+
+**推奨使用タイミング**: `git commit` の直前
+
+#### 機能ディレクトリパス表示
+```bash
+pnpm workflow:paths
+```
+**実行内容**:
+- ✅ 現在のブランチに対応する機能ディレクトリパスを環境変数形式で出力
+
+---
+
+## 推奨開発フロー
+
+新規開発者向けの、実践的なステップバイステップガイドです。
+
+### パターンA: 新機能開発（チャット履歴ベース・推奨）
+
+**最もシンプルなMVPアプローチ**
+
+#### Step 1: 環境セットアップ
+```bash
+# 1. 依存関係インストール
+pnpm install
+
+# 2. 環境変数設定
+cp .env.example .env
+# .envを編集してSUI_PRIVATE_KEYを設定
+
+# 3. Devnetデプロイ
+pnpm deploy:devnet
+
+# 4. シードデータ投入
+pnpm seed:devnet
+```
+
+#### Step 2: 機能開発（Claude Code使用）
+```bash
+# 1. 仕様書作成
+/specify "NFT購入フロー: Kiosk統合とSponsored Transaction"
+
+# 2. 実装計画作成
+/plan
+
+# 3. タスク作成（TodoWriteツール推奨）
+/tasks
+
+# 4. 実装（1タスクずつ）
+/execute
+```
+
+#### Step 3: 品質チェックとコミット
+```bash
+# 1. 品質ゲート実行
+pnpm check:packages
+
+# 2. コミット
+git add .
+git commit -m "feat: implement NFT purchase flow"
+```
+
+#### Step 4: デモ実行
+```bash
+# 1. 購入フローデモ
+pnpm demo:purchase
+
+# 2. 視聴フローデモ
+pnpm demo:view
+
+# 3. フロントエンド確認
+pnpm dev
+# → http://localhost:5173 で動作確認
+```
+
+---
+
+### コミット前チェックリスト
+
+#### 必須チェック
+```bash
+# 全チェック一括実行（推奨）
+pnpm check:packages
+```
+
+#### 個別チェック（トラブルシューティング用）
+```bash
+# 1. Move契約テスト
+pnpm move:test
+
+# 2. Linter/Format
+pnpm biome:check
+
+# 3. ビルドチェック
+pnpm build
 ```
 
 ---
@@ -385,29 +607,67 @@ docs/
         └── tasks.md
 ```
 
-### ディレクトリ命名ルール
+### ブランチ命名戦略
+
+OneTube MVPでは、柔軟なブランチ命名をサポートしています。
+
+#### パターン1: ユーザー名ベース（推奨：MVP開発）
+```bash
+feature/yuseiwhite
+feature/john-doe
+```
+- 個人開発に最適
+- Issue番号管理不要
+- チャット履歴で進捗管理
+
+#### パターン2: 機能名ベース
+```bash
+feature/nft-purchase
+feature/video-streaming
+feature/wallet-integration
+```
+- 機能が明確
+- ドキュメント任意
+- シンプルで分かりやすい
+
+#### パターン3: Issue番号付き（オプション）
+```bash
+feature/001-smart-contract-deployment
+feature/002-kiosk-integration
+feature/i96-nft-marketplace
+```
+- 従来のIssue管理と互換性
+- 複数人での協業時に有用
+- `docs/issues/###-feature-name/`でドキュメント管理
+
+### ディレクトリ構造（完全任意）
+
+ドキュメントをファイルに保存する場合の推奨構造：
 
 ```
-docs/issues/###-feature-name/
+# オプション1: シンプル構造（MVP推奨）
+docs/
+├── nft-purchase-spec.md
+├── nft-purchase-plan.md
+└── nft-purchase-tasks.md
 
-###: 3桁の番号（001, 002, 003...）
-feature-name: 機能名（kebab-case）
+# オプション2: 機能ディレクトリ
+docs/specs/nft-purchase/
+├── spec.md
+├── plan.md
+└── tasks.md
+
+# オプション3: Issue番号付き（従来方式）
+docs/issues/001-nft-purchase/
+├── spec.md
+├── plan.md
+└── tasks.md
 ```
 
-**良い例**:
-```
-✅ 001-smart-contract-deployment
-✅ 002-kiosk-integration
-✅ 003-sponsored-transaction
-```
-
-**悪い例**:
-```
-❌ 1-smart-contract          # 番号が2桁
-❌ 001-SmartContract         # camelCase
-❌ 001_smart_contract        # snake_case
-❌ smartcontract             # 番号なし
-```
+**MVP開発での推奨**:
+- ✅ チャット履歴で管理（ファイル作成不要）
+- ✅ Claude Code組み込みTodoリスト使用
+- ❌ 過度なドキュメント管理は避ける
 
 ---
 
@@ -582,99 +842,6 @@ pnpm test
 
 ---
 
-### 4. Issue番号の付け方
-
-#### 基本ルール
-
-```
-001, 002, 003, ... 099
-100, 101, 102, ... 999
-```
-
-**ポイント**:
-- ✅ 必ず3桁（001, 002, ...）
-- ✅ 連番で付ける
-- ✅ 欠番は作らない（削除したIssueも番号は保持）
-
-#### 番号の振り方（実例）
-
-```
-実装順序:
-001-smart-contract-deployment     # 最初に実装
-002-kiosk-integration            # 2番目
-003-sponsored-transaction        # 3番目
-004-walrus-seal-integration      # 4番目
-005-frontend-ui                  # 最後
-
-→ 実装順に番号を付ける（機能の重要度ではない）
-```
-
----
-
-## トラブルシューティング
-
-### Q1: Claude Codeが期待通り動かない
-
-**症状**:
-```
-"NFT購入機能を実装してください"
-→ Claude Codeが抽象的な回答しか返さない
-```
-
-**原因**: 依頼が曖昧すぎる
-
-**解決策**:
-```
-1. spec.mdを先に作成（/specify）
-2. tasks.mdを参照しながら、具体的に依頼
-
-"docs/issues/003-sponsored-transaction/tasks.md の
-「Backend署名サービス」セクションを実装してください。"
-```
-
----
-
-### Q2: Issueの粒度が適切か判断できない
-
-**判断フローチャート**:
-
-```
-実装時間は3日以上か？
-  ├─ YES → Issue作成
-  └─ NO  → 複数ファイルにまたがるか？
-           ├─ YES → Issue作成
-           └─ NO  → 直接実装（Issueなし）
-```
-
-**迷ったら**: Issue作成を推奨（後で統合できる）
-
----
-
-### Q3: 既存コードとの整合性が取れない
-
-**症状**:
-```
-新しく実装したコードが、既存のコードと競合する
-→ エラーが発生
-```
-
-**解決策**:
-
-```bash
-# 1. 既存コードを確認
-"app/src/server/index.ts を読んで、
-既存のルート定義を教えてください"
-
-# 2. 整合性を取る
-"既存の /api/health ルートと同じパターンで
-/api/purchase ルートを追加してください"
-
-# 3. テストで検証
-pnpm test:api
-```
-
----
-
 ## チェックリスト
 
 ### Issue作成前
@@ -764,5 +931,3 @@ pnpm test:api
 2. **design.mdを読む** - システム構成を理解
 3. **最初のIssueを作成** - `/specify "001-smart-contract-deployment"`
 4. **実装開始** - tasks.mdを見ながら1タスクずつ実装
-
-**Happy Coding! 🚀**
