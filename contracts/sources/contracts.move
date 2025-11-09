@@ -35,3 +35,20 @@ public struct RevenueShareConfig has store, drop {
     one_bp: u16,      // basis points (2500 = 25%)
     platform_bp: u16, // basis points (500 = 5%)
 }
+
+// ====== 初期化関数 ======
+
+/// モジュール初期化 - Publisherの作成とAdminCapの発行
+fun init(otw: CONTRACTS, ctx: &mut sui::tx_context::TxContext) {
+    // Publisherを作成（ONE_TIME_WITNESSを使用）
+    let publisher = sui::package::claim(otw, ctx);
+
+    // AdminCapを作成
+    let admin_cap = AdminCap {
+        id: sui::object::new(ctx),
+    };
+
+    // Publisherとadmin_capをデプロイヤーに転送
+    sui::transfer::public_transfer(publisher, sui::tx_context::sender(ctx));
+    sui::transfer::transfer(admin_cap, sui::tx_context::sender(ctx));
+}
