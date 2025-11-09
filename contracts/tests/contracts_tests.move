@@ -433,3 +433,55 @@ fun test_transfer_policy_revenue_split() {
 
     ts::end(scenario);
 }
+
+// ====== Transfer Policy統合テスト ======
+
+// テスト8: Transfer Policy統合テスト（作成・ルール追加・収益分配）
+#[test]
+fun test_transfer_policy_integration() {
+
+    let admin = @0xA;
+    let athlete = @0xB;
+    let one_championship = @0xC;
+    let platform = @0xD;
+    let mut scenario = ts::begin(admin);
+
+    // コントラクトを初期化（PublisherとAdminCapを取得）
+    {
+        contracts::init_for_testing(ts::ctx(&mut scenario));
+    };
+
+    // Transfer Policyを作成し、収益分配ルールを追加
+    ts::next_tx(&mut scenario, admin);
+    {
+        let publisher = ts::take_from_sender<sui::package::Publisher>(&scenario);
+
+        // Transfer Policyを作成
+        let (mut policy, cap) = contracts::create_transfer_policy(
+            &publisher,
+            ts::ctx(&mut scenario)
+        );
+
+        // 収益分配ルールを追加
+        contracts::add_revenue_share_rule(
+            &mut policy,
+            &cap,
+            athlete,
+            one_championship,
+            platform
+        );
+
+        // ルールが正しく設定されたことを確認
+        let config = contracts::get_revenue_share_config(&policy);
+        assert!(contracts::athlete_bp(config) == 7000, 0);
+        assert!(contracts::one_bp(config) == 2500, 1);
+        assert!(contracts::platform_bp(config) == 500, 2);
+
+        // Policyを共有オブジェクトとして公開
+        sui::transfer::public_share_object(policy);
+        sui::transfer::public_transfer(cap, admin);
+        ts::return_to_sender(&scenario, publisher);
+    };
+
+    ts::end(scenario);
+}
