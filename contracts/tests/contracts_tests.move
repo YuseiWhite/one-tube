@@ -90,3 +90,55 @@ fun test_mint_requires_admin_cap() {
 
     ts::end(scenario);
 }
+
+// ====== Phase 2 & 3: 所有権・アクセス制御テスト ======
+
+// テスト: NFT所有権の確認（SDKチェックをシミュレート）
+#[test]
+fun test_nft_ownership_verification() {
+    let admin = @0xA;
+    let user = @0xB;
+    let mut scenario = ts::begin(admin);
+
+    {
+        contracts::init_for_testing(ts::ctx(&mut scenario));
+    };
+
+    // AdminがNFTを発行してユーザーに転送
+    ts::next_tx(&mut scenario, admin);
+    {
+        let admin_cap = ts::take_from_sender<AdminCap>(&scenario);
+        let mut nfts = contracts::mint_batch(
+            &admin_cap,
+            1,
+            string::utf8(b"Ownership Test NFT"),
+            string::utf8(b"Test ownership"),
+            string::utf8(b"blob-ownership"),
+            ts::ctx(&mut scenario)
+        );
+
+        let nft = vector::pop_back(&mut nfts);
+        vector::destroy_empty(nfts);
+
+        // NFTをユーザーに転送
+        sui::transfer::public_transfer(nft, user);
+
+        ts::return_to_sender(&scenario, admin_cap);
+    };
+
+    // ユーザーがNFTを受け取る（所有権確認）
+    ts::next_tx(&mut scenario, user);
+    {
+        // ユーザーがNFTを取得できれば、所有していることを意味する
+        let nft = ts::take_from_sender<PremiumTicketNFT>(&scenario);
+
+        // NFTプロパティを検証
+        assert!(contracts::name(&nft) == string::utf8(b"Ownership Test NFT"), 0);
+        assert!(contracts::blob_id(&nft) == string::utf8(b"blob-ownership"), 1);
+
+        // NFTをユーザーに返却
+        ts::return_to_sender(&scenario, nft);
+    };
+
+    ts::end(scenario);
+}
