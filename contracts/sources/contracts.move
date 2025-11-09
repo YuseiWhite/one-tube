@@ -1,9 +1,6 @@
-/*
-/// Module: contracts
 module contracts::contracts;
-*/
 
-// For Move coding conventions, see
-// https://docs.sui.io/concepts/sui-move-concepts/conventions
+// ====== エラーコード ======
 
-
+const EInvalidCount: u64 = 0;
+const EInvalidBasisPoints: u64 = 1;
