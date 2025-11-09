@@ -83,3 +83,20 @@ public fun mint_batch(
 
     nfts
 }
+
+// ====== アクセサー関数 ======
+
+/// NFT名を取得
+public fun name(nft: &PremiumTicketNFT): String {
+    nft.name
+}
+
+/// NFTの説明を取得
+public fun description(nft: &PremiumTicketNFT): String {
+    nft.description
+}
+
+/// NFTのblob_idを取得
+public fun blob_id(nft: &PremiumTicketNFT): String {
+    nft.blob_id
+}
