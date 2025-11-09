@@ -1,7 +1,9 @@
 module contracts::contracts;
 
-use sui::transfer_policy::{TransferPolicy, TransferPolicyCap};
+use sui::transfer_policy::{TransferPolicy, TransferPolicyCap, TransferRequest};
 use sui::package::Publisher;
+use sui::coin::Coin;
+use sui::sui::SUI;
 
 // ====== エラーコード ======
 
@@ -142,4 +144,40 @@ public fun add_revenue_share_rule(
 
     // ルールをポリシーに追加
     sui::transfer_policy::add_rule(RevenueShareRule {}, policy, cap, config);
+}
+
+/// 収益分配の実行（Kiosk購入時に呼び出される）
+/// Transfer Requestを検証し、支払いを分配する
+public fun split_revenue(
+    policy: &TransferPolicy<PremiumTicketNFT>,
+    request: &mut TransferRequest<PremiumTicketNFT>,
+    mut payment: Coin<SUI>,
+    ctx: &mut sui::tx_context::TxContext
+) {
+    // ポリシーから収益分配設定を取得
+    let config = sui::transfer_policy::get_rule<PremiumTicketNFT, RevenueShareRule, RevenueShareConfig>(
+        RevenueShareRule {},
+        policy
+    );
+
+    let total_amount = sui::coin::value(&payment);
+
+    // 各受取人への分配額を計算（basis points使用、丸め誤差対策）
+    let athlete_amount = ((total_amount as u128) * (config.athlete_bp as u128) / 10000) as u64;
+    let one_amount = ((total_amount as u128) * (config.one_bp as u128) / 10000) as u64;
+    // Platform は残り全額を受け取る（丸め誤差を吸収）
+
+    // アスリートへの支払い (70%)
+    let athlete_coin = sui::coin::split(&mut payment, athlete_amount, ctx);
+    sui::transfer::public_transfer(athlete_coin, config.athlete_address);
+
+    // ONE Championshipへの支払い (25%)
+    let one_coin = sui::coin::split(&mut payment, one_amount, ctx);
+    sui::transfer::public_transfer(one_coin, config.one_address);
+
+    // プラットフォームへの支払い (5% + 丸め誤差)
+    sui::transfer::public_transfer(payment, config.platform_address);
+
+    // Transfer Requestにレシートを追加（ルール適用完了）
+    sui::transfer_policy::add_receipt(RevenueShareRule {}, request);
 }
