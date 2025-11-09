@@ -1,0 +1,31 @@
+{
+  "name": "one-tube",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "move:test": "cd contracts && sui move test",
+    "move:e2e": "tsx tests/e2e.spec.ts",
+    "dev": "cd app && pnpm dev",
+    "build": "cd app && pnpm build",
+    "deploy:devnet": "node scripts/tool.ts deploy --network devnet",
+    "seed:devnet": "node scripts/tool.ts seed --network devnet",
+    "demo:purchase": "node scripts/tool.ts demo-purchase --network devnet",
+    "demo:view": "node scripts/tool.ts demo-view --network devnet",
+    "biome:check": "biome check .",
+    "biome:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "check:packages": "bash docs/scripts/check-packages.sh",
+    "workflow:paths": "bash docs/scripts/get-feature-paths.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.20.0",
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.4",
+    "@mysten/sui": "^1.44.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
