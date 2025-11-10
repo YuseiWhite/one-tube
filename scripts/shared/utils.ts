@@ -279,3 +279,65 @@ export function getKeypair(): Ed25519Keypair {
 		);
 	}
 }
+
+// === Logger Functions ===
+/**
+ * ボックス枠でメッセージを囲んで表示
+ * 複数行対応、最長行に合わせて幅を調整
+ */
+export function printBox(message: string): void {
+	const lines = message.split("\n");
+	const maxLength = Math.max(...lines.map((line) => line.length));
+	const border = "─".repeat(maxLength + 2);
+
+	console.log(`┌${border}┐`);
+	for (const line of lines) {
+		console.log(`│ ${line.padEnd(maxLength)} │`);
+	}
+	console.log(`└${border}┘`);
+}
+
+/**
+ * 指定されたミリ秒だけ処理を待機
+ */
+export function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Sui devnet faucetからガスを取得
+ * @throws Faucetリクエストが失敗した場合
+ */
+export async function requestDevnetFaucet(address: string): Promise<void> {
+	console.log(`🚰 Requesting devnet faucet for ${address}...`);
+
+	try {
+		const response = await fetch("https://faucet.devnet.sui.io/v2/gas", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				FixedAmountRequest: {
+					recipient: address,
+				},
+			}),
+		});
+
+		if (!response.ok) {
+			const errorText = await response.text();
+			throw new Error(
+				`Faucet request failed: ${response.status} ${response.statusText} - ${errorText}`,
+			);
+		}
+
+		const data = await response.json();
+		console.log(`✅ Faucet request successful: ${JSON.stringify(data)}`);
+	} catch (error: unknown) {
+		throw new Error(
+			`Failed to request devnet faucet.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Solution: Try manually at https://faucet.devnet.sui.io/`,
+		);
+	}
+}
