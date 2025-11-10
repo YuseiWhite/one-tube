@@ -405,9 +405,17 @@ export async function deployCommand(network: SupportedNetwork): Promise<void> {
 	} catch {
 		console.log("⚠️  No keypair found or invalid, generating new one...");
 
-		// sui keytoolで新しいkeypairとmnemonicを生成
+		// .keys/ディレクトリを作成（存在しない場合）
+		const keysDir = path.join(process.cwd(), ".keys");
+		if (!fs.existsSync(keysDir)) {
+			fs.mkdirSync(keysDir, { recursive: true, mode: 0o700 });
+			console.log("  📁 Created .keys/ directory");
+		}
+
+		// sui keytoolで新しいkeypairとmnemonicを生成（.keys/内で実行）
 		const output = execSync("sui keytool generate ed25519 --json", {
 			encoding: "utf-8",
+			cwd: keysDir,
 		});
 		const data = JSON.parse(output);
 
