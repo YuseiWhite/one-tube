@@ -4,11 +4,18 @@ import type {
 } from "@mysten/sui/client";
 import type { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { Transaction } from "@mysten/sui/transactions";
+import * as dotenv from "dotenv";
 
+import type { SupportedNetwork } from "../shared/utils";
 import {
 	filterObjectChangesWithId,
 	findObjectChangeWithId,
+	getClient,
 	getErrorMessage,
+	getKeypair,
+	loadConfig,
+	printBox,
+	updateEnvFile,
 } from "../shared/utils";
 
 /**
@@ -309,5 +316,96 @@ async function kioskPlaceAndList(
 	// Diagnosable: 成功ログ（価格情報を含む）
 	console.log(
 		`  ✅ Listed NFT ${nftId.substring(0, 10)}... at ${price / 1_000_000_000} SUI`,
+	);
+}
+
+/**
+ * シードコマンドのメイン処理
+ * 1. NFTをミント（10個のPremium Ticket）
+ * 2. Kiosk作成（まだない場合のみ、.envに保存）
+ * 3. NFTをKioskに配置して出品（0.5 SUI固定価格）
+ *
+ * @throws デプロイ未完了（PACKAGE_IDまたはADMIN_CAP_IDがない場合）
+ * @throws NFTミント、Kiosk作成、または出品に失敗した場合
+ */
+export async function seedCommand(network: SupportedNetwork): Promise<void> {
+	printBox("🌱 Seed NFTs to Kiosk");
+
+	console.log(`Network: ${network}`);
+	console.log("Minting 10 NFTs...");
+
+	// Load environment variables first
+	dotenv.config({ override: true });
+
+	const config = loadConfig();
+	const client = getClient(network);
+	const keypair = getKeypair();
+
+	// Correct: デプロイ確認
+	if (!config.packageId || !config.adminCapId) {
+		throw new Error(
+			"Package ID or Admin Cap ID not found.\n" +
+				'Solution: Run "pnpm run deploy:devnet" first',
+		);
+	}
+
+	// 1. NFTミント
+	const nftIds = await mintBatch(
+		client,
+		keypair,
+		config.packageId,
+		config.adminCapId,
+		10,
+		"ONE 170 Premium Ticket",
+		"Superbon vs Masaaki Noiri - Full Match Access",
+		"mock-blob-id-fullmatch-one170",
+	);
+
+	// 2. Kiosk作成（まだない場合）
+	let kioskId = config.kioskId;
+	let kioskCapId = config.kioskCapId;
+
+	if (!kioskId) {
+		const kioskResult = await createKiosk(client, keypair);
+		kioskId = kioskResult.kioskId;
+		kioskCapId = kioskResult.kioskCapId;
+
+		console.log("\n📝 Updating .env with Kiosk IDs...");
+		updateEnvFile({
+			KIOSK_ID: kioskId,
+			KIOSK_CAP_ID: kioskCapId,
+		});
+	} else {
+		console.log(`\n✅ Using existing Kiosk: ${kioskId}`);
+	}
+
+	if (!kioskId || !kioskCapId) {
+		throw new Error(
+			"Kiosk ID or Kiosk Cap ID not found after setup.\n" +
+				"Solution: Ensure createKiosk succeeded or set KIOSK_ID/KIOSK_CAP_ID in .env",
+		);
+	}
+
+	// 3. NFTをKioskにデポジット & 出品
+	console.log("\n📦 Depositing and listing NFTs...");
+	const price = 500_000_000; // 0.5 SUI
+
+	for (let i = 0; i < nftIds.length; i++) {
+		await kioskPlaceAndList(
+			client,
+			keypair,
+			config.packageId,
+			kioskId,
+			kioskCapId,
+			nftIds[i],
+			price,
+		);
+	}
+
+	printBox(
+		"✅ Seed Complete!\n\n" +
+			`Kiosk ID: ${kioskId}\n` +
+			`NFTs listed: ${nftIds.length}\n` +
+			`Price: ${price / 1_000_000_000} SUI each`,
 	);
 }
