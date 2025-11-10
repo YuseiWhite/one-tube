@@ -223,3 +223,91 @@ async function createKiosk(
 
 	return { kioskId, kioskCapId };
 }
+
+/**
+ * NFTをKioskに配置して指定価格で出品
+ * 1. place: NFTをKioskにデポジット
+ * 2. list: 指定価格で出品リストに追加
+ * @throws price が0以下の場合
+ * @throws トランザクション構築または実行に失敗した場合
+ */
+async function kioskPlaceAndList(
+	client: SuiClient,
+	keypair: Ed25519Keypair,
+	packageId: string,
+	kioskId: string,
+	kioskCapId: string,
+	nftId: string,
+	price: number,
+): Promise<void> {
+	// Correct: 価格検証
+	if (price <= 0) {
+		throw new Error(
+			`Invalid price: ${price}\nSolution: price must be greater than 0`,
+		);
+	}
+
+	const tx = new Transaction();
+
+	try {
+		// 1. NFTをKioskにデポジット
+		tx.moveCall({
+			target: "0x2::kiosk::place",
+			typeArguments: [`${packageId}::contracts::PremiumTicketNFT`],
+			arguments: [tx.object(kioskId), tx.object(kioskCapId), tx.object(nftId)],
+		});
+
+		// 2. NFTを出品
+		tx.moveCall({
+			target: "0x2::kiosk::list",
+			typeArguments: [`${packageId}::contracts::PremiumTicketNFT`],
+			arguments: [
+				tx.object(kioskId),
+				tx.object(kioskCapId),
+				tx.pure.id(nftId),
+				tx.pure.u64(price),
+			],
+		});
+	} catch (error: unknown) {
+		throw new Error(
+			`Failed to construct place and list transaction.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Solution: Check that all IDs are valid`,
+		);
+	}
+
+	let result: SuiTransactionBlockResponse;
+	try {
+		result = await client.signAndExecuteTransaction({
+			signer: keypair,
+			transaction: tx,
+			options: {
+				showEffects: true,
+			},
+		});
+	} catch (error: unknown) {
+		throw new Error(
+			`Place and list transaction execution failed.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Solution: Check gas balance and network connectivity`,
+		);
+	}
+
+	if (result.effects?.status?.status !== "success") {
+		// Diagnosable: デバッグ用に全エラーを表示
+		console.error(
+			"DEBUG: Transaction effects:",
+			JSON.stringify(result.effects, null, 2),
+		);
+		throw new Error(
+			`Kiosk place and list failed.\n` +
+				`Status: ${result.effects?.status?.status || "UNKNOWN"}\n` +
+				`Error: ${result.effects?.status?.error || "No error message"}`,
+		);
+	}
+
+	// Diagnosable: 成功ログ（価格情報を含む）
+	console.log(
+		`  ✅ Listed NFT ${nftId.substring(0, 10)}... at ${price / 1_000_000_000} SUI`,
+	);
+}
