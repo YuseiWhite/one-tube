@@ -90,6 +90,29 @@ public fun mint_batch(
     nfts
 }
 
+/// ミント＆転送: NFTをバッチでミントして呼び出し元に転送
+public entry fun mint_and_transfer_batch(
+    admin_cap: &AdminCap,
+    count: u64,
+    name: String,
+    description: String,
+    blob_id: String,
+    recipient: address,
+    ctx: &mut sui::tx_context::TxContext
+) {
+    let mut nfts = mint_batch(admin_cap, count, name, description, blob_id, ctx);
+    let mut i = 0;
+    let len = vector::length(&nfts);
+
+    while (i < len) {
+        let nft = vector::pop_back(&mut nfts);
+        sui::transfer::public_transfer(nft, recipient);
+        i = i + 1;
+    };
+
+    vector::destroy_empty(nfts);
+}
+
 // ====== アクセサー関数 ======
 
 /// NFT名を取得
