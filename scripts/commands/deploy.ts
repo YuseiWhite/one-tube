@@ -159,3 +159,109 @@ async function publishContract(
 
 	return { packageId, publisherId, adminCapId };
 }
+
+/**
+ * Transfer Policyを作成してNFT譲渡ルールを設定
+ * PolicyをSharedにすることで公開アクセス可能にする
+ * @throws トランザクション構築または実行に失敗した場合
+ */
+async function createTransferPolicy(
+	client: SuiClient,
+	keypair: Ed25519Keypair,
+	packageId: string,
+	publisherId: string,
+): Promise<{ policyId: string; policyCapId: string }> {
+	console.log("\n🔐 Creating Transfer Policy...");
+
+	const tx = new Transaction();
+
+	try {
+		const [policy, policyCap] = tx.moveCall({
+			target: `${packageId}::contracts::create_transfer_policy`,
+			arguments: [tx.object(publisherId)],
+		});
+
+		// Policyを共有（公開アクセス可能にする）
+		tx.moveCall({
+			target: "0x2::transfer::public_share_object",
+			typeArguments: [
+				`0x2::transfer_policy::TransferPolicy<${packageId}::contracts::PremiumTicketNFT>`,
+			],
+			arguments: [policy],
+		});
+
+		// PolicyCapを送信者に転送
+		tx.transferObjects([policyCap], keypair.getPublicKey().toSuiAddress());
+	} catch (error: unknown) {
+		throw new Error(
+			`Failed to construct Transfer Policy transaction.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Solution: Check that packageId and publisherId are valid`,
+		);
+	}
+
+	let result: SuiTransactionBlockResponse;
+	try {
+		result = await client.signAndExecuteTransaction({
+			signer: keypair,
+			transaction: tx,
+			options: {
+				showEffects: true,
+				showObjectChanges: true,
+			},
+		});
+	} catch (error: unknown) {
+		throw new Error(
+			`Transfer Policy transaction execution failed.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Solution: Check gas balance and network connectivity`,
+		);
+	}
+
+	// Diagnosable: Transaction Digest をログ出力
+	console.log(`  Transaction Digest: ${result.digest}`);
+
+	if (result.effects?.status?.status !== "success") {
+		// Diagnosable: デバッグ用に全エラーを表示
+		console.error(
+			"DEBUG: Transaction effects:",
+			JSON.stringify(result.effects, null, 2),
+		);
+		throw new Error(
+			`Transfer Policy creation failed.\n` +
+				`Status: ${result.effects?.status?.status || "UNKNOWN"}\n` +
+				`Error: ${result.effects?.status?.error || "No error message"}`,
+		);
+	}
+
+	const policyChange = findObjectChangeWithId(
+		result.objectChanges,
+		(change) =>
+			(change.type === "created" || change.type === "mutated") &&
+			change.objectType.includes("transfer_policy::TransferPolicy") &&
+			!change.objectType.includes("TransferPolicyCap"),
+	);
+
+	const policyCapChange = findObjectChangeWithId(
+		result.objectChanges,
+		(change) =>
+			change.type === "created" &&
+			change.objectType.includes("transfer_policy::TransferPolicyCap"),
+	);
+
+	const policyId = policyChange?.objectId;
+	const policyCapId = policyCapChange?.objectId;
+
+	if (!policyId || !policyCapId) {
+		throw new Error(
+			"Failed to extract Policy IDs from transaction result.\n" +
+				`policyId: ${policyId || "NOT_FOUND"}\n` +
+				`policyCapId: ${policyCapId || "NOT_FOUND"}`,
+		);
+	}
+
+	console.log(`✅ Transfer Policy ID: ${policyId}`);
+	console.log(`✅ Transfer Policy Cap ID: ${policyCapId}`);
+
+	return { policyId, policyCapId };
+}
