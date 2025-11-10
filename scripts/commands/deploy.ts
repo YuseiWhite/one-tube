@@ -265,3 +265,103 @@ async function createTransferPolicy(
 
 	return { policyId, policyCapId };
 }
+
+/**
+ * 収益分配ルールをTransfer Policyに追加
+ * Athlete 70% / ONE 25% / Platform 5% で自動分配
+ * @throws アドレス形式が不正な場合
+ * @throws トランザクション実行に失敗した場合
+ */
+async function addRevenueShareRule(
+	client: SuiClient,
+	keypair: Ed25519Keypair,
+	packageId: string,
+	policyId: string,
+	policyCapId: string,
+	athleteAddress: string,
+	oneAddress: string,
+	platformAddress: string,
+): Promise<void> {
+	console.log("\n💰 Adding revenue share rule...");
+	console.log(`  Athlete (70%): ${athleteAddress}`);
+	console.log(`  ONE (25%): ${oneAddress}`);
+	console.log(`  Platform (5%): ${platformAddress}`);
+
+	// アドレス形式検証
+	const addresses = [
+		{ name: "Athlete", value: athleteAddress },
+		{ name: "ONE", value: oneAddress },
+		{ name: "Platform", value: platformAddress },
+	];
+
+	for (const addr of addresses) {
+		if (!addr.value || addr.value.trim() === "") {
+			throw new Error(
+				`${addr.name} address is empty.\n` +
+					`Solution: Set ${addr.name.toUpperCase()}_ADDRESS in .env`,
+			);
+		}
+		if (!addr.value.startsWith("0x")) {
+			throw new Error(
+				`${addr.name} address format is invalid: ${addr.value}\n` +
+					`Solution: Address must start with "0x"`,
+			);
+		}
+	}
+
+	const tx = new Transaction();
+
+	try {
+		tx.moveCall({
+			target: `${packageId}::contracts::add_revenue_share_rule`,
+			arguments: [
+				tx.object(policyId),
+				tx.object(policyCapId),
+				tx.pure.address(athleteAddress),
+				tx.pure.address(oneAddress),
+				tx.pure.address(platformAddress),
+			],
+		});
+	} catch (error: unknown) {
+		throw new Error(
+			`Failed to construct revenue share rule transaction.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Solution: Check that all IDs and addresses are valid`,
+		);
+	}
+
+	let result: SuiTransactionBlockResponse;
+	try {
+		result = await client.signAndExecuteTransaction({
+			signer: keypair,
+			transaction: tx,
+			options: {
+				showEffects: true,
+			},
+		});
+	} catch (error: unknown) {
+		throw new Error(
+			`Revenue share rule transaction execution failed.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Solution: Check gas balance and network connectivity`,
+		);
+	}
+
+	// Diagnosable: Transaction Digest をログ出力
+	console.log(`  Transaction Digest: ${result.digest}`);
+
+	if (result.effects?.status?.status !== "success") {
+		// Diagnosable: デバッグ用に全エラーを表示
+		console.error(
+			"DEBUG: Transaction effects:",
+			JSON.stringify(result.effects, null, 2),
+		);
+		throw new Error(
+			`Adding revenue share rule failed.\n` +
+				`Status: ${result.effects?.status?.status || "UNKNOWN"}\n` +
+				`Error: ${result.effects?.status?.error || "No error message"}`,
+		);
+	}
+
+	console.log("✅ Revenue share rule added successfully");
+}
