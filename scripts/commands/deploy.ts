@@ -6,13 +6,22 @@ import type {
 	SuiObjectChange,
 	SuiTransactionBlockResponse,
 } from "@mysten/sui/client";
-import { type SuiClient } from "@mysten/sui/client";
+import { getFullnodeUrl, type SuiClient } from "@mysten/sui/client";
 import type { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import { Ed25519Keypair as Ed25519KeypairClass } from "@mysten/sui/keypairs/ed25519";
 import { Transaction } from "@mysten/sui/transactions";
+import * as dotenv from "dotenv";
 
+import type { SupportedNetwork } from "../shared/utils";
 import {
 	findObjectChangeWithId,
+	getClient,
 	getErrorMessage,
+	getKeypair,
+	printBox,
+	requestDevnetFaucet,
+	sleep,
+	updateEnvFile,
 } from "../shared/utils";
 
 /**
@@ -364,4 +373,127 @@ async function addRevenueShareRule(
 	}
 
 	console.log("✅ Revenue share rule added successfully");
+}
+
+/**
+ * デプロイコマンドのメイン処理
+ * 1. Keypair準備（既存または新規生成）
+ * 2. Faucetからガス取得
+ * 3. 契約パブリッシュ
+ * 4. Transfer Policy作成
+ * 5. 収益分配ルール追加
+ * 6. .env更新
+ *
+ * @throws Keypair生成、契約デプロイ、またはPolicy設定に失敗した場合
+ */
+export async function deployCommand(network: SupportedNetwork): Promise<void> {
+	printBox("🚀 Deploy Contract to Sui Devnet");
+
+	console.log(`Network: ${network}`);
+	console.log(`RPC: ${getFullnodeUrl(network)}`);
+
+	// 環境変数を読み込み
+	dotenv.config({ override: true });
+
+	const client = getClient(network);
+	let keypair: Ed25519Keypair;
+
+	// 1. Keypair準備（既存または新規生成）
+	try {
+		keypair = getKeypair();
+		console.log("✅ Using existing keypair from .env");
+	} catch {
+		console.log("⚠️  No keypair found or invalid, generating new one...");
+
+		// sui keytoolで新しいkeypairとmnemonicを生成
+		const output = execSync("sui keytool generate ed25519 --json", {
+			encoding: "utf-8",
+		});
+		const data = JSON.parse(output);
+
+		// mnemonicからkeypairを導出
+		keypair = Ed25519KeypairClass.deriveKeypair(data.mnemonic);
+
+		// encodeSuiPrivateKeyが使えない可能性があるためmnemonicを保存
+		updateEnvFile({
+			SPONSOR_PRIVATE_KEY: `MNEMONIC:${data.mnemonic}`,
+		});
+		console.log("✅ New keypair generated and saved to .env (mnemonic format)");
+	}
+
+	const address = keypair.getPublicKey().toSuiAddress();
+	console.log(`📍 Deployer Address: ${address}`);
+
+	// 2. Faucetからガス取得
+	console.log("\n💰 Requesting gas from faucet...");
+	try {
+		await requestDevnetFaucet(address);
+	} catch (error: unknown) {
+		throw new Error(
+			`Faucet request failed.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Solution: Try again or manually request at https://faucet.devnet.sui.io/`,
+		);
+	}
+
+	console.log("⏳ Waiting for faucet transaction to complete...");
+	await sleep(5000);
+	console.log("✅ Gas received");
+
+	// 3. Contractをpublish
+	const publishResult = await publishContract(client, keypair);
+
+	// 契約のインデックス完了を待機
+	console.log("\n⏳ Waiting for contract to be indexed...");
+	await sleep(5000);
+	console.log("✅ Contract indexed");
+
+	// 4. Transfer Policy作成
+	const policyResult = await createTransferPolicy(
+		client,
+		keypair,
+		publishResult.packageId,
+		publishResult.publisherId,
+	);
+
+	// Transfer Policyのインデックス完了を待機（Policyオブジェクトは時間がかかる）
+	console.log("\n⏳ Waiting for Transfer Policy to be indexed...");
+	await sleep(8000);
+	console.log("✅ Transfer Policy indexed");
+
+	// 5. 収益分配ルール追加
+	// デプロイごとに新しいkeypairが生成されるため、現在のアドレスを使用
+	await addRevenueShareRule(
+		client,
+		keypair,
+		publishResult.packageId,
+		policyResult.policyId,
+		policyResult.policyCapId,
+		address, // Athleteアドレス
+		address, // ONEアドレス
+		address, // Platformアドレス
+	);
+
+	// 6. .env更新
+	console.log("\n📝 Updating .env file...");
+
+	// 秘密鍵は最初に保存済み（mnemonic形式）
+	// その他のデプロイIDを更新
+	updateEnvFile({
+		PACKAGE_ID: publishResult.packageId,
+		ADMIN_CAP_ID: publishResult.adminCapId,
+		PUBLISHER_ID: publishResult.publisherId,
+		TRANSFER_POLICY_ID: policyResult.policyId,
+		TRANSFER_POLICY_CAP_ID: policyResult.policyCapId,
+		ATHLETE_ADDRESS: address,
+		ONE_ADDRESS: address,
+		PLATFORM_ADDRESS: address,
+	});
+
+	printBox(
+		"✅ Deploy Complete!\n\n" +
+			`Package ID: ${publishResult.packageId}\n` +
+			`Transfer Policy: ${policyResult.policyId}\n\n` +
+			"Next step: pnpm run seed:devnet",
+	);
 }
