@@ -7,6 +7,7 @@ import { Transaction } from "@mysten/sui/transactions";
 
 import {
 	filterObjectChangesWithId,
+	findObjectChangeWithId,
 	getErrorMessage,
 } from "../shared/utils";
 
@@ -128,4 +129,97 @@ async function mintBatch(
 	console.log(`✅ Minted ${nftIds.length} NFTs successfully`);
 
 	return nftIds;
+}
+
+/**
+ * Kioskを作成してNFT販売の準備
+ * @throws トランザクション構築または実行に失敗した場合
+ */
+async function createKiosk(
+	client: SuiClient,
+	keypair: Ed25519Keypair,
+): Promise<{ kioskId: string; kioskCapId: string }> {
+	console.log("\n🏪 Creating Kiosk...");
+
+	const tx = new Transaction();
+
+	try {
+		tx.moveCall({
+			target: "0x2::kiosk::default",
+			arguments: [],
+		});
+	} catch (error: unknown) {
+		throw new Error(
+			`Failed to construct Kiosk creation transaction.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Solution: Check that Kiosk package (0x2) is accessible`,
+		);
+	}
+
+	let result: SuiTransactionBlockResponse;
+	try {
+		result = await client.signAndExecuteTransaction({
+			signer: keypair,
+			transaction: tx,
+			options: {
+				showEffects: true,
+				showObjectChanges: true,
+			},
+		});
+	} catch (error: unknown) {
+		throw new Error(
+			`Kiosk creation transaction execution failed.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Solution: Check gas balance and network connectivity`,
+		);
+	}
+
+	// Diagnosable: Transaction Digest をログ出力
+	console.log(`  Transaction Digest: ${result.digest}`);
+
+	if (result.effects?.status?.status !== "success") {
+		// Diagnosable: デバッグ用に全エラーを表示
+		console.error(
+			"DEBUG: Transaction effects:",
+			JSON.stringify(result.effects, null, 2),
+		);
+		throw new Error(
+			`Kiosk creation failed.\n` +
+				`Status: ${result.effects?.status?.status || "UNKNOWN"}\n` +
+				`Error: ${result.effects?.status?.error || "No error message"}`,
+		);
+	}
+
+	// Kiosk IDを抽出
+	const kioskId = findObjectChangeWithId(
+		result.objectChanges,
+		(change) =>
+			change.type === "created" && change.objectType.includes("::kiosk::Kiosk"),
+	)?.objectId;
+
+	// Kiosk Cap IDを抽出
+	const kioskCapId = findObjectChangeWithId(
+		result.objectChanges,
+		(change) =>
+			change.type === "created" &&
+			change.objectType.includes("::kiosk::KioskOwnerCap"),
+	)?.objectId;
+
+	if (!kioskId || !kioskCapId) {
+		// Diagnosable: デバッグ用に全出力を表示
+		console.error(
+			"DEBUG: objectChanges:",
+			JSON.stringify(result.objectChanges, null, 2),
+		);
+		throw new Error(
+			"Failed to extract Kiosk IDs from creation result.\n" +
+				`kioskId: ${kioskId || "NOT_FOUND"}\n` +
+				`kioskCapId: ${kioskCapId || "NOT_FOUND"}`,
+		);
+	}
+
+	console.log(`✅ Kiosk ID: ${kioskId}`);
+	console.log(`✅ Kiosk Cap ID: ${kioskCapId}`);
+
+	return { kioskId, kioskCapId };
 }
