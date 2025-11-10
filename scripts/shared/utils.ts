@@ -1,4 +1,9 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
+
 import type { SuiObjectChange } from "@mysten/sui/client";
+import { getFullnodeUrl } from "@mysten/sui/client";
+import * as dotenv from "dotenv";
 
 // === Constants ===
 export const SUPPORTED_NETWORKS = [
@@ -144,4 +149,75 @@ export function filterObjectChangesWithId(
 	}
 
 	return matches;
+}
+
+// === Config Functions ===
+/**
+ * .envファイルから設定を読み込み
+ * 環境変数がない場合は空文字列をデフォルト値として使用
+ */
+export function loadConfig(): Config {
+	dotenv.config({ override: true });
+
+	const network = resolveNetwork(process.env.NETWORK);
+
+	const config: Config = {
+		network,
+		rpcUrl: process.env.RPC_URL || getFullnodeUrl(network),
+		packageId: process.env.PACKAGE_ID || "",
+		adminCapId: process.env.ADMIN_CAP_ID || "",
+		publisherId: process.env.PUBLISHER_ID || "",
+		policyId: process.env.TRANSFER_POLICY_ID || "",
+		policyCapId: process.env.TRANSFER_POLICY_CAP_ID || "",
+		kioskId: process.env.KIOSK_ID || "",
+		kioskCapId: process.env.KIOSK_CAP_ID || "",
+		athleteAddress: process.env.ATHLETE_ADDRESS || "",
+		oneAddress: process.env.ONE_ADDRESS || "",
+		platformAddress: process.env.PLATFORM_ADDRESS || "",
+		sponsorPrivateKey: process.env.SPONSOR_PRIVATE_KEY || "",
+	};
+
+	// Diagnosable: 設定読み込みログ
+	console.log(`✅ Config loaded: network=${config.network}`);
+
+	return config;
+}
+
+/**
+ * .envファイルを更新
+ * 既存のキーは値を置換、新しいキーは追加
+ * .envがない場合は.env.exampleをテンプレートとして使用
+ * @throws .env.exampleファイルが見つからない場合
+ */
+export function updateEnvFile(data: Partial<Record<string, string>>): void {
+	const envPath = path.join(process.cwd(), ".env");
+	const envExamplePath = path.join(process.cwd(), ".env.example");
+
+	// Correct: .env.example存在チェック
+	if (!fs.existsSync(envExamplePath)) {
+		throw new Error(
+			`.env.example not found at ${envExamplePath}.\n` +
+				`Please create .env.example first.`,
+		);
+	}
+
+	let envContent = fs.existsSync(envPath)
+		? fs.readFileSync(envPath, "utf-8")
+		: fs.readFileSync(envExamplePath, "utf-8");
+
+	for (const [key, value] of Object.entries(data)) {
+		if (value) {
+			const regex = new RegExp(`^${key}=.*$`, "m");
+			if (envContent.match(regex)) {
+				envContent = envContent.replace(regex, `${key}=${value}`);
+				console.log(`  ✅ Updated: ${key}`);
+			} else {
+				envContent += `\n${key}=${value}`;
+				console.log(`  ➕ Added: ${key}`);
+			}
+		}
+	}
+
+	fs.writeFileSync(envPath, envContent);
+	console.log("✅ .env file updated successfully");
 }
