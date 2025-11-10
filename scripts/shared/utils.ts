@@ -2,7 +2,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 import type { SuiObjectChange } from "@mysten/sui/client";
-import { getFullnodeUrl } from "@mysten/sui/client";
+import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
+import { decodeSuiPrivateKey } from "@mysten/sui/cryptography";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import * as dotenv from "dotenv";
 
 // === Constants ===
@@ -220,4 +222,60 @@ export function updateEnvFile(data: Partial<Record<string, string>>): void {
 
 	fs.writeFileSync(envPath, envContent);
 	console.log("✅ .env file updated successfully");
+}
+
+// === Sui Functions ===
+/**
+ * 指定されたネットワークのSuiClientインスタンスを作成
+ * @throws ネットワークパラメータが指定されていない場合
+ */
+export function getClient(network: SupportedNetwork): SuiClient {
+	if (!network) {
+		throw new Error(
+			"Network parameter is required. Valid values: devnet, testnet, mainnet, localnet",
+		);
+	}
+
+	const url = getFullnodeUrl(network);
+	console.log(`✅ SuiClient created: ${url}`);
+	return new SuiClient({ url });
+}
+
+/**
+ * SPONSOR_PRIVATE_KEYからEd25519Keypairを生成
+ * MNEMONIC:形式とBech32形式の両方に対応
+ * @throws 秘密鍵がない場合、または形式が不正な場合
+ */
+export function getKeypair(): Ed25519Keypair {
+	const privateKey = process.env.SPONSOR_PRIVATE_KEY;
+
+	if (!privateKey) {
+		throw new Error(
+			"SPONSOR_PRIVATE_KEY not found in .env.\n" +
+				"Solution: Run deployment to auto-generate a keypair",
+		);
+	}
+
+	try {
+		// Check if it's mnemonic format
+		if (privateKey.startsWith("MNEMONIC:")) {
+			const mnemonic = privateKey.substring("MNEMONIC:".length);
+			return Ed25519Keypair.deriveKeypair(mnemonic);
+		}
+
+		// Otherwise, try Bech32 format
+		const { schema, secretKey } = decodeSuiPrivateKey(privateKey);
+
+		if (schema !== "ED25519") {
+			throw new Error(`Unsupported key schema: ${schema}. Expected ED25519.`);
+		}
+
+		return Ed25519Keypair.fromSecretKey(secretKey);
+	} catch (error: unknown) {
+		throw new Error(
+			`Invalid SPONSOR_PRIVATE_KEY format.\n` +
+				`Error: ${getErrorMessage(error)}\n` +
+				`Expected format: suiprivkey1... or MNEMONIC:...`,
+		);
+	}
 }
