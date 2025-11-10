@@ -92,3 +92,56 @@ export function getErrorStack(error: unknown): string | undefined {
 
 	return undefined;
 }
+
+// === Type Guards ===
+/**
+ * SuiObjectChangeがobjectIdとobjectTypeを持つかを判定
+ */
+export function isObjectChangeWithIdAndType(
+	change: SuiObjectChange,
+): change is ObjectChangeWithIdAndType {
+	return "objectId" in change && "objectType" in change;
+}
+
+/**
+ * オブジェクト変更の配列から条件に合う最初の要素を取得
+ * objectIdとobjectTypeを持つ要素のみをフィルタ
+ */
+export function findObjectChangeWithId(
+	changes: SuiObjectChange[] | null | undefined,
+	predicate: (change: ObjectChangeWithIdAndType) => boolean,
+): ObjectChangeWithIdAndType | undefined {
+	if (!changes) {
+		return undefined;
+	}
+
+	for (const change of changes) {
+		if (isObjectChangeWithIdAndType(change) && predicate(change)) {
+			return change;
+		}
+	}
+
+	return undefined;
+}
+
+/**
+ * オブジェクト変更の配列から条件に合う全要素を取得
+ * objectIdとobjectTypeを持つ要素のみをフィルタ
+ */
+export function filterObjectChangesWithId(
+	changes: SuiObjectChange[] | null | undefined,
+	predicate: (change: ObjectChangeWithIdAndType) => boolean,
+): ObjectChangeWithIdAndType[] {
+	if (!changes) {
+		return [];
+	}
+
+	const matches: ObjectChangeWithIdAndType[] = [];
+	for (const change of changes) {
+		if (isObjectChangeWithIdAndType(change) && predicate(change)) {
+			matches.push(change);
+		}
+	}
+
+	return matches;
+}
