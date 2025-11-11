@@ -27,6 +27,7 @@ export interface Config {
 	policyCapId: string;
 	kioskId: string;
 	kioskCapId: string;
+	kioskInitialSharedVersion: string;
 	athleteAddress: string;
 	oneAddress: string;
 	platformAddress: string;
@@ -173,6 +174,7 @@ export function loadConfig(): Config {
 		policyCapId: process.env.TRANSFER_POLICY_CAP_ID || "",
 		kioskId: process.env.KIOSK_ID || "",
 		kioskCapId: process.env.KIOSK_CAP_ID || "",
+		kioskInitialSharedVersion: process.env.KIOSK_INITIAL_SHARED_VERSION || "",
 		athleteAddress: process.env.ATHLETE_ADDRESS || "",
 		oneAddress: process.env.ONE_ADDRESS || "",
 		platformAddress: process.env.PLATFORM_ADDRESS || "",
@@ -260,7 +262,19 @@ export function getKeypair(): Ed25519Keypair {
 		// Check if it's mnemonic format
 		if (privateKey.startsWith("MNEMONIC:")) {
 			const mnemonic = privateKey.substring("MNEMONIC:".length);
-			return Ed25519Keypair.deriveKeypair(mnemonic);
+			const derived = Ed25519Keypair.deriveKeypair(mnemonic);
+			const encoded = derived.getSecretKey();
+			if (encoded && encoded !== privateKey) {
+				try {
+					updateEnvFile({ SPONSOR_PRIVATE_KEY: encoded });
+				} catch (updateError) {
+					console.warn(
+						"⚠️  Failed to rewrite SPONSOR_PRIVATE_KEY as suiprivkey:",
+						updateError,
+					);
+				}
+			}
+			return derived;
 		}
 
 		// Otherwise, try Bech32 format

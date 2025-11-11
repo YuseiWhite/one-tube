@@ -91,6 +91,9 @@ async function createTransferPolicy(packageId: string): Promise<PolicyResult>
 async function mintNFTs(adminCap: string, count: number): Promise<string[]>
 async function setupKiosk(nftIds: string[]): Promise<KioskResult>
 async function updateEnvFile(deployData: DeployData): Promise<void>
+
+// SPONSOR_PRIVATE_KEY は suiprivkey1... 形式が必須。
+// .env に MNEMONIC:... が残っている場合は getKeypair() 内で自動変換して上書きする。
 ```
 
 ### 3.2 .env更新対象
@@ -110,8 +113,9 @@ TRANSFER_POLICY_ID=0x...            # ← create_transfer_policy
 TRANSFER_POLICY_CAP_ID=0x...        # ← create_transfer_policy
 
 # Kiosk
-KIOSK_ID=0x...                      # ← kiosk::new
-KIOSK_CAP_ID=0x...                  # ← kiosk::new
+KIOSK_ID=0x...                      # ← kiosk::default で生成された共有オブジェクト
+KIOSK_CAP_ID=0x...                  # ← 同トランザクションで得られる OwnerCap
+KIOSK_INITIAL_SHARED_VERSION=...    # ← shared object を参照する際の initial_shared_version
 KIOSK_PACKAGE_ID=0x000000000000000000000000000000000000000000000000000000000000000002  # 固定
 
 # 収益分配先
@@ -120,7 +124,7 @@ ONE_ADDRESS=0x...                   # ← デプロイヤーアドレス（テ�
 PLATFORM_ADDRESS=0x...              # ← デプロイヤーアドレス（テスト用）
 
 # Sponsored Transaction（モック）
-SPONSOR_PRIVATE_KEY=suiprivkey...   # ← デプロイヤーの秘密鍵
+SPONSOR_PRIVATE_KEY=suiprivkey...   # ← デプロイヤーの秘密鍵（MNEMONIC は自動で suiprivkey に変換）
 
 # Walrus/Seal（モック用）
 SEAL_SESSION_DURATION=30
@@ -219,36 +223,58 @@ WALRUS_AGGREGATOR_URL=https://aggregator.walrus-testnet.walrus.space
 }
 ```
 
+### 3.3.1 Kiosk共有オブジェクトの扱い
+
+- `0x2::kiosk::default` で作成される Kiosk は共有オブジェクトとして公開されるため、後続トランザクション（seed など）では `tx.sharedObjectRef({ objectId, initialSharedVersion, mutable: true })` で参照する。
+- 初回作成時に `owner.Shared.initial_shared_version` を取得し、`.env` の `KIOSK_INITIAL_SHARED_VERSION` として保存。`.env` に値がない場合は RPC を通じて再取得する。
+- KioskOwnerCap は Owned オブジェクトなので `Inputs.ObjectRef({ objectId, version, digest })` で参照し、`kiosk::place/list` のたびに mutated された最新 `version/digest` を拾って次の操作に渡す。
+
 ### 3.4 シードフロー
 
 ```typescript
 async function seed(network: string) {
-  // 1. .envから設定読み込み
-  const config = loadEnvConfig();
+  const config = loadConfig();
+  const client = getClient(network);
+  const keypair = getKeypair();
 
-  // 2. AdminCapでNFTミント（10個）
-  const nftIds = await mintBatch({
-    adminCapId: config.ADMIN_CAP_ID,
-    count: 10,
-    name: "ONE 170 Premium Ticket",
-    description: "Superbon vs Masaaki Noiri - Full Match Access",
-    blobId: "mock-blob-id-fullmatch-one170"
-  });
+  // 1. AdminCapで10件ミントし、チェーン反映を待って objectId を取得
+  const nftIds = await mintBatch(...);
+  await waitForObjectsAvailable(client, nftIds);
 
-  // 3. Kiosk作成（まだない場合）
-  if (!config.KIOSK_ID) {
-    const { kioskId, kioskCapId } = await createKiosk();
-    updateEnvFile({ KIOSK_ID: kioskId, KIOSK_CAP_ID: kioskCapId });
+  // 2. Kioskメタデータの確保
+  let kioskId = config.kioskId;
+  let kioskCapId = config.kioskCapId;
+  let kioskInitialSharedVersion = config.kioskInitialSharedVersion;
+
+  if (!kioskId || !kioskCapId) {
+    const { kioskId: id, kioskCapId: cap, kioskInitialSharedVersion: version } = await createKiosk(client, keypair);
+    kioskId = id;
+    kioskCapId = cap;
+    kioskInitialSharedVersion = version;
+    updateEnvFile({
+      KIOSK_ID: kioskId,
+      KIOSK_CAP_ID: kioskCapId,
+      KIOSK_INITIAL_SHARED_VERSION: kioskInitialSharedVersion,
+    });
+  } else if (!kioskInitialSharedVersion) {
+    kioskInitialSharedVersion = await fetchKioskInitialSharedVersion(client, kioskId);
+    updateEnvFile({ KIOSK_INITIAL_SHARED_VERSION: kioskInitialSharedVersion });
   }
 
-  // 4. 全NFTをKioskにデポジット
-  for (const nftId of nftIds) {
-    await kioskPlace(config.KIOSK_ID, config.KIOSK_CAP_ID, nftId);
-  }
+  const kioskCapRef = await fetchOwnedObjectRef(client, kioskCapId);
 
-  // 5. 全NFTを出品（0.5 SUI）
+  // 3. 出品: Kioskは sharedObjectRef、OwnerCap は Inputs.ObjectRef で参照
   for (const nftId of nftIds) {
-    await kioskList(config.KIOSK_ID, config.KIOSK_CAP_ID, nftId, 500_000_000);
+    kioskCapRef = await kioskPlaceAndList({
+      kioskShared: tx.sharedObjectRef({
+        objectId: kioskId,
+        initialSharedVersion: kioskInitialSharedVersion,
+        mutable: true,
+      }),
+      kioskCapRef,
+      nftId,
+      price: 500_000_000,
+    });
   }
 
   console.log('✅ 10個のNFTがKioskに出品されました');
