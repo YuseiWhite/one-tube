@@ -260,7 +260,19 @@ export function getKeypair(): Ed25519Keypair {
 		// Check if it's mnemonic format
 		if (privateKey.startsWith("MNEMONIC:")) {
 			const mnemonic = privateKey.substring("MNEMONIC:".length);
-			return Ed25519Keypair.deriveKeypair(mnemonic);
+			const derived = Ed25519Keypair.deriveKeypair(mnemonic);
+			const encoded = derived.getSecretKey();
+			if (encoded && encoded !== privateKey) {
+				try {
+					updateEnvFile({ SPONSOR_PRIVATE_KEY: encoded });
+				} catch (updateError) {
+					console.warn(
+						"⚠️  Failed to rewrite SPONSOR_PRIVATE_KEY as suiprivkey:",
+						updateError,
+					);
+				}
+			}
+			return derived;
 		}
 
 		// Otherwise, try Bech32 format

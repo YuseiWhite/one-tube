@@ -422,11 +422,10 @@ export async function deployCommand(network: SupportedNetwork): Promise<void> {
 		// mnemonicからkeypairを導出
 		keypair = Ed25519KeypairClass.deriveKeypair(data.mnemonic);
 
-		// encodeSuiPrivateKeyが使えない可能性があるためmnemonicを保存
 		updateEnvFile({
-			SPONSOR_PRIVATE_KEY: `MNEMONIC:${data.mnemonic}`,
+			SPONSOR_PRIVATE_KEY: keypair.getSecretKey(),
 		});
-		console.log("✅ New keypair generated and saved to .env (mnemonic format)");
+		console.log("✅ New keypair generated and saved to .env (suiprivkey format)");
 	}
 
 	const address = keypair.getPublicKey().toSuiAddress();
