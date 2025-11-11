@@ -27,6 +27,7 @@ export interface Config {
 	policyCapId: string;
 	kioskId: string;
 	kioskCapId: string;
+	kioskInitialSharedVersion: string;
 	athleteAddress: string;
 	oneAddress: string;
 	platformAddress: string;
@@ -173,6 +174,7 @@ export function loadConfig(): Config {
 		policyCapId: process.env.TRANSFER_POLICY_CAP_ID || "",
 		kioskId: process.env.KIOSK_ID || "",
 		kioskCapId: process.env.KIOSK_CAP_ID || "",
+		kioskInitialSharedVersion: process.env.KIOSK_INITIAL_SHARED_VERSION || "",
 		athleteAddress: process.env.ATHLETE_ADDRESS || "",
 		oneAddress: process.env.ONE_ADDRESS || "",
 		platformAddress: process.env.PLATFORM_ADDRESS || "",
