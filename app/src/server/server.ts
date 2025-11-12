@@ -1,13 +1,33 @@
+import "dotenv/config";
 import express from "express";
+import cors from "cors";
 
 const app = express();
-const PORT = 3001;
+const PORT = 5174;
 
-app.use(express.json());
+// Middleware
+app.use(cors()); // CORS を許可（開発用）
+app.use(express.json()); // JSON ボディを受けられるようにする
 
 // Health check endpoint
 app.get("/api/health", (_req, res) => {
-	res.json({ status: "ok", timestamp: new Date().toISOString() });
+	res.json({ status: "ok" });
+});
+
+// Watch endpoint - returns mock session token and video URL
+app.post("/api/watch", (_req, res) => {
+	try {
+		const expiresInSec = Number(process.env.SEAL_SESSION_DURATION ?? 30);
+		res.json({
+			success: true,
+			sessionToken: "mock-token",
+			videoUrl: "https://example.com/mock.mp4",
+			expiresInSec,
+		});
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Unknown error";
+		res.status(500).json({ success: false, message });
+	}
 });
 
 // Default route
