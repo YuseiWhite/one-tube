@@ -31,9 +31,21 @@ app.post("/api/watch", (_req, res) => {
 });
 
 // Purchase endpoint - returns mock transaction digest
-app.post("/api/purchase", (_req, res) => {
+app.post("/api/purchase", (req, res) => {
 	try {
-		// リクエストボディ: { listingId: string } は未使用でOK
+		// Content-Type を設定
+		res.setHeader("Content-Type", "application/json; charset=utf-8");
+
+		// listingId のバリデーション
+		const { listingId } = req.body;
+		if (!listingId || typeof listingId !== "string") {
+			return res.status(500).json({
+				success: false,
+				message: "listingId is required and must be a string",
+			});
+		}
+
+		// 成功レスポンス
 		res.json({
 			success: true,
 			txDigest: "0xmock_tx_digest",
