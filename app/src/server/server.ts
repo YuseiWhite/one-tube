@@ -30,6 +30,20 @@ app.post("/api/watch", (_req, res) => {
 	}
 });
 
+// Purchase endpoint - returns mock transaction digest
+app.post("/api/purchase", (_req, res) => {
+	try {
+		// リクエストボディ: { listingId: string } は未使用でOK
+		res.json({
+			success: true,
+			txDigest: "0xmock_tx_digest",
+		});
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Unknown error";
+		res.status(500).json({ success: false, message });
+	}
+});
+
 // Default route
 app.get("/", (_req, res) => {
 	res.json({ message: "OneTube API Server" });
