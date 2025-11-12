@@ -1,3 +1,6 @@
+// API Base URL - 環境変数で切り替え可能
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+
 // API Response Types
 export interface WatchResponse {
 	success: boolean;
@@ -18,7 +21,7 @@ export interface PurchaseResponse {
  */
 export async function watch(videoId: string): Promise<WatchResponse> {
 	try {
-		const response = await fetch("/api/watch", {
+		const response = await fetch(API_BASE + "/api/watch", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -49,7 +52,7 @@ export async function watch(videoId: string): Promise<WatchResponse> {
  */
 export async function purchase(listingId: string): Promise<PurchaseResponse> {
 	try {
-		const response = await fetch("/api/purchase", {
+		const response = await fetch(API_BASE + "/api/purchase", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
