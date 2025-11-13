@@ -51,7 +51,11 @@ export default function App() {
 
   // player state
   const [fullUrl, setFullUrl] = useState<string | undefined>(undefined);
+  const [fullVideoUrl, setFullVideoUrl] = useState<string | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [watchLoading, setWatchLoading] = useState(false);
   const sessionTimer = useRef<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -76,6 +80,25 @@ export default function App() {
   useEffect(() => {
     return () => { if (sessionTimer.current) window.clearTimeout(sessionTimer.current); };
   }, []);
+
+  // セッション期限切れ監視
+  useEffect(() => {
+    if (sessionExpiresAt === null) return;
+    
+    const checkInterval = setInterval(() => {
+      if (Date.now() >= sessionExpiresAt) {
+        setSessionExpired(true);
+        addLog('セッション期限切れを検知');
+        // 動画を一時停止
+        if (videoRef.current) {
+          videoRef.current.pause();
+        }
+        clearInterval(checkInterval);
+      }
+    }, 1000); // 1秒ごとにチェック
+    
+    return () => clearInterval(checkInterval);
+  }, [sessionExpiresAt]);
 
   // キーボード操作: Space/P（再生/一時停止）、←/→（1秒シーク）
   useEffect(() => {
@@ -229,6 +252,20 @@ export default function App() {
 
   // watch full
   const handleWatch = async () => {
+    // ウォレット未接続または購入前のチェック
+    if (!account?.address) {
+      showToast('❌ ウォレットを接続してください');
+      addLog('watch: error - ウォレット未接続');
+      return;
+    }
+    
+    if (!owned) {
+      showToast('❌ チケットを購入してください');
+      addLog('watch: error - チケット未購入');
+      return;
+    }
+    
+    setWatchLoading(true);
     setSessionExpired(false);
     showToast('セッション生成中…');
     addLog('watch: start');
@@ -238,9 +275,16 @@ export default function App() {
         const result = await watch('superbon-noiri-ko');
         if (result.success && result.videoUrl) {
           setFullUrl(result.videoUrl);
+          setFullVideoUrl(result.videoUrl);
+          setSessionToken(result.sessionToken ?? null);
+          
+          // expiresAt を計算（現在時刻 + TTL）
           const ttl = result.expiresInSec ?? 30;
-          const ms = ttl * 1000;
+          const expiresAt = Date.now() + (ttl * 1000);
+          setSessionExpiresAt(expiresAt);
+          
           addLog(`watch: url=${result.videoUrl.slice(0, 30)}..., ttl=${ttl}s`);
+          addLog('視聴セッションを開始しました');
           showToast('✅ 視聴を開始します');
           
           if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
@@ -251,10 +295,15 @@ export default function App() {
             if (videoRef.current) {
               videoRef.current.pause();
             }
-          }, ms);
+          }, ttl * 1000);
         } else {
-          addLog('watch: error - URL取得失敗');
-          showToast('❌ 動画URLの取得に失敗（モック）');
+          const errMsg = result.message || 'URL取得失敗';
+          addLog(`watch: error - ${errMsg}`);
+          showToast(`❌ 動画URLの取得に失敗: ${errMsg}`);
+          // エラー時はクリア
+          setFullVideoUrl(null);
+          setSessionToken(null);
+          setSessionExpiresAt(null);
         }
       } else {
         // 本API: セッション作成 → videoURL取得
@@ -262,6 +311,10 @@ export default function App() {
         if (!session?.sessionToken) {
           addLog('watch: error - セッション作成失敗');
           showToast('❌ セッション作成に失敗');
+          // エラー時はクリア
+          setFullVideoUrl(null);
+          setSessionToken(null);
+          setSessionExpiresAt(null);
           return;
         }
         addLog(`watch: session token=${session.sessionToken.slice(0,8)}...`);
@@ -270,12 +323,24 @@ export default function App() {
         if (!video?.videoUrl) {
           addLog('watch: error - 動画URL取得失敗');
           showToast('❌ 動画URL取得に失敗');
+          // エラー時はクリア
+          setFullVideoUrl(null);
+          setSessionToken(null);
+          setSessionExpiresAt(null);
           return;
         }
         
         setFullUrl(video.videoUrl);
+        setFullVideoUrl(video.videoUrl);
+        setSessionToken(session.sessionToken);
+        
+        // expiresAt を計算
         const ttl = session.expiresInSec ?? 30;
+        const expiresAt = Date.now() + (ttl * 1000);
+        setSessionExpiresAt(expiresAt);
+        
         addLog(`watch: url=${video.videoUrl.slice(0, 30)}..., ttl=${ttl}s`);
+        addLog('視聴セッションを開始しました');
         showToast('✅ 視聴を開始します');
         
         if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
@@ -292,6 +357,12 @@ export default function App() {
       const errMsg = e instanceof Error ? e.message : '再生準備に失敗';
       addLog(`watch: error - ${errMsg}`);
       showToast('❌ 再生準備に失敗しました');
+      // エラー時はクリア
+      setFullVideoUrl(null);
+      setSessionToken(null);
+      setSessionExpiresAt(null);
+    } finally {
+      setWatchLoading(false);
     }
   };
 
@@ -446,6 +517,8 @@ export default function App() {
               <div className='kv'>
                 <div>API: {useNewApi ? '本API' : 'モック'}</div>
                 <div>txDigest: {txDigest || '-'}</div>
+                <div>sessionToken: {sessionToken ? `${sessionToken.slice(0, 16)}...` : '-'}</div>
+                <div>sessionExpiresAt: {sessionExpiresAt ? new Date(sessionExpiresAt).toLocaleString('ja-JP') : '-'}</div>
               </div>
             )}
           </div>
@@ -711,15 +784,63 @@ export default function App() {
 
           {/* Controls */}
           <div className='row'>
-            <button className='btn success' onClick={handleWatch} disabled={!owned}>
-              完全版を視聴
+            <button 
+              className='btn success' 
+              onClick={handleWatch} 
+              disabled={!account?.address || !owned || watchLoading}
+              aria-label="完全版を視聴"
+            >
+              {watchLoading ? 'セッション生成中...' : '完全版を視聴'}
             </button>
             {sessionExpired && (
-              <button className='btn warn' onClick={handleRetryWatch}>
+              <button 
+                className='btn warn' 
+                onClick={handleRetryWatch}
+                disabled={watchLoading}
+              >
                 もう一度視聴
               </button>
             )}
           </div>
+
+          {/* セッション期限切れ UI */}
+          {sessionExpired && fullVideoUrl && (
+            <div 
+              style={{
+                backgroundColor: '#fff3cd',
+                border: '1px solid #ffc107',
+                borderRadius: '8px',
+                padding: '16px',
+                marginTop: '16px',
+                color: '#856404',
+              }}
+              role="alert"
+            >
+              <div style={{ marginBottom: '12px', fontWeight: 'bold' }}>
+                ⚠️ セッション期限切れ
+              </div>
+              <div style={{ marginBottom: '12px' }}>
+                セッションが期限切れになりました。もう一度視聴ボタンから新しいキーを取得してください。
+              </div>
+              <button
+                onClick={handleRetryWatch}
+                disabled={watchLoading}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: watchLoading ? '#ccc' : '#ffc107',
+                  color: '#000',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  cursor: watchLoading ? 'not-allowed' : 'pointer',
+                }}
+                aria-label="もう一度視聴"
+              >
+                {watchLoading ? 'セッション生成中...' : 'もう一度視聴'}
+              </button>
+            </div>
+          )}
 
           {/* Log Panel - 購入/視聴イベントを表示 */}
           <LogPanel logs={logs} />
