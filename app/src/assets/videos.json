@@ -1,0 +1,14 @@
+{
+	"videos": [
+		{
+			"id": "one170-superbon-noiri",
+			"title": "Superbon vs Masaaki Noiri - Full Match",
+			"description": "ONE 170 Premium Ticket",
+			"blobId": "mock-blob-id-fullmatch-one170",
+			"previewUrl": "https://example.walrus.site/preview-10s.mp4",
+			"fullVideoUrl": "https://example.walrus.site/full-match.mp4",
+			"price": 500000000,
+			"thumbnailUrl": "/thumbnails/one170.jpg"
+		}
+	]
+}
