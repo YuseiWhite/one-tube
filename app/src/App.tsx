@@ -1,462 +1,248 @@
-import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
-import { useRef, useState, useEffect } from "react";
-// Legacy mock API (currently in use)
-import { watch, purchaseSmart } from "./lib/api";
-// New backend API functions available (Issue #009):
-// import { getHealth, getListings, createWatchSession, getVideoUrl } from "./lib/api";
+import { useEffect, useRef, useState } from 'react';
+import './styles/app.css';
+import Header from './components/Header';
+import VideoCard from './components/VideoCard';
+import Player from './components/Player';
 
-// Video data type
-interface VideoData {
-	id: string;
-	title: string;
-	thumbnail: string;
-	previewUrl: string;
-	date: string;
-	athletes: string[];
+// Legacy mock API
+import { watch, purchaseSmart } from './lib/api';
+// New API (Issue #009)
+import { getListings, createWatchSession, getVideoUrl } from './lib/api';
+
+type VideoData = {
+  id: string; title: string; thumbnail: string; previewUrl: string;
+  date: string; athletes: string[];
+};
+
+const useNewApi = !!(import.meta as any).env?.VITE_API_BASE_URL;
+
+type Listing = { listingId: string; objectId: string; price: number };
+
+export default function App() {
+  // tabs: 'list' | 'owned' | 'debug'
+  const [tab, setTab] = useState<'list'|'owned'|'debug'>('list');
+
+  // mock videos.json
+  const [videoData, setVideoData] = useState<VideoData | null>(null);
+  const [loadingVideo, setLoadingVideo] = useState(true);
+  const [videoLoadError, setVideoLoadError] = useState('');
+
+  // listings (new api)
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loadingListings, setLoadingListings] = useState(false);
+
+  // purchase state
+  const [owned, setOwned] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
+  const [txDigest, setTxDigest] = useState('');
+
+  // player state
+  const [fullUrl, setFullUrl] = useState<string | undefined>(undefined);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const sessionTimer = useRef<number | null>(null);
+
+  // toast
+  const [toast, setToast] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(()=>setToast(null), 3200);
+  };
+
+  useEffect(() => {
+    return () => { if (sessionTimer.current) window.clearTimeout(sessionTimer.current); };
+  }, []);
+
+  // load mock videos.json (for preview + mock flow)
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const r = await fetch('/src/assets/videos.json');
+        if (!r.ok) throw new Error('Failed to load videos.json');
+        const arr: VideoData[] = await r.json();
+        setVideoData(arr[0] ?? null);
+      } catch (e) {
+        setVideoLoadError('動画データの読み込みに失敗しました');
+      } finally {
+        setLoadingVideo(false);
+      }
+    };
+    run();
+  }, []);
+
+  // load listings if new api
+  useEffect(() => {
+    if (!useNewApi) return;
+    setLoadingListings(true);
+    getListings()
+      .then(list => setListings(list))
+      .catch(()=>{})
+      .finally(()=> setLoadingListings(false));
+  }, []);
+
+  // purchase
+  const handlePurchase = async () => {
+    setPurchasing(true); setTxDigest('');
+    try {
+      // 現状は listingId 固定のモック呼び出し
+      // 将来: 本API購入に切替する場合はここに分岐
+      const result = await purchaseSmart('listing-superbon-noiri-ko');
+      if (result.success) {
+        setOwned(true);
+        setTxDigest(result.txDigest || '');
+        showToast('✅ 購入が完了しました');
+      } else {
+        showToast('❌ 購入に失敗しました');
+      }
+    } catch (e) {
+      showToast('❌ サーバーエラー');
+    } finally {
+      setPurchasing(false);
+    }
+  };
+
+  // watch full
+  const handleWatch = async () => {
+    setSessionExpired(false);
+    try {
+      if (!useNewApi) {
+        const result = await watch('superbon-noiri-ko');
+        if (result.success && result.videoUrl) {
+          setFullUrl(result.videoUrl);
+          const ms = (result.expiresInSec ?? 30) * 1000;
+          if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
+          sessionTimer.current = window.setTimeout(()=>{
+            setSessionExpired(true);
+          }, ms);
+        } else {
+          showToast('❌ 動画URLの取得に失敗（モック）');
+        }
+      } else {
+        // 本API: セッション作成 → videoURL取得
+        const session = await createWatchSession('superbon-noiri-ko');
+        if (!session?.sessionToken) {
+          showToast('❌ セッション作成に失敗');
+          return;
+        }
+        const video = await getVideoUrl('superbon-noiri-ko', session.sessionToken);
+        if (!video?.videoUrl) {
+          showToast('❌ 動画URL取得に失敗');
+          return;
+        }
+        setFullUrl(video.videoUrl);
+        const expires = session.expiresInSec ?? 30;
+        if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
+        sessionTimer.current = window.setTimeout(()=>{
+          setSessionExpired(true);
+        }, expires * 1000);
+      }
+    } catch {
+      showToast('❌ 再生準備に失敗しました');
+    }
+  };
+
+  const handleRetryWatch = () => handleWatch();
+
+  // UI
+  return (
+    <>
+      <Header />
+      <div className='container layout'>
+        {/* Sidebar */}
+        <aside className='sidebar'>
+          <div className='tabs'>
+            <div className={`tab ${tab==='list'?'active':''}`} onClick={()=>setTab('list')}>一覧</div>
+            <div className={`tab ${tab==='owned'?'active':''}`} onClick={()=>setTab('owned')}>マイアクセス</div>
+            <div className={`tab ${tab==='debug'?'active':''}`} onClick={()=>setTab('debug')}>デバッグ</div>
+          </div>
+        </aside>
+
+        {/* Main */}
+        <main className='main'>
+          {/* Listings */}
+          <div className='card'>
+            <div className='row'>
+              <h2 style={{margin:0}}>コンテンツ</h2>
+              <div className='kv'>{useNewApi ? 'Backend Listings' : 'Mock Listing (videos.json)'}</div>
+            </div>
+
+            {tab==='list' && (
+              <>
+                {useNewApi ? (
+                  <>
+                    {loadingListings ? <div className='kv'>読み込み中...</div> : (
+                      <div className='grid' style={{marginTop:12}}>
+                        {listings.map((it, idx) => (
+                          <VideoCard
+                            key={idx}
+                            title={`Premium Ticket ${it.objectId.slice(0,6)}…`}
+                            thumb={videoData?.thumbnail}
+                            priceLabel={`${(it.price/1e9).toFixed(3)} SUI`}
+                            onPurchase={handlePurchase}
+                            disabled={purchasing}
+                          />
+                        ))}
+                        {listings.length===0 && <div className='kv'>リスティングが見つかりません</div>}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {loadingVideo && <div className='kv'>読み込み中...</div>}
+                    {videoLoadError && <div className='kv' style={{color:'var(--danger)'}}>❌ {videoLoadError}</div>}
+                    {videoData && (
+                      <div className='grid' style={{marginTop:12}}>
+                        <VideoCard
+                          title={videoData.title}
+                          thumb={videoData.thumbnail}
+                          priceLabel={'0.5 SUI'}
+                          onPurchase={handlePurchase}
+                          disabled={purchasing}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+            </>
+            )}
+            {tab==='owned' && (
+              <div className='kv'>購入済み: {owned ? 'はい（視聴可能）' : 'いいえ'}</div>
+            )}
+            {tab==='debug' && (
+              <div className='kv'>
+                <div>API: {useNewApi ? '本API' : 'モック'}</div>
+                <div>txDigest: {txDigest || '-'}</div>
+              </div>
+            )}
+          </div>
+
+          {/* Player */}
+          <Player
+            previewUrl={videoData?.previewUrl}
+            fullUrl={fullUrl}
+            sessionExpired={sessionExpired}
+          />
+
+          {/* Controls */}
+          <div className='row'>
+            {!owned && (
+              <button className='btn primary' onClick={handlePurchase} disabled={purchasing}>
+                {purchasing ? '購入中…' : '購入する'}
+              </button>
+            )}
+            <div style={{flex:1}} />
+            <button className='btn success' onClick={handleWatch} disabled={!owned}>
+              完全版を視聴
+            </button>
+            {sessionExpired && (
+              <button className='btn warn' onClick={handleRetryWatch}>
+                もう一度視聴
+              </button>
+            )}
+          </div>
+        </main>
+      </div>
+
+      {toast && <div className='toast'>{toast}</div>}
+    </>
+  );
 }
-
-function App() {
-	const currentAccount = useCurrentAccount();
-	const videoRef = useRef<HTMLVideoElement>(null);
-
-	// API切替フラグ（将来: createWatchSession/getVideoUrl に切替予定）
-	const useNewApi = !!import.meta.env.VITE_API_BASE_URL;
-
-	// Video data state
-	const [videoData, setVideoData] = useState<VideoData | null>(null);
-	const [loadingVideo, setLoadingVideo] = useState<boolean>(true);
-	const [videoLoadError, setVideoLoadError] = useState<string>("");
-
-	// State management
-	const [videoUrl, setVideoUrl] = useState<string>("");
-	const [loading, setLoading] = useState<boolean>(false);
-	const [error, setError] = useState<string>("");
-	const [sessionExpired, setSessionExpired] = useState<boolean>(false);
-
-	// Purchase state
-	const [owned, setOwned] = useState<boolean>(false);
-	const [purchasing, setPurchasing] = useState<boolean>(false);
-	const [purchaseError, setPurchaseError] = useState<string>("");
-	const [txDigest, setTxDigest] = useState<string>("");
-
-	// Session timer ref for cleanup
-	const sessionTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-	// Load video data from JSON
-	useEffect(() => {
-		const loadVideoData = async () => {
-			try {
-				const response = await fetch("/src/assets/videos.json");
-				if (!response.ok) {
-					throw new Error("Failed to load video data");
-				}
-				const videos: VideoData[] = await response.json();
-				if (videos.length > 0) {
-					setVideoData(videos[0]);
-				}
-			} catch (err) {
-				console.error("Failed to load video data:", err);
-				setVideoLoadError("動画データの読み込みに失敗しました");
-			} finally {
-				setLoadingVideo(false);
-			}
-		};
-
-		loadVideoData();
-	}, []);
-
-	// Cleanup session timer on unmount
-	useEffect(() => {
-		return () => {
-			if (sessionTimerRef.current) {
-				clearTimeout(sessionTimerRef.current);
-			}
-		};
-	}, []);
-
-	// Handle watch video request
-	const handleWatch = async () => {
-		setLoading(true);
-		setError("");
-		setSessionExpired(false);
-
-		try {
-			const result = await watch("superbon-noiri-ko");
-
-			if (result.success && result.videoUrl) {
-				setVideoUrl(result.videoUrl);
-				setError("");
-
-				// Wait for video to load and play
-				setTimeout(() => {
-					if (videoRef.current) {
-						videoRef.current.play().catch((err) => {
-							console.error("Play failed:", err);
-							setError("動画の再生に失敗しました");
-						});
-					}
-				}, 100);
-
-				// Setup session expiration timer
-				const expiresInMs = (result.expiresInSec || 30) * 1000;
-				if (sessionTimerRef.current) {
-					clearTimeout(sessionTimerRef.current);
-				}
-				sessionTimerRef.current = setTimeout(() => {
-					setSessionExpired(true);
-					if (videoRef.current) {
-						videoRef.current.pause();
-					}
-				}, expiresInMs);
-			} else {
-				setError(result.message || "動画の取得に失敗しました");
-			}
-		} catch (err) {
-			setError("サーバーエラーが発生しました。再試行してください");
-			console.error("Watch error:", err);
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	// Handle retry after session expiration
-	const handleRetryWatch = async () => {
-		setSessionExpired(false);
-		await handleWatch();
-	};
-
-	// Handle purchase
-	const handlePurchase = async () => {
-		setPurchasing(true);
-		setPurchaseError("");
-		setTxDigest("");
-
-		try {
-			const result = await purchaseSmart("listing-superbon-noiri-ko");
-
-			if (result.success && result.txDigest) {
-				setTxDigest(result.txDigest);
-				setOwned(true);
-				setPurchaseError("");
-			} else {
-				setPurchaseError(result.message || "購入に失敗しました");
-			}
-		} catch (err) {
-			setPurchaseError("サーバーエラーが発生しました。再試行してください");
-			console.error("Purchase error:", err);
-		} finally {
-			setPurchasing(false);
-		}
-	};
-
-	return (
-		<div style={{ padding: "20px", fontFamily: "sans-serif" }}>
-			{/* Devnet Banner */}
-			<div
-				style={{
-					backgroundColor: "#fff3cd",
-					border: "1px solid #ffc107",
-					borderRadius: "4px",
-					padding: "12px 20px",
-					marginBottom: "20px",
-					color: "#856404",
-					textAlign: "center",
-					fontWeight: "bold",
-				}}
-				role="alert"
-				aria-label="テストネット警告"
-			>
-				⚠️ Sui devnetでテスト中です。これは実際のSUIではありません
-			</div>
-
-			<h1>OneTube - NFT-Gated Video Streaming</h1>
-			<ConnectButton />
-			{currentAccount && (
-				<div style={{ marginTop: "20px" }}>
-					<p>
-						<strong>Connected:</strong> {currentAccount.address}
-					</p>
-				</div>
-			)}
-
-			{/* Loading State */}
-			{loadingVideo && (
-				<div style={{ marginTop: "40px", textAlign: "center" }}>
-					<p>読み込み中...</p>
-				</div>
-			)}
-
-			{/* Error State */}
-			{videoLoadError && (
-				<div
-					style={{
-						marginTop: "40px",
-						padding: "20px",
-						backgroundColor: "#f8d7da",
-						border: "1px solid #f5c6cb",
-						borderRadius: "4px",
-						color: "#721c24",
-					}}
-				>
-					❌ {videoLoadError}
-				</div>
-			)}
-
-			{/* Video Card */}
-			{!loadingVideo && !videoLoadError && videoData && (
-				<div
-					style={{
-						marginTop: "40px",
-						maxWidth: "800px",
-						border: "1px solid #ddd",
-						borderRadius: "8px",
-						padding: "20px",
-					}}
-				>
-					{/* Thumbnail */}
-					<img
-						src={videoData.thumbnail}
-						alt={`${videoData.title} - ${videoData.athletes.join(", ")}`}
-						style={{
-							width: "100%",
-							maxHeight: "400px",
-							objectFit: "cover",
-							borderRadius: "8px",
-							marginBottom: "20px",
-						}}
-						onError={(e) => {
-							// Fallback if thumbnail fails to load
-							e.currentTarget.style.display = "none";
-						}}
-					/>
-
-					{/* Title */}
-					<h2>{videoData.title}</h2>
-
-					{/* Date */}
-					<p style={{ color: "#666", marginBottom: "10px" }}>
-						<strong>日付:</strong> {videoData.date}
-					</p>
-
-					{/* Athletes */}
-					<p style={{ color: "#666", marginBottom: "20px" }}>
-						<strong>出演:</strong> {videoData.athletes.join(", ")}
-					</p>
-
-					{/* Price Display Block */}
-					<div
-						style={{
-							backgroundColor: "#f8f9fa",
-							border: "1px solid #dee2e6",
-							borderRadius: "8px",
-							padding: "20px",
-							marginBottom: "20px",
-						}}
-						aria-label="価格情報"
-					>
-						<h3 style={{ marginTop: 0, marginBottom: "15px", fontSize: "18px" }}>
-							💰 価格情報
-						</h3>
-						<div style={{ marginBottom: "10px" }}>
-							<strong>物理チケット:</strong>{" "}
-							<span style={{ color: "#666" }}>¥20,000 〜 ¥558,000</span>
-						</div>
-						<div style={{ marginBottom: "10px" }}>
-							<strong>プレミアム追加:</strong>{" "}
-							<span style={{ color: "#666" }}>+¥5,000</span>
-						</div>
-						<div
-							style={{
-								marginTop: "15px",
-								paddingTop: "15px",
-								borderTop: "1px solid #dee2e6",
-							}}
-						>
-							<strong style={{ fontSize: "16px" }}>実購入価格:</strong>{" "}
-							<span
-								style={{
-									fontSize: "20px",
-									fontWeight: "bold",
-									color: "#007bff",
-								}}
-							>
-								0.5 SUI
-							</span>
-						</div>
-					</div>
-
-					{/* Session Expired Message */}
-					{sessionExpired && (
-						<div
-							style={{
-								backgroundColor: "#fff3cd",
-								border: "1px solid #ffc107",
-								borderRadius: "4px",
-								padding: "15px",
-								marginBottom: "20px",
-							}}
-						>
-							<p style={{ margin: "0 0 10px 0", color: "#856404" }}>
-								⚠️ セッションが期限切れになりました。もう一度視聴を押してください
-							</p>
-							<button
-								onClick={handleRetryWatch}
-								disabled={loading}
-								style={{
-									padding: "8px 16px",
-									backgroundColor: "#ffc107",
-									border: "none",
-									borderRadius: "4px",
-									cursor: loading ? "not-allowed" : "pointer",
-									fontWeight: "bold",
-								}}
-							>
-								{loading ? "読み込み中..." : "もう一度視聴"}
-							</button>
-						</div>
-					)}
-
-					{/* Error Message */}
-					{error && (
-						<div
-							style={{
-								backgroundColor: "#f8d7da",
-								border: "1px solid #f5c6cb",
-								borderRadius: "4px",
-								padding: "15px",
-								marginBottom: "20px",
-								color: "#721c24",
-							}}
-						>
-							❌ {error}
-						</div>
-					)}
-
-					{/* Preview Section */}
-					<div style={{ marginBottom: "20px" }}>
-						<h3>プレビュー（10秒）</h3>
-						<video
-							controls
-							style={{ width: "100%", maxHeight: "400px", borderRadius: "4px" }}
-						>
-							<source src={videoData.previewUrl} type="video/mp4" />
-							プレビュー動画を再生できません
-						</video>
-					</div>
-
-					{/* Purchase Section */}
-					{!owned && (
-						<div style={{ marginBottom: "20px" }}>
-							<button
-								onClick={handlePurchase}
-								disabled={purchasing}
-								style={{
-									padding: "12px 24px",
-									backgroundColor: purchasing ? "#ccc" : "#28a745",
-									color: "white",
-									border: "none",
-									borderRadius: "4px",
-									fontSize: "16px",
-									fontWeight: "bold",
-									cursor: purchasing ? "not-allowed" : "pointer",
-									marginRight: "10px",
-								}}
-							>
-								{purchasing ? "購入中..." : "購入する"}
-							</button>
-
-							{/* Purchase Error */}
-							{purchaseError && (
-								<div
-									style={{
-										backgroundColor: "#f8d7da",
-										border: "1px solid #f5c6cb",
-										borderRadius: "4px",
-										padding: "15px",
-										marginTop: "10px",
-										color: "#721c24",
-									}}
-								>
-									❌ {purchaseError}
-								</div>
-							)}
-						</div>
-					)}
-
-					{/* Purchase Success Message */}
-					{owned && txDigest && (
-						<div
-							style={{
-								backgroundColor: "#d4edda",
-								border: "1px solid #c3e6cb",
-								borderRadius: "4px",
-								padding: "15px",
-								marginBottom: "20px",
-								color: "#155724",
-							}}
-						>
-							<p style={{ margin: "0 0 10px 0" }}>✅ 購入が完了しました！</p>
-							<p style={{ margin: "0", fontSize: "14px" }}>
-								<strong>トランザクション:</strong>{" "}
-								<code
-									style={{
-										backgroundColor: "#fff",
-										padding: "2px 6px",
-										borderRadius: "3px",
-									}}
-								>
-									{txDigest}
-								</code>
-							</p>
-						</div>
-					)}
-
-					{/* Watch Full Video Button */}
-					<button
-						onClick={handleWatch}
-						disabled={!owned || loading}
-						aria-label="完全版を視聴"
-						style={{
-							padding: "12px 24px",
-							backgroundColor: !owned || loading ? "#ccc" : "#007bff",
-							color: "white",
-							border: "none",
-							borderRadius: "4px",
-							fontSize: "16px",
-							fontWeight: "bold",
-							cursor: !owned || loading ? "not-allowed" : "pointer",
-							marginBottom: "20px",
-						}}
-					>
-						{loading
-							? "読み込み中..."
-							: owned
-								? "完全版を視聴"
-								: "完全版を視聴（要購入）"}
-					</button>
-
-					{/* Full Video Player */}
-					{videoUrl && (
-						<div style={{ marginTop: "20px" }}>
-							<h3>完全版</h3>
-							<video
-								ref={videoRef}
-								controls
-								style={{
-									width: "100%",
-									maxHeight: "500px",
-									borderRadius: "4px",
-								}}
-								src={videoUrl}
-							>
-								完全版動画を再生できません
-							</video>
-						</div>
-					)}
-				</div>
-			)}
-		</div>
-	);
-}
-
-export default App;
