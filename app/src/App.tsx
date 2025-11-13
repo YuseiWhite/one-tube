@@ -365,6 +365,87 @@ export default function App() {
             </div>
           )}
 
+          {/* 選択された動画の詳細 */}
+          {selected && (
+            <div className='card'>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 20 }}>
+                {/* サムネイル */}
+                <div>
+                  <img 
+                    src={selected.thumbnail} 
+                    alt={`${selected.title} - ${selected.athletes.join(', ')}`}
+                    style={{ 
+                      width: '100%', 
+                      aspectRatio: '16/9', 
+                      objectFit: 'cover', 
+                      borderRadius: 8,
+                      border: '1px solid #2b2b2b'
+                    }}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden'; }}
+                  />
+                </div>
+
+                {/* タイトル・日付・出演情報 */}
+                <div>
+                  <h2 style={{ margin: '0 0 8px 0', fontSize: 20, color: '#e5e7eb' }}>
+                    {selected.title}
+                  </h2>
+                  <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 8 }}>
+                    📅 {selected.date}
+                  </div>
+                  <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 16 }}>
+                    👤 出演: {selected.athletes.join(', ')}
+                  </div>
+
+                  {/* Price Display Block */}
+                  <div
+                    style={{
+                      backgroundColor: "#1f2937",
+                      border: "1px solid #374151",
+                      borderRadius: "8px",
+                      padding: "20px",
+                      marginTop: "16px",
+                    }}
+                    aria-label="価格情報"
+                  >
+                    <h3 style={{ marginTop: 0, marginBottom: "15px", fontSize: "18px", color: '#e5e7eb' }}>
+                      💰 価格情報
+                    </h3>
+
+                    <div style={{ marginBottom: "10px", color: '#d1d5db' }}>
+                      <strong>物理チケット:</strong>{" "}
+                      <span style={{ color: "#9ca3af" }}>¥20,000 〜 ¥558,000</span>
+                    </div>
+
+                    <div style={{ marginBottom: "10px", color: '#d1d5db' }}>
+                      <strong>プレミアム追加:</strong>{" "}
+                      <span style={{ color: "#9ca3af" }}>+¥5,000</span>
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: "15px",
+                        paddingTop: "15px",
+                        borderTop: "1px solid #374151",
+                      }}
+                    >
+                      <strong style={{ fontSize: "16px", color: '#e5e7eb' }}>実購入価格:</strong>{" "}
+                      <span
+                        style={{
+                          fontSize: "20px",
+                          fontWeight: "bold",
+                          color: "#4aa7ff",
+                        }}
+                      >
+                        0.5 SUI
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Player */}
           <Player
             previewUrl={selected?.previewUrl}
