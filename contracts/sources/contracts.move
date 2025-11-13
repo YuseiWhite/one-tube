@@ -91,7 +91,7 @@ public fun mint_batch(
 }
 
 /// ミント＆転送: NFTをバッチでミントして呼び出し元に転送
-public entry fun mint_and_transfer_batch(
+public fun mint_and_transfer_batch(
     admin_cap: &AdminCap,
     count: u64,
     name: String,
