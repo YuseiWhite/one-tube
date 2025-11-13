@@ -4,16 +4,18 @@ type Props = {
   previewUrl?: string;
   fullUrl?: string;
   sessionExpired?: boolean;
+  videoRef?: React.RefObject<HTMLVideoElement>;
 };
 
-export default function Player({ previewUrl, fullUrl, sessionExpired }: Props) {
-  const ref = useRef<HTMLVideoElement>(null);
+export default function Player({ previewUrl, fullUrl, sessionExpired, videoRef }: Props) {
+  const internalRef = useRef<HTMLVideoElement>(null);
+  const ref = videoRef || internalRef;
 
   useEffect(()=>{
     if (fullUrl && ref.current) {
       ref.current.play().catch(()=>{});
     }
-  }, [fullUrl]);
+  }, [fullUrl, ref]);
 
   return (
     <div className='card'>
