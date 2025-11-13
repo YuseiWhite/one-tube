@@ -118,6 +118,7 @@ export async function sponsorPurchase(
 		});
 
 		console.log("✅ Transaction executed:", result.digest);
+		console.log("🧾 Tx digest (short):", formatDigest(result.digest));
 
 		const nftId = extractNFTId(result.objectChanges, request.userAddress);
 
@@ -142,6 +143,13 @@ export async function sponsorPurchase(
 			error: friendlyMessage,
 		};
 	}
+}
+
+function formatDigest(digest: string): string {
+	if (digest.length <= 10) {
+		return digest;
+	}
+	return `${digest.slice(0, 6)}...${digest.slice(-4)}`;
 }
 
 function extractNFTId(
