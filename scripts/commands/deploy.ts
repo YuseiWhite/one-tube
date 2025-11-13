@@ -425,7 +425,9 @@ export async function deployCommand(network: SupportedNetwork): Promise<void> {
 		updateEnvFile({
 			SPONSOR_PRIVATE_KEY: keypair.getSecretKey(),
 		});
-		console.log("✅ New keypair generated and saved to .env (suiprivkey format)");
+		console.log(
+			"✅ New keypair generated and saved to .env (suiprivkey format)",
+		);
 	}
 
 	const address = keypair.getPublicKey().toSuiAddress();
