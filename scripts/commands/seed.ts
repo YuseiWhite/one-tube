@@ -225,8 +225,8 @@ async function createKiosk(
 				change.objectType?.startsWith("0x2::kiosk::KioskOwnerCap<")),
 	)?.objectId;
 
-	const kioskInitialSharedVersion =
-		(kioskChange as any)?.owner?.Shared?.initial_shared_version;
+	const kioskInitialSharedVersion = (kioskChange as any)?.owner?.Shared
+		?.initial_shared_version;
 
 	if (!kioskId || !kioskCapId || !kioskInitialSharedVersion) {
 		// Diagnosable: デバッグ用に全出力を表示
@@ -321,9 +321,7 @@ async function waitForObjectsAvailable(
 		}
 
 		if (attempt === retries) {
-			throw new Error(
-				`Objects not yet available on chain: ${ids.join(", ")}`,
-			);
+			throw new Error(`Objects not yet available on chain: ${ids.join(", ")}`);
 		}
 		await sleep(delayMs);
 	}
