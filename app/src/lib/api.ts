@@ -133,3 +133,15 @@ export async function getVideoUrl(videoId: string, sessionToken: string) {
 	const r = await fetch(url.toString());
 	return r.json();
 }
+
+// ===== Switchable Purchase Wrapper =====
+// 将来: VITE_API_BASE_URL が設定されたら本APIに差し替える予定の集約ポイント
+// 現在: モック購入API purchase(listingId) をそのまま使用
+export async function purchaseSmart(listingId: string) {
+	// TODO: 切替時のイメージ
+	// if (import.meta.env.VITE_API_BASE_URL) {
+	//   // 例: 本APIが Listing → Sponsor Purchase の形に揃ったらこちらへ
+	//   // return purchaseNFT({ listingId, userAddress: ... })
+	// }
+	return purchase(listingId);
+}

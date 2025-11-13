@@ -1,7 +1,7 @@
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { useRef, useState, useEffect } from "react";
 // Legacy mock API (currently in use)
-import { watch, purchase } from "./lib/api";
+import { watch, purchaseSmart } from "./lib/api";
 // New backend API functions available (Issue #009):
 // import { getHealth, getListings, createWatchSession, getVideoUrl } from "./lib/api";
 
@@ -18,6 +18,9 @@ interface VideoData {
 function App() {
 	const currentAccount = useCurrentAccount();
 	const videoRef = useRef<HTMLVideoElement>(null);
+
+	// API切替フラグ（将来: createWatchSession/getVideoUrl に切替予定）
+	const useNewApi = !!import.meta.env.VITE_API_BASE_URL;
 
 	// Video data state
 	const [videoData, setVideoData] = useState<VideoData | null>(null);
@@ -129,7 +132,7 @@ function App() {
 		setTxDigest("");
 
 		try {
-			const result = await purchase("listing-superbon-noiri-ko");
+			const result = await purchaseSmart("listing-superbon-noiri-ko");
 
 			if (result.success && result.txDigest) {
 				setTxDigest(result.txDigest);
