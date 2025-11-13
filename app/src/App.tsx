@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import './styles/app.css';
 import Header from './components/Header';
 import VideoCard from './components/VideoCard';
@@ -37,6 +37,11 @@ export default function App() {
   // listings (new api)
   const [listings, setListings] = useState<Listing[]>([]);
   const [loadingListings, setLoadingListings] = useState(false);
+
+  // 在庫管理（実API対応）
+  const [inventoryCount, setInventoryCount] = useState<number | null>(null);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
+  const [inventoryError, setInventoryError] = useState<string | null>(null);
 
   // purchase state
   const [owned, setOwned] = useState(false);
@@ -147,6 +152,29 @@ export default function App() {
       .finally(()=> setLoadingListings(false));
   }, []);
 
+  // 在庫取得関数
+  const loadInventory = useCallback(async () => {
+    setInventoryLoading(true);
+    setInventoryError(null);
+    try {
+      const listings = await getListings();
+      setInventoryCount(listings.length);
+      addLog(`在庫情報を取得: ${listings.length}件`);
+    } catch (err) {
+      console.error("Failed to load inventory", err);
+      setInventoryError("在庫情報を取得できませんでした");
+      setInventoryCount(null);
+      addLog('在庫情報の取得に失敗');
+    } finally {
+      setInventoryLoading(false);
+    }
+  }, []);
+
+  // 初回マウント時に在庫情報を取得
+  useEffect(() => {
+    loadInventory();
+  }, [loadInventory]);
+
   // purchase
   const handlePurchase = async () => {
     setPurchasing(true); setPurchaseError(''); setTxDigest('');
@@ -181,6 +209,8 @@ export default function App() {
         // ステップ4: 成功
         addLog(`purchase: success, tx=${digest}, 残り在庫: ${(stock || 0) - 1}`);
         showToast('✅ 購入が完了しました');
+        // 在庫情報を更新
+        loadInventory();
       } else {
         const errMsg = result.message || '購入に失敗しました';
         setPurchaseError(errMsg);
@@ -272,7 +302,7 @@ export default function App() {
   };
 
   // UI
-  return (
+	return (
     <div style={{ background: '#0f0f0f', color: '#eaeaea', minHeight: '100vh' }}>
       {/* Wallet Header */}
       <header
@@ -522,6 +552,68 @@ export default function App() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Inventory / Stock Block */}
+                  <div
+                    style={{
+                      backgroundColor: "#101010",
+                      border: "1px solid #333",
+                      borderRadius: "8px",
+                      padding: "16px",
+                      marginTop: "16px",
+                    }}
+                    aria-label="チケット在庫情報"
+                  >
+                    <h3 style={{ marginTop: 0, marginBottom: "10px", fontSize: "16px", color: '#e5e7eb' }}>
+                      🎟 チケット在庫
+                    </h3>
+
+                    {inventoryLoading && <p style={{ color: '#9ca3af' }}>在庫情報を読み込み中...</p>}
+
+                    {!inventoryLoading && inventoryError && (
+                      <p style={{ color: "#f66", marginBottom: "8px" }}>{inventoryError}</p>
+                    )}
+
+                    {!inventoryLoading && !inventoryError && (
+                      <>
+                        {inventoryCount === 0 && (
+                          <p style={{ color: "#f66", marginBottom: "8px" }}>
+                            Sold Out：現在販売中のチケットNFTはありません
+                          </p>
+                        )}
+                        {inventoryCount !== null && inventoryCount > 0 && (
+                          <p style={{ color: "#ddd", marginBottom: "8px" }}>
+                            残り <strong>{inventoryCount}</strong> チケットNFT
+                          </p>
+                        )}
+                        {inventoryCount === null && (
+                          <p style={{ color: "#aaa", marginBottom: "8px" }}>
+                            在庫情報は未取得です
+                          </p>
+                        )}
+                      </>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={loadInventory}
+                      style={{
+                        marginTop: "8px",
+                        padding: "6px 12px",
+                        fontSize: "12px",
+                        borderRadius: "4px",
+                        border: "1px solid #555",
+                        backgroundColor: "#222",
+                        color: "#fff",
+                        cursor: inventoryLoading ? "not-allowed" : "pointer",
+                        opacity: inventoryLoading ? 0.6 : 1,
+                      }}
+                      disabled={inventoryLoading}
+                      aria-label="在庫情報を再読み込み"
+                    >
+                      在庫を更新
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -537,39 +629,36 @@ export default function App() {
 
           {/* Purchase Section */}
           <div className='card'>
-            {/* 在庫＆再読込 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0 16px' }}>
-              <span style={{ color: '#9ca3af' }}>
-                {stock === null ? '在庫情報取得中…' : stock === 0 ? 'Sold Out' : `残り${stock} チケットNFT`}
-              </span>
-              <button onClick={() => { 
-                const newStock = stock === null ? 3 : Math.max(0, stock - 1);
-                setStock(newStock); 
-                addLog(`在庫再読込: ${newStock}`);
-              }}
-                style={{ background: '#1f2937', color: '#e5e7eb', border: '1px solid #374151', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}>
-                再読込
-              </button>
-            </div>
-
             <div style={{ marginBottom: "20px" }}>
-              <button
-                onClick={handlePurchase}
-                disabled={owned || purchasing || stock === 0}
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: stock === 0 ? "#6c757d" : (owned ? "#6c757d" : (purchasing ? "#ccc" : "#28a745")),
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  cursor: owned || purchasing || stock === 0 ? "not-allowed" : "pointer",
-                  marginRight: "10px",
-                }}
-              >
-                {stock === 0 ? "Sold Out" : (owned ? "購入済み" : (purchasing ? "購入中..." : "購入する"))}
-              </button>
+              {(() => {
+                const isSoldOut = inventoryCount === 0;
+                return (
+                  <button
+                    onClick={handlePurchase}
+                    disabled={owned || purchasing || isSoldOut}
+                    style={{
+                      padding: "12px 24px",
+                      backgroundColor: isSoldOut ? "#6c757d" : (owned ? "#6c757d" : (purchasing ? "#ccc" : "#28a745")),
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "16px",
+                      fontWeight: "bold",
+                      cursor: owned || purchasing || isSoldOut ? "not-allowed" : "pointer",
+                      marginRight: "10px",
+                    }}
+                    aria-label={
+                      isSoldOut
+                        ? "Sold Out"
+                        : owned
+                        ? "購入済み"
+                        : "クリックしてプレミアムチケットを購入"
+                    }
+                  >
+                    {isSoldOut ? "Sold Out" : (owned ? "購入済み" : (purchasing ? "購入中..." : "購入する"))}
+                  </button>
+                );
+              })()}
 
               {/* 購入エラー */}
               {purchaseError && (
@@ -586,8 +675,8 @@ export default function App() {
                   }}
                 >
                   ❌ {purchaseError}
-                </div>
-              )}
+				</div>
+			)}
             </div>
 
             {/* 購入成功メッセージ */}
@@ -612,8 +701,7 @@ export default function App() {
                 setOwned(false); 
                 setTxDigest(""); 
                 setPurchaseError(""); 
-                setStock(3); 
-                addLog('購入状態と在庫をリセット');
+                addLog('購入状態をリセット');
               }}
               style={{ marginLeft: 8, padding: "6px 10px", borderRadius: 4, border: "1px solid #ddd", cursor: "pointer" }}
             >
@@ -640,6 +728,6 @@ export default function App() {
       </div>
 
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
-    </div>
-  );
+		</div>
+	);
 }

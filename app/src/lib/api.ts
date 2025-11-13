@@ -30,6 +30,12 @@ export interface Listing {
 	price: number;
 }
 
+// Backend /api/listings response shape
+interface ListingsResponse {
+	success: boolean;
+	listings: Listing[];
+}
+
 /**
  * Watch API - Request a video session token
  */
@@ -107,8 +113,17 @@ export async function getHealth(): Promise<Health> {
  */
 export async function getListings(): Promise<Listing[]> {
 	const r = await fetch(API_BASE + "/api/listings");
-	if (!r.ok) throw new Error("HTTP " + r.status);
-	return r.json();
+	if (!r.ok) {
+		throw new Error("HTTP " + r.status);
+	}
+
+	const data: ListingsResponse = await r.json();
+
+	if (!data || data.success !== true || !Array.isArray(data.listings)) {
+		throw new Error("Invalid listings response");
+	}
+
+	return data.listings;
 }
 
 /**
