@@ -10,8 +10,6 @@
 		"build": "cd app && pnpm build",
 		"deploy:devnet": "node scripts/tool.ts deploy --network devnet",
 		"seed:devnet": "node scripts/tool.ts seed --network devnet",
-		"demo:purchase": "node scripts/tool.ts demo-purchase --network devnet",
-		"demo:view": "node scripts/tool.ts demo-view --network devnet",
 		"biome:check": "biome check .",
 		"biome:fix": "biome check --write .",
 		"format": "biome format --write .",
