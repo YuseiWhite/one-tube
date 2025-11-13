@@ -5,6 +5,7 @@ import VideoCard from './components/VideoCard';
 import Player from './components/Player';
 import { Toast } from './components/Toast';
 import { LogPanel } from './components/LogPanel';
+import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit';
 
 // Legacy mock API
 import { watch, purchaseSmart } from './lib/api';
@@ -61,6 +62,11 @@ export default function App() {
   const addLog = (msg: string) => {
     setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
   };
+
+  // Wallet connection
+  const account = useCurrentAccount();
+  const shortAddress =
+    account?.address ? `0x...${account.address.slice(-4)}` : null;
 
   useEffect(() => {
     return () => { if (sessionTimer.current) window.clearTimeout(sessionTimer.current); };
@@ -268,6 +274,81 @@ export default function App() {
   // UI
   return (
     <div style={{ background: '#0f0f0f', color: '#eaeaea', minHeight: '100vh' }}>
+      {/* Wallet Header */}
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 24px',
+          backgroundColor: '#050509',
+          borderBottom: '1px solid #222',
+          marginBottom: '16px',
+        }}
+      >
+        {/* 左側: ロゴテキスト */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span
+            style={{
+              fontSize: '20px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            OneTube
+          </span>
+          <span
+            style={{
+              fontSize: '12px',
+              color: '#aaa',
+            }}
+          >
+            Premium Fight Archive
+          </span>
+        </div>
+
+        {/* 右側: ネットワーク + アドレス + ConnectButton */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Network badge */}
+          <span
+            style={{
+              padding: '4px 10px',
+              borderRadius: '999px',
+              backgroundColor: '#122a1a',
+              color: '#4ade80',
+              fontSize: '12px',
+              border: '1px solid #14532d',
+            }}
+          >
+            ● Sui devnet
+          </span>
+
+          {/* Address (connected only) */}
+          {shortAddress && (
+            <span
+              style={{
+                fontSize: '12px',
+                color: '#ddd',
+                padding: '4px 8px',
+                borderRadius: '999px',
+                backgroundColor: '#111',
+                border: '1px solid #333',
+              }}
+            >
+              {shortAddress}
+            </span>
+          )}
+
+          {/* ConnectButton */}
+          <ConnectButton
+            connectText="ウォレット接続"
+            className="onetube-connect-button"
+            aria-label="Sui Walletを接続"
+          />
+        </div>
+      </header>
+
       <Header />
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: 24 }}>
         <div className='container layout'>
