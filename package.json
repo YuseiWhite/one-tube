@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"move:test": "cd contracts && sui move test",
+		"move:test": "scripts/utils/run_move_tests.sh",
 		"move:e2e": "tsx tests/e2e.spec.ts",
 		"dev": "cd app && pnpm dev",
 		"build": "cd app && pnpm build",
