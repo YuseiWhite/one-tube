@@ -1,6 +1,9 @@
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import { useRef, useState, useEffect } from "react";
+// Legacy mock API (currently in use)
 import { watch, purchase } from "./lib/api";
+// New backend API functions available (Issue #009):
+// import { getHealth, getListings, createWatchSession, getVideoUrl } from "./lib/api";
 
 // Video data type
 interface VideoData {

@@ -1,7 +1,7 @@
 // API Base URL - 環境変数で切り替え可能
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
-// API Response Types
+// ===== Legacy Mock API Types =====
 export interface WatchResponse {
 	success: boolean;
 	sessionToken?: string;
@@ -14,6 +14,20 @@ export interface PurchaseResponse {
 	success: boolean;
 	txDigest?: string;
 	message?: string;
+}
+
+// ===== New Backend API Types (Issue #009) =====
+export interface Health {
+	status: "ok";
+	sponsorBalance?: string;
+	activeSessions?: number;
+	rpc?: "ok" | "down";
+}
+
+export interface Listing {
+	listingId: string;
+	objectId: string;
+	price: number;
 }
 
 /**
@@ -78,3 +92,44 @@ export async function purchase(listingId: string): Promise<PurchaseResponse> {
 	}
 }
 
+// ===== New Backend API Functions (Issue #009) =====
+
+/**
+ * Health Check API - Get server health status
+ */
+export async function getHealth(): Promise<Health> {
+	const r = await fetch(API_BASE + "/api/health");
+	return r.json();
+}
+
+/**
+ * Listings API - Get available video listings
+ */
+export async function getListings(): Promise<Listing[]> {
+	const r = await fetch(API_BASE + "/api/listings");
+	if (!r.ok) throw new Error("HTTP " + r.status);
+	return r.json();
+}
+
+/**
+ * Create Watch Session - Request a session token for video playback
+ */
+export async function createWatchSession(videoId: string) {
+	const r = await fetch(API_BASE + "/api/watch", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ videoId }),
+	});
+	return r.json();
+}
+
+/**
+ * Get Video URL - Retrieve the video streaming URL with session token
+ */
+export async function getVideoUrl(videoId: string, sessionToken: string) {
+	const url = new URL(API_BASE + "/api/video", window.location.origin);
+	url.searchParams.set("videoId", videoId);
+	url.searchParams.set("sessionToken", sessionToken);
+	const r = await fetch(url.toString());
+	return r.json();
+}
