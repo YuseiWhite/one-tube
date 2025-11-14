@@ -26,7 +26,7 @@ public struct PremiumTicketNFT has key, store {
     id: sui::object::UID,
     name: String,
     description: String,
-    blob_id: String,  // Walrus BLOB ID（MVP用モック）
+    blob_id: String,  // Walrus BLOB ID
 }
 
 /// 収益分配ルール用Witness
