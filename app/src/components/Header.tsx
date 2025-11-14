@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ConnectButton } from '@mysten/dapp-kit';
 import { getHealth } from '../lib/api';
+import logoSrc from '../assets/onetube-logo.png';
 
 const useNewApi = !!import.meta.env.VITE_API_BASE_URL;
 
@@ -42,8 +43,7 @@ export default function Header({ address }: HeaderProps) {
     <header className="onetube-header">
       {/* Figma参照: figma-ui/src/components/Header.tsx */}
       <div className="onetube-header__brand">
-        <p className="onetube-header__logo">ONETUBE</p>
-        <p className="onetube-header__subtitle">Premium Fight Archive</p>
+        <img src={logoSrc} alt="ONETUBE" className="onetube-header__logoImage" />
       </div>
       <div className="onetube-header__actions">
         <div className="onetube-network">

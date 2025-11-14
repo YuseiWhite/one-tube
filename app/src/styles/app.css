@@ -109,17 +109,10 @@ video {
   gap: 6px;
 }
 
-.onetube-header__logo {
-  font-size: 22px;
-  letter-spacing: 0.38em;
-  color: var(--onetube-accent-yellow);
-}
-
-.onetube-header__subtitle {
-  font-size: 11px;
-  letter-spacing: 0.28em;
-  color: var(--onetube-text-soft);
-  text-transform: uppercase;
+.onetube-header__logoImage {
+  height: 72px;
+  width: auto;
+  display: block;
 }
 
 .onetube-header__actions {

@@ -1,4 +1,5 @@
 import { Button } from './ui/button';
+import logoSrc from '../assets/onetube-logo.png';
 
 interface HeaderProps {
   isWalletConnected: boolean;
@@ -22,14 +23,7 @@ export function Header({
     <header className="bg-black border-b border-zinc-800 px-8 py-4">
       <div className="flex items-center justify-between max-w-[1440px] mx-auto">
         {/* ロゴエリア */}
-        <div>
-          <h1 className="tracking-wider text-yellow-400" style={{ fontFamily: 'system-ui, sans-serif' }}>
-            ONETUBE
-          </h1>
-          <p className="text-zinc-500 tracking-wide">
-            Premium Fight Archive
-          </p>
-        </div>
+        <img src={logoSrc} alt="ONETUBE" className="h-16 w-auto" />
 
         {/* 右側：ネットワーク＋ウォレット */}
         <div className="flex items-center gap-4">
