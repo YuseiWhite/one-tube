@@ -1,18 +1,18 @@
 import type { CSSProperties } from 'react';
 
-const SUPERBON_IMAGES = [
-  'https://images.unsplash.com/photo-1602827114696-738d7ee10b3d?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1542720046-1e772598ea39?auto=format&fit=crop&w=800&q=80',
+const ANDRADE_IMAGES = [
+  'https://cdn.onefc.com/wp-content/uploads/2023/10/Fabricio_Andrade-avatar-500x345-1.png',
+  'https://cdn.onefc.com/wp-content/uploads/2023/04/Enkh-Orgil-Avatar-500x345-1.png',
 ];
 
-const RODTANG_IMAGES = [
-  'https://images.unsplash.com/photo-1637055667163-ad033183b329?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1601039834001-7d32a613c60d?auto=format&fit=crop&w=800&q=80',
+const SUPERBON_IMAGES = [
+  'https://cdn.onefc.com/wp-content/uploads/2024/04/Superbon-Avatar-500x345-1.png',
+  'https://cdn.onefc.com/wp-content/uploads/2025/03/Maasaki_Noiri-avatar-champ-500x345-1.png',
 ];
 
 const TAWANCHAI_IMAGES = [
-  'https://images.unsplash.com/photo-1602827114696-738d7ee10b3d?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1681203888755-bd61fe3558eb?auto=format&fit=crop&w=800&q=80',
+  'https://cdn.onefc.com/wp-content/uploads/2023/10/Tawanchai-avatar-500x345-1.png',
+  'https://cdn.onefc.com/wp-content/uploads/2024/12/Liu_Mengyang-Avatar-500x345-1.png',
 ];
 
 type TicketsPageProps = {
@@ -33,6 +33,7 @@ type TicketsPageProps = {
   onPurchase: () => void;
   onReloadInventory: () => void;
   addLog: (msg: string) => void;
+  isWalletConnected: boolean;
 };
 
 type ReferenceTicket = {
@@ -42,12 +43,11 @@ type ReferenceTicket = {
   venue: string;
   physicalPrice: string;
   premiumAddOn: string;
-  suiPrice: string;
   stockLabel: string;
   soldOut: boolean;
   imageUrls: string[];
   isPrimary?: boolean;
-  owned?: boolean;
+  ownedDisplay?: boolean;
 };
 
 export default function TicketsPage({
@@ -62,6 +62,7 @@ export default function TicketsPage({
   onPurchase,
   onReloadInventory,
   addLog,
+  isWalletConnected,
 }: TicketsPageProps) {
   if (!selected) {
     return <div className="page-placeholder">動画データを読み込み中...</div>;
@@ -83,48 +84,45 @@ export default function TicketsPage({
   const primaryStockLabel = (() => {
     if (inventoryLoading) return '在庫情報を取得しています...';
     if (typeof inventoryCount === 'number') {
-      if (inventoryCount === 0) return '在庫なし';
-      return `残り ${inventoryCount} / 10 チケットNFT`;
+      if (inventoryCount === 0) return 'TICKETS NOT AVAILABLE';
+      return `残り ${inventoryCount} / 10 PREMIUM NFT`;
     }
     return '在庫情報を取得できません';
   })();
 
   const referenceTickets: ReferenceTicket[] = [
     {
+      id: 'ticket-andrade',
+      eventTitle: 'ONE Fight Night 38: Andrade vs. Baatarkhuu',
+      matchTitle: 'Fabricio Andrade vs Enkh-Orgil Baatarkhuu',
+      venue: 'Lumpinee Stadium, Bangkok',
+      physicalPrice: '¥168,000',
+      premiumAddOn: '+¥5,000（手数料無料）',
+      stockLabel: isWalletConnected ? 'ウォレットに保存済み（デモ）' : '残り 5 / 10 PREMIUM NFT',
+      soldOut: false,
+      imageUrls: ANDRADE_IMAGES,
+      ownedDisplay: isWalletConnected,
+    },
+    {
       id: selected.id,
-      eventTitle: `ONE 173: ${matchTitle.toUpperCase()}`,
-      matchTitle,
+      eventTitle: 'ONE 173: Superbon vs. Noiri',
+      matchTitle: 'Superbon vs Masaaki Noiri',
       venue: 'Ariake Arena, Tokyo',
-      physicalPrice: '¥20,000 〜 ¥558,000',
-      premiumAddOn: '+¥5,000',
-      suiPrice: '0.5 SUI',
+      physicalPrice: '¥168,000',
+      premiumAddOn: '+¥5,000（手数料無料）',
       stockLabel: primaryStockLabel,
       soldOut: inventoryCount === 0,
       imageUrls: SUPERBON_IMAGES,
       isPrimary: true,
-      owned,
-    },
-    {
-      id: 'ticket-rodtang',
-      eventTitle: 'ONE 172: RODTANG VS. PRAJANCHAI',
-      matchTitle: 'Rodtang vs Prajanchai',
-      venue: 'Impact Arena, Bangkok',
-      physicalPrice: '¥15,000 〜 ¥420,000',
-      premiumAddOn: '+¥5,000',
-      suiPrice: '0.5 SUI',
-      stockLabel: '残り 8 / 15 チケットNFT',
-      soldOut: false,
-      imageUrls: RODTANG_IMAGES,
     },
     {
       id: 'ticket-tawanchai',
-      eventTitle: 'ONE 171: TAWANCHAI VS. NATTAWUT',
-      matchTitle: 'Tawanchai vs Nattawut',
-      venue: 'Singapore Indoor Stadium',
-      physicalPrice: '¥18,000 〜 ¥480,000',
-      premiumAddOn: '+¥5,000',
-      suiPrice: '0.5 SUI',
-      stockLabel: 'SOLD OUT - 在庫なし',
+      eventTitle: 'ONE Friday Fights 137: Tawanchai vs. Liu',
+      matchTitle: 'Tawanchai PK Saenchai vs Liu Mengyang',
+      venue: 'Lumpinee Stadium, Bangkok',
+      physicalPrice: '¥168,000',
+      premiumAddOn: '+¥5,000（手数料無料）',
+      stockLabel: 'TICKETS NOT AVAILABLE',
       soldOut: true,
       imageUrls: TAWANCHAI_IMAGES,
     },
@@ -140,9 +138,17 @@ export default function TicketsPage({
     onPurchase();
   };
 
-  const statusLabelClass = (ticket: ReferenceTicket) => {
-    if (ticket.isPrimary && ticket.owned) return 'onetube-status-label onetube-status-label--owned';
-    if (ticket.soldOut) return 'onetube-status-label onetube-status-label--sold';
+  const handleStandardTicket = () => {
+    addLog('tickets: standard ticket CTA clicked');
+    const officialUrl = 'https://www.onefc.com/tickets/';
+    if (typeof window !== 'undefined') {
+      window.open(officialUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const statusLabelClass = (isOwnedTicket: boolean, soldOut: boolean) => {
+    if (soldOut) return 'onetube-status-label onetube-status-label--sold';
+    if (isOwnedTicket) return 'onetube-status-label onetube-status-label--owned';
     return 'onetube-status-label onetube-status-label--available';
   };
 
@@ -153,7 +159,7 @@ export default function TicketsPage({
         <div className="ticket-hero-inner">
           <p className="ticket-hero-title">PREMIUM TICKET NFT</p>
           <p className="ticket-hero-subtitle">ONE CHAMPIONSHIP</p>
-          <p className="ticket-hero-body">世界最高峰の格闘技を、プレミアムチケットNFTで体験。完全版映像・限定アーカイブ・ガス代スポンサー対応。</p>
+          <p className="ticket-hero-body">世界最高峰の格闘技を、プレミアムチケットNFTで体験。完全版映像と限定アーカイブを収録。</p>
           <p className="ticket-hero-date">{heroDate}</p>
         </div>
       </section>
@@ -178,14 +184,20 @@ export default function TicketsPage({
 
       <div className="ticket-grid">
         {referenceTickets.map((ticket) => {
-          const statusLabel = ticket.isPrimary ? (ticket.owned ? 'OWNED' : 'NOT OWNED') : ticket.soldOut ? 'SOLD OUT' : 'NOT OWNED';
-          const galleryLock = ticket.isPrimary && !ticket.owned;
+          const isPrimaryTicket = !!ticket.isPrimary;
+          const isOwnedTicket = isPrimaryTicket ? owned : !!ticket.ownedDisplay;
+          const statusLabel = ticket.soldOut
+            ? 'TICKETS NOT AVAILABLE'
+            : isOwnedTicket
+            ? 'OWNED'
+            : 'NOT OWNED';
+          const galleryLock = isPrimaryTicket ? !owned : !ticket.ownedDisplay;
 
           return (
             <article key={ticket.id} className={`ticket-card${ticket.soldOut ? ' ticket-card--disabled' : ''}`}>
               <div className="ticket-card__title onetube-accent-bar">{ticket.eventTitle}</div>
               <div className="ticket-card__status-chip">
-                <span className={statusLabelClass(ticket)}>{statusLabel}</span>
+                <span className={statusLabelClass(isOwnedTicket, ticket.soldOut)}>{statusLabel}</span>
               </div>
 
               <div className="ticket-card__gallery">
@@ -208,51 +220,70 @@ export default function TicketsPage({
                     <strong>{ticket.physicalPrice}</strong>
                   </div>
                   <div className="ticket-card__priceRow">
-                    <span>プレミアム追加:</span>
+                    <span>プレミアム:</span>
                     <strong>{ticket.premiumAddOn}</strong>
-                  </div>
-                  <div className="ticket-card__priceRow ticket-card__priceRow--accent">
-                    <span>実購入価格:</span>
-                    <strong>{ticket.suiPrice}</strong>
                   </div>
                 </div>
 
                 <div className="ticket-card__stock">
                   {ticket.soldOut ? (
-                    <p className="ticket-card__stockMessage ticket-card__stockMessage--sold">SOLD OUT - 次回ロットをお待ちください</p>
+                    <p className="ticket-card__stockMessage ticket-card__stockMessage--sold">
+                      {ticket.stockLabel || 'TICKETS NOT AVAILABLE - 次回アナウンスをお待ちください'}
+                    </p>
                   ) : (
                     <p className="ticket-card__stockMessage">{ticket.stockLabel}</p>
                   )}
                 </div>
 
-                {ticket.isPrimary ? (
+                {isPrimaryTicket ? (
                   <>
-                    {ticket.owned ? (
+                    {isOwnedTicket ? (
                       <div className="ticket-card__notice ticket-card__notice--owned">✅ 購入済みです。「VIDEOS」タブから完全版を視聴できます。</div>
                     ) : (
-                      <button
-                        type="button"
-                        className="ticket-card__cta"
-                        onClick={handlePurchase}
-                        disabled={purchasing || ticket.soldOut}
-                      >
-                        {purchasing ? 'PURCHASING…' : ticket.soldOut ? 'SOLD OUT' : 'BUY PREMIUM TICKET'}
-                      </button>
-                    )}
-
-                    {!ticket.owned && !ticket.soldOut && <p className="ticket-card__helper">ガス代なし（Sponsored Tx）</p>}
-
-                    {purchaseError && !ticket.owned && <div className="ticket-card__notice ticket-card__notice--error">❌ {purchaseError}</div>}
-
-                    {txDigest && (
-                      <div className="ticket-card__notice ticket-card__notice--success">
-                        ✅ トランザクション: <code>{txDigest.slice(0, 10)}...</code>
-                      </div>
+                      <>
+                        <div className="ticket-card__actions">
+                          <button
+                            type="button"
+                            className="ticket-card__cta"
+                            onClick={handlePurchase}
+                            disabled={purchasing || ticket.soldOut}
+                          >
+                            {purchasing ? 'PURCHASING…' : ticket.soldOut ? 'TICKETS NOT AVAILABLE' : 'BUY PREMIUM TICKET'}
+                          </button>
+                          <button
+                            type="button"
+                            className="ticket-card__cta ticket-card__cta--secondary"
+                            onClick={handleStandardTicket}
+                            disabled={purchasing || ticket.soldOut}
+                          >
+                            BUY TICKET
+                          </button>
+                        </div>
+                        {purchaseError && (
+                          <div className="ticket-card__notice ticket-card__notice--error">❌ {purchaseError}</div>
+                        )}
+                        {txDigest && (
+                          <div className="ticket-card__notice ticket-card__notice--success">
+                            ✅ トランザクション: <code>{txDigest.slice(0, 10)}...</code>
+                          </div>
+                        )}
+                      </>
                     )}
                   </>
+                ) : ticket.ownedDisplay ? (
+                  <div className="ticket-card__notice ticket-card__notice--owned">✅ このイベントのNFTはウォレットに保存済みです。</div>
+                ) : ticket.id === 'ticket-andrade' ? (
+                  <div className="ticket-card__actions">
+                    <button type="button" className="ticket-card__cta" disabled>
+                      BUY PREMIUM TICKET
+                    </button>
+                    <button type="button" className="ticket-card__cta ticket-card__cta--secondary" disabled>
+                      BUY TICKET
+                    </button>
+                  </div>
                 ) : (
                   <button type="button" className="ticket-card__cta ticket-card__cta--disabled" disabled>
-                    {ticket.soldOut ? 'SOLD OUT' : 'COMING SOON'}
+                    {ticket.soldOut ? 'TICKETS NOT AVAILABLE' : 'BUY TICKET'}
                   </button>
                 )}
               </div>

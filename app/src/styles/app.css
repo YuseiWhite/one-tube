@@ -503,10 +503,6 @@ video {
   font-weight: 500;
 }
 
-.ticket-card__priceRow--accent strong {
-  color: var(--onetube-cyan);
-}
-
 .ticket-card__stockMessage {
   font-size: 12px;
   text-align: center;
@@ -525,6 +521,32 @@ video {
   padding: 14px;
   letter-spacing: 0.34em;
   background: transparent;
+}
+
+.ticket-card__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.ticket-card__actions .ticket-card__cta {
+  width: auto;
+  flex: 1;
+}
+
+.ticket-card__cta--secondary {
+  border-color: var(--onetube-border);
+  color: var(--onetube-text-soft);
+  background: rgba(255, 255, 255, 0.03);
+  letter-spacing: 0.24em;
+  flex: 0.85;
+  opacity: 0.85;
+}
+
+.ticket-card__cta--secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--onetube-text);
 }
 
 .ticket-card__cta:hover:not(:disabled) {
@@ -560,13 +582,6 @@ video {
   border-color: rgba(255, 140, 107, 0.35);
   background: rgba(255, 140, 107, 0.1);
   color: var(--onetube-danger);
-}
-
-.ticket-card__helper {
-  text-align: center;
-  color: var(--onetube-text-soft);
-  font-size: 11px;
-  letter-spacing: 0.15em;
 }
 
 .tickets-footnote {

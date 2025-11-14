@@ -12,19 +12,19 @@ interface Ticket {
   venue: string;
   physicalPrice: string;
   premiumAdd: string;
-  suiPrice: string;
-  stock: number;
-  totalStock: number;
+  stockMessage: string;
   soldOut: boolean;
+  soldOutMessage?: string;
 }
 
 interface TicketCardProps {
   ticket: Ticket;
   isOwned: boolean;
   onPurchase: (ticketId: string) => void;
+  onBuyStandard?: (ticketId: string) => void;
 }
 
-export function TicketCard({ ticket, isOwned, onPurchase }: TicketCardProps) {
+export function TicketCard({ ticket, isOwned, onPurchase, onBuyStandard }: TicketCardProps) {
   return (
     <div
       className={`bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden transition-all hover:border-yellow-400/50 ${
@@ -85,40 +85,42 @@ export function TicketCard({ ticket, isOwned, onPurchase }: TicketCardProps) {
             <span className="text-zinc-300">{ticket.physicalPrice}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-zinc-400">プレミアム追加:</span>
+            <span className="text-zinc-400">プレミアム:</span>
             <span className="text-zinc-300">{ticket.premiumAdd}</span>
-          </div>
-          <div className="border-t border-zinc-800 my-2" />
-          <div className="flex justify-between items-center">
-            <span className="text-zinc-400">実購入価格:</span>
-            <span className="text-cyan-400">{ticket.suiPrice}</span>
           </div>
         </div>
 
         {/* 在庫表示 */}
         {ticket.soldOut ? (
           <div className="bg-red-500/10 border border-red-500/30 rounded px-3 py-2 text-center">
-            <span className="text-red-400 tracking-wider">SOLD OUT</span>
+            <span className="text-red-400 tracking-wider">
+              {ticket.soldOutMessage || 'TICKETS NOT AVAILABLE'}
+            </span>
           </div>
         ) : (
           <div className="text-zinc-400 text-center">
-            残り {ticket.stock} / {ticket.totalStock} チケットNFT
+            {ticket.stockMessage}
           </div>
         )}
 
         {/* 購入ボタン */}
-        <Button
-          className="w-full bg-black hover:bg-zinc-900 text-yellow-400 border border-yellow-400 hover:border-yellow-300"
-          disabled={ticket.soldOut || isOwned}
-          onClick={() => onPurchase(ticket.id)}
-        >
-          {isOwned ? '購入済み' : 'BUY PREMIUM TICKET'}
-        </Button>
-        {!ticket.soldOut && !isOwned && (
-          <p className="text-zinc-600 text-center">
-            ガス代なし（Sponsored Tx）
-          </p>
-        )}
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Button
+            className="w-full sm:flex-[1.1] bg-black hover:bg-zinc-900 text-yellow-400 border border-yellow-400 hover:border-yellow-300"
+            disabled={ticket.soldOut || isOwned}
+            onClick={() => onPurchase(ticket.id)}
+          >
+            {isOwned ? '購入済み' : 'BUY PREMIUM TICKET'}
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full sm:flex-[0.9] border-zinc-700 text-zinc-300 hover:text-white"
+            disabled={ticket.soldOut}
+            onClick={() => onBuyStandard?.(ticket.id)}
+          >
+            BUY TICKET
+          </Button>
+        </div>
       </div>
     </div>
   );

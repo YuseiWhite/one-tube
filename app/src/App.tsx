@@ -370,6 +370,7 @@ export default function App() {
               onPurchase={handlePurchase}
               onReloadInventory={loadInventory}
               addLog={addLog}
+              isWalletConnected={!!account}
             />
           ) : (
             <VideosPage
