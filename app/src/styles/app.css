@@ -448,6 +448,7 @@ video {
 
 .ticket-card__title {
   border-bottom: 1px solid var(--onetube-border-strong);
+  padding: 18px 20px;
 }
 
 .ticket-card__status-chip {
@@ -543,30 +544,23 @@ video {
   width: 100%;
   border: 1px solid var(--onetube-accent-yellow);
   color: var(--onetube-accent-yellow);
-  padding: 14px;
-  letter-spacing: 0.34em;
+  padding: 12px;
+  letter-spacing: 0.24em;
   background: transparent;
 }
 
 .ticket-card__actions {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  flex-wrap: wrap;
-  align-items: stretch;
-}
-
-.ticket-card__actions .ticket-card__cta {
-  width: auto;
-  flex: 1;
 }
 
 .ticket-card__cta--secondary {
   border-color: var(--onetube-border);
   color: var(--onetube-text-soft);
   background: rgba(255, 255, 255, 0.03);
-  letter-spacing: 0.24em;
-  flex: 0.85;
-  opacity: 0.85;
+  letter-spacing: 0.18em;
+  opacity: 0.9;
 }
 
 .ticket-card__cta--secondary:hover:not(:disabled) {
