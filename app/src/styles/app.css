@@ -1,559 +1,948 @@
 /* ===== app/src/styles/app.css ===== */
+
+/* ===== Variables ===== */
 :root {
   --bg: #0f1115;
+  --bg-dark: #0a0b0e;
   --panel: #151820;
+  --panel-dark: #111419;
   --text: #e7e9ee;
-  --muted: #9aa4b2;
+  --text-muted: #9aa4b2;
+  --text-secondary: #6b7280;
   --accent: #4aa7ff;
+  --accent-yellow: #facc15;
   --warn: #ffc107;
   --danger: #ff5577;
   --ok: #30d158;
   --border: #242938;
+  --border-light: #333;
 }
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; }
+
+/* ===== Reset & Base ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--bg-dark);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
-}
-a { color: var(--accent); text-decoration: none; }
-.container {
-  max-width: 1200px; margin: 0 auto; padding: 16px;
-}
-.header {
-  display: flex; gap: 12px; align-items: center; justify-content: space-between;
-  padding: 12px 0; border-bottom: 1px solid var(--border);
-}
-.badge {
-  background: rgba(255, 193, 7, .15);
-  color: var(--warn); border: 1px solid rgba(255, 193, 7, .5);
-  padding: 6px 10px; border-radius: 8px; font-weight: 600; font-size: 12px;
-}
-.health {
-  display:flex; gap:8px; align-items:center; font-size:12px; color: var(--muted);
-}
-.dot { width:8px; height:8px; border-radius:999px; background: var(--muted); }
-.dot.ok { background: var(--ok); }
-.dot.down { background: var(--danger); }
-
-.layout {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 16px; margin-top: 16px;
-}
-.sidebar {
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 12px; padding: 12px;
-}
-.tabs { display:flex; flex-direction:column; gap:8px; }
-.tab {
-  padding: 10px 12px; border-radius: 8px; color: var(--muted);
-  cursor: pointer; border: 1px solid transparent;
-}
-.tab.active { color: var(--text); background: #111520; border-color: var(--border); }
-
-.main {
-  display: grid; grid-template-rows: auto 1fr auto; gap: 12px;
-}
-.card {
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 12px; padding: 16px;
-}
-.row { display:flex; gap:12px; align-items:center; justify-content:space-between; }
-.grid { display:grid; gap:12px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-.btn {
-  padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border);
-  background: #1a1f2b; color: var(--text); cursor: pointer; font-weight: 600;
-}
-.btn.primary { background: #162035; border-color: #1f2940; }
-.btn.primary:hover { background: #1b2742; }
-.btn.warn { background: #2a2415; border-color: #3b3120; color: var(--warn); }
-.btn.success { background: #13231a; border-color: #1c3526; color: var(--ok); }
-.btn.disabled, .btn:disabled { opacity:.5; cursor:not-allowed; }
-
-.kv { color: var(--muted); font-size: 13px; }
-.price { font-size: 18px; font-weight: 700; }
-.thumb { width: 100%; aspect-ratio: 16/9; background: #0b0e14; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; }
-.video { width: 100%; aspect-ratio: 16/9; background: #0b0e14; border-radius: 8px; border: 1px solid var(--border); }
-
-.toast {
-  position: fixed; right: 16px; bottom: 16px;
-  background: #121722; border: 1px solid var(--border);
-  padding: 12px 14px; border-radius: 10px; color: var(--text);
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+  line-height: 1.5;
 }
 
-/* ===== ONE 風 TICKETS ページ ===== */
-
-.onetube-ticket-page {
-  color: #e5e7eb;
+a {
+  color: var(--accent);
+  text-decoration: none;
 }
 
-.onetube-ticket-header {
-  margin-bottom: 12px;
+button {
+  font-family: inherit;
 }
 
-.onetube-ticket-header-label {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
+/* ===== App Layout (Figma-based) ===== */
 
-.onetube-ticket-tabs {
+.app-container {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-dark);
 }
 
-.onetube-ticket-tab {
-  flex: 0 0 auto;
-  padding: 6px 14px;
+/* ===== ヘッダー ===== */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--panel-dark);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-logo {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--accent-yellow);
+  margin: 0;
+}
+
+.app-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 193, 7, 0.15);
+  color: var(--warn);
+  border: 1px solid rgba(255, 193, 7, 0.5);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
   font-size: 12px;
+}
+
+.wallet-address {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--panel);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.connect-wallet-button {
+  /* @mysten/dapp-kit の ConnectButton にデフォルトスタイルがあるため、上書きは最小限に */
+}
+
+/* ===== メインコンテンツエリア ===== */
+.app-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ===== 左サイドバー（タブ） ===== */
+.app-sidebar {
+  width: 200px;
+  background: var(--panel-dark);
+  border-right: 1px solid var(--border);
+  padding: 16px 0;
+  flex-shrink: 0;
+}
+
+.app-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.app-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.app-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.app-tab.active {
+  background: var(--accent-yellow);
+  color: #000;
+  border-color: var(--accent-yellow);
+}
+
+.app-tab .tab-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.app-tab .tab-label {
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  border-radius: 999px;
-  border: 1px solid #333;
-  background: #111;
-  color: #e5e7eb;
-  cursor: pointer;
 }
 
-.onetube-ticket-tab.active {
-  background: #facc15;
+@media (max-width: 768px) {
+  .app-sidebar {
+    width: 160px;
+  }
+  .app-tab {
+    padding: 10px 12px;
+  }
+  .app-tab .tab-label {
+    font-size: 11px;
+  }
+}
+
+/* ===== 右コンテンツエリア ===== */
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--bg);
+}
+
+/* ===== チケット購入ページ ===== */
+.tickets-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.tickets-page-header {
+  margin-bottom: 24px;
+}
+
+.tickets-page-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.tickets-page-description {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ONE風チケットカード */
+.ticket-card-container {
+  background: var(--panel-dark);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.ticket-card-header {
+  background: var(--accent-yellow);
+  padding: 12px 20px;
+  text-align: center;
+}
+
+.ticket-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: #000;
-  border-color: #facc15;
 }
 
-.onetube-ticket-main {
+.ticket-card-body {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(260px, 1.2fr);
-  gap: 24px;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+  padding: 24px;
+  background: var(--panel);
 }
 
-@media (max-width: 900px) {
-  .onetube-ticket-main {
+@media (max-width: 768px) {
+  .ticket-card-body {
     grid-template-columns: 1fr;
   }
 }
 
-.onetube-ticket-card-wrapper {
-  display: flex;
-  justify-content: center;
-}
-
-.onetube-ticket-card {
-  width: 100%;
-  max-width: 480px;
-  background: #111;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  border: 1px solid #333;
-}
-
-.onetube-ticket-card-header {
-  background: #facc15;
-  padding: 10px 16px;
-  text-align: center;
-}
-
-.onetube-ticket-card-header-text {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-}
-
-.onetube-ticket-card-body {
-  display: grid;
-  grid-template-columns: 1.2fr 1.4fr;
-  gap: 16px;
-  padding: 16px;
-  background: #181818;
-}
-
-.onetube-ticket-card-thumb {
+/* サムネイル */
+.ticket-card-thumbnail {
   position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
 
-.onetube-ticket-card-thumb img {
+.ticket-card-thumbnail img {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  background: #000;
+  display: block;
   transition: filter 0.3s ease, opacity 0.3s ease;
 }
 
-.onetube-ticket-card-thumb .ownership-badge {
+.ticket-card-badge {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 10px;
+  bottom: 12px;
+  right: 12px;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-.onetube-ticket-card-thumb .ownership-badge.owned {
-  background: #10b981;
+.ticket-card-badge.owned {
+  background: var(--ok);
   color: #fff;
 }
 
-.onetube-ticket-card-thumb .ownership-badge.locked {
+.ticket-card-badge.not-owned {
   background: rgba(0, 0, 0, 0.85);
   color: #fff;
 }
 
-.onetube-ticket-card-meta {
-  font-size: 12px;
-}
-
-.onetube-ticket-card-meta-row {
-  margin-bottom: 6px;
+/* 詳細情報 */
+.ticket-card-info {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.onetube-ticket-card-meta-row .label {
-  color: #9ca3af;
+.ticket-info-section {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ticket-info-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.ticket-info-heading {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  font-size: 11px;
-}
-
-.onetube-ticket-card-meta-row .value {
-  color: #e5e7eb;
-}
-
-.onetube-ticket-card-vs {
-  align-items: center;
+  color: var(--text-muted);
   margin-bottom: 10px;
 }
 
-.onetube-ticket-card-vs .name {
-  font-weight: 700;
-}
-
-.onetube-ticket-card-vs .vs {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #9ca3af;
-}
-
-.onetube-ticket-card-footer {
-  background: #f3f4f6;
-  padding: 16px;
-  border-top: 1px solid #ddd;
-}
-
-.onetube-ticket-price-block {
-  background: #fff;
-  border-radius: 2px;
-  padding: 12px;
-  margin-bottom: 12px;
-  font-size: 12px;
-}
-
-.onetube-ticket-price-block .row {
+.ticket-info-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 4px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
 }
 
-.onetube-ticket-price-block .row.emphasis .label {
+.ticket-info-label {
+  color: var(--text-secondary);
+}
+
+.ticket-info-value {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* 価格ブロック */
+.ticket-price-block {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.ticket-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.ticket-price-row:last-child {
+  margin-bottom: 0;
+}
+
+.ticket-price-row.highlight {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+.ticket-price-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.ticket-price-value {
+  font-weight: 600;
+}
+
+.ticket-price-value.secondary {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.ticket-price-value.primary {
+  color: var(--accent-yellow);
+  font-size: 18px;
   font-weight: 700;
 }
 
-.onetube-ticket-price-block .row.emphasis .value {
-  font-weight: 800;
-  font-size: 16px;
-}
-
-.onetube-ticket-price-block .label {
-  color: #4b5563;
-}
-
-.onetube-ticket-price-block .value {
-  color: #111827;
-}
-
-.onetube-ticket-price-block .divider {
-  height: 1px;
-  background: #e5e7eb;
-  margin: 6px 0;
-}
-
-.onetube-ticket-stock-block {
-  font-size: 12px;
-}
-
-.onetube-ticket-stock-block .stock-row {
-  margin-bottom: 4px;
-}
-
-.onetube-ticket-stock-block .stock-row.muted {
-  color: #6b7280;
-}
-
-.onetube-ticket-stock-block .stock-row.error,
-.onetube-ticket-stock-block .stock-row.error-inline {
-  color: #b91c1c;
-}
-
-.onetube-ticket-stock-block .stock-row.success {
-  color: #166534;
-}
-
-.onetube-ticket-stock-block .tx-code {
-  background: #f9fafb;
-  padding: 1px 4px;
-  border-radius: 3px;
-}
-
-.onetube-ticket-stock-block .stock-actions {
+/* 在庫情報 */
+.ticket-stock-header {
   display: flex;
-  gap: 8px;
-  margin: 8px 0;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
-/* サイドの「出品中の動画」 */
-
-.onetube-ticket-side-title {
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-
-.onetube-ticket-side-info {
-  font-size: 12px;
-  margin-bottom: 8px;
-  color: #9ca3af;
-}
-
-.onetube-ticket-side-info.error {
-  color: #f87171;
-}
-
-.onetube-ticket-side-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 10px;
-}
-
-.onetube-ticket-side-card {
-  border-radius: 4px;
-  border: 1px solid #27272a;
-  background: #18181b;
-  text-align: left;
-  padding: 8px;
+.ticket-stock-reload {
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.onetube-ticket-side-card.active {
-  border-color: #facc15;
+.ticket-stock-reload:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.onetube-ticket-side-card.locked {
-  opacity: 0.85;
-}
-
-.onetube-ticket-side-card .thumbnail-wrapper {
-  position: relative;
-  margin-bottom: 6px;
-}
-
-.onetube-ticket-side-card img {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: 2px;
-  transition: filter 0.3s ease, opacity 0.3s ease;
-}
-
-.onetube-ticket-side-card .lock-badge {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 10px;
-  font-weight: 600;
-  white-space: nowrap;
-  pointer-events: none;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.onetube-ticket-side-card .title {
-  font-size: 12px;
-  color: #e5e7eb;
-}
-
-.onetube-ticket-side-card .meta {
-  font-size: 11px;
-  color: #9ca3af;
-}
-
-/* 共通ボタン */
-
-.onetube-btn-primary {
-  padding: 8px 18px;
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: 2px;
-  border: none;
-  background: #111827;
-  color: #f9fafb;
-  cursor: pointer;
-}
-
-.onetube-btn-primary.full {
-  width: 100%;
-  text-align: center;
-}
-
-.onetube-btn-primary:disabled {
+.ticket-stock-reload:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  opacity: 0.6;
 }
 
-.onetube-btn-outline {
-  padding: 6px 14px;
-  font-size: 11px;
-  border-radius: 2px;
-  border: 1px solid #4b5563;
-  background: transparent;
-  color: #e5e7eb;
-  cursor: pointer;
+.ticket-stock-status {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
 }
 
-.onetube-btn-secondary {
-  padding: 8px 18px;
+.ticket-stock-text {
+  display: block;
+}
+
+.ticket-stock-text.available {
+  color: var(--ok);
+}
+
+.ticket-stock-text.sold-out {
+  color: var(--danger);
+}
+
+.ticket-stock-error {
+  color: var(--danger);
   font-size: 12px;
-  border-radius: 2px;
-  border: 1px solid #facc15;
-  background: #1f2933;
-  color: #facc15;
-  cursor: pointer;
 }
 
-.onetube-btn-secondary.full {
+/* 購入ボタンエリア */
+.ticket-purchase-section {
+  margin-top: auto;
+}
+
+.ticket-purchase-button {
   width: 100%;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent-yellow);
+  color: #000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
 }
 
-/* ===== YouTube 風 VIDEO ページ ===== */
-
-.onetube-video-page {
-  color: #e5e7eb;
+.ticket-purchase-button:hover {
+  background: #fbbf24;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(250, 204, 21, 0.3);
 }
 
-.onetube-video-layout {
+.ticket-purchase-button:disabled {
+  background: var(--text-secondary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.ticket-owned-message {
+  padding: 12px;
+  background: rgba(48, 209, 88, 0.15);
+  border: 1px solid rgba(48, 209, 88, 0.3);
+  border-radius: 8px;
+  color: var(--ok);
+  font-size: 13px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.ticket-purchase-error {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(255, 85, 119, 0.15);
+  border: 1px solid rgba(255, 85, 119, 0.3);
+  border-radius: 6px;
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.ticket-purchase-success {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(48, 209, 88, 0.15);
+  border: 1px solid rgba(48, 209, 88, 0.3);
+  border-radius: 6px;
+  color: var(--ok);
+  font-size: 12px;
+}
+
+.ticket-purchase-success code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+/* フッター */
+.tickets-page-footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.tickets-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ===== 動画視聴ページ（YouTube風） ===== */
+.videos-page {
   display: grid;
-  grid-template-columns: minmax(0, 2.4fr) minmax(260px, 1.3fr);
+  grid-template-columns: 300px 1fr;
   gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
 }
 
-@media (max-width: 900px) {
-  .onetube-video-layout {
+@media (max-width: 1024px) {
+  .videos-page {
     grid-template-columns: 1fr;
   }
 }
 
-.onetube-video-player {
-  border-radius: 8px;
-  overflow: hidden;
-  background: #000;
+/* 左側: 動画一覧 */
+.videos-list {
+  background: var(--panel-dark);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.videos-list-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
   margin-bottom: 12px;
 }
 
-.onetube-video-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.onetube-video-meta {
-  font-size: 12px;
-  color: #9ca3af;
-  margin-bottom: 12px;
-}
-
-.onetube-video-description {
-  font-size: 13px;
-  line-height: 1.6;
-  background: #111827;
-  border-radius: 8px;
-  padding: 12px 14px;
-  border: 1px solid #1f2937;
-}
-
-.onetube-video-description .note {
-  font-size: 12px;
-  color: #9ca3af;
-  margin-top: 6px;
-}
-
-.onetube-video-side {
+.videos-list-grid {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.onetube-video-side-card {
-  background: #111827;
+/* 動画カード */
+.video-list-card {
+  display: block;
+  background: var(--panel);
+  border: 2px solid var(--border);
   border-radius: 8px;
-  padding: 12px 14px;
-  border: 1px solid #1f2937;
-  font-size: 13px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
 }
 
-.onetube-video-side-card h2 {
-  font-size: 14px;
-  margin-bottom: 8px;
+.video-list-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-light);
 }
 
-.onetube-video-side-card .status {
-  margin-bottom: 8px;
+.video-list-card.selected {
+  border-color: var(--accent-yellow);
+  background: rgba(250, 204, 21, 0.1);
 }
 
-.session-alert {
-  margin-top: 10px;
-  padding: 8px 10px;
+.video-list-thumbnail {
+  position: relative;
   border-radius: 6px;
-  background: #fff3cd;
-  color: #856404;
-  font-size: 12px;
+  overflow: hidden;
+  margin-bottom: 8px;
 }
 
-.session-alert .title {
+.video-list-thumbnail img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.video-preview-label {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 9px;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.video-ownership-icon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 16px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.video-ownership-icon.owned {
+  opacity: 1;
+}
+
+.video-ownership-icon.locked {
+  opacity: 0.8;
+}
+
+.video-list-info {
+  padding: 0 4px;
+}
+
+.video-list-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
   margin-bottom: 4px;
+  line-height: 1.3;
 }
 
-.onetube-video-side-card.logs {
-  font-size: 12px;
+.video-list-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
-.onetube-video-side-card .log-list {
-  max-height: 220px;
+/* 右側: プレイヤー + 詳細 */
+.videos-player-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   overflow-y: auto;
-  padding-right: 4px;
 }
 
-.onetube-video-side-card .log-line {
-  border-bottom: 1px solid #1f2937;
-  padding: 2px 0;
+.videos-player-container {
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
 }
 
-.onetube-video-side-card .log-empty {
-  color: #9ca3af;
+.videos-details {
+  background: var(--panel-dark);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.videos-details-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.videos-details-meta {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.videos-details-date,
+.videos-details-athletes {
+  display: flex;
+  align-items: center;
+}
+
+/* アクションボタン */
+.videos-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.videos-action-button {
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.videos-action-button.preview {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.videos-action-button.preview:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.videos-action-button.full {
+  background: var(--accent-yellow);
+  color: #000;
+}
+
+.videos-action-button.full:hover {
+  background: #fbbf24;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(250, 204, 21, 0.3);
+}
+
+.videos-action-button:disabled {
+  background: var(--text-secondary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  border: 1px solid var(--border);
+}
+
+.videos-action-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+/* セッション期限切れUI */
+.videos-session-expired {
+  padding: 16px;
+  background: rgba(255, 193, 7, 0.15);
+  border: 1px solid rgba(255, 193, 7, 0.5);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.session-expired-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--warn);
+  margin-bottom: 6px;
+}
+
+.session-expired-description {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.session-retry-button {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  background: var(--warn);
+  color: #000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.session-retry-button:hover {
+  background: #ffb300;
+}
+
+/* キーボードショートカット */
+.videos-keyboard-help {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.keyboard-help-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.keyboard-help-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.keyboard-help-list kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text);
+}
+
+/* ログパネル */
+.videos-logs {
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.videos-no-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ===== トースト通知 ===== */
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  background: var(--panel-dark);
+  border: 1px solid var(--border);
+  padding: 14px 18px;
+  border-radius: 10px;
+  color: var(--text);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 9999;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ===== その他のユーティリティ ===== */
+.health {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--text-muted);
+}
+
+.dot.ok {
+  background: var(--ok);
+}
+
+.dot.down {
+  background: var(--danger);
+}
+
+/* ===== レスポンシブ調整 ===== */
+@media (max-width: 1024px) {
+  .app-sidebar {
+    width: 80px;
+  }
+
+  .app-tab .tab-label {
+    display: none;
+  }
+
+  .app-tab {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 12px 16px;
+  }
+
+  .app-logo {
+    font-size: 20px;
+  }
+
+  .app-subtitle {
+    display: none;
+  }
+
+  .app-content {
+    padding: 16px;
+  }
+
+  .videos-page {
+    grid-template-columns: 1fr;
+  }
+
+  .videos-list {
+    max-height: 300px;
+  }
 }

@@ -1,5 +1,3 @@
-import React from 'react';
-
 export function LogPanel({ logs }: { logs: string[] }) {
   if (!logs.length) return null;
 
