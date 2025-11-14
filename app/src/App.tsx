@@ -70,8 +70,6 @@ export default function App() {
 
   // Wallet connection
   const account = useCurrentAccount();
-  const shortAddress = account?.address ? account.address.slice(-4) : null;
-
   useEffect(() => {
     return () => {
       if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
@@ -353,7 +351,7 @@ export default function App() {
   return (
     <div className="onetube-shell">
       <div className="onetube-banner">⚠️ Sui devnet でテスト中です。これは実際の SUI ではありません。</div>
-      <Header shortAddress={shortAddress} />
+      <Header address={account?.address ?? null} />
       <div className="onetube-layout">
         <Sidebar activePage={activePage} onChange={setActivePage} />
         <main className="onetube-main">

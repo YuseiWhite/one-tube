@@ -90,20 +90,17 @@ export function VideosPage({ isWalletConnected, ownedTickets }: VideosPageProps)
               <p>⏱️ 再生時間: {selectedVideo.duration}</p>
             </div>
 
-            {!isVideoOwned && (
-              <div className="mt-6 bg-yellow-400/10 border border-yellow-400/30 rounded-lg p-4">
-                <p className="text-yellow-400">
-                  💡 完全版を視聴するには、対応するプレミアムチケットNFTが必要です。
-                </p>
+            <div className="mt-6 space-y-3 text-zinc-300">
+              <p>プレミアムチケットを持っていない場合、10秒間のプレビュー動画しか視聴できません。</p>
+              <p>好きな試合のプレミアムチケットを購入すると、完全版を視聴することができます。</p>
+              <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4 text-zinc-100 space-y-1">
+                <p className="text-yellow-400">Superbon vs Masaaki Noiri - full match</p>
+                <p>📅 開催日: 2024年1月15日</p>
+                <p>🥊 選手: Superbon, Masaaki Noiri</p>
+                <p>会場: 有明アリーナ</p>
+                <p>⏱️ 時間: 1:50:00</p>
               </div>
-            )}
-          </div>
-
-          {/* モック注記 */}
-          <div className="mt-6 bg-zinc-950 border border-zinc-800 rounded-lg p-4">
-            <p className="text-zinc-500">
-              ℹ️ 動画はモックデモです。本番環境では 4K・マルチアングルが利用可能になります。
-            </p>
+            </div>
           </div>
         </div>
       </div>

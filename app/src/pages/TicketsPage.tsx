@@ -1,5 +1,3 @@
-import type { CSSProperties } from 'react';
-
 const ANDRADE_IMAGES = [
   'https://cdn.onefc.com/wp-content/uploads/2023/10/Fabricio_Andrade-avatar-500x345-1.png',
   'https://cdn.onefc.com/wp-content/uploads/2023/04/Enkh-Orgil-Avatar-500x345-1.png',
@@ -67,19 +65,6 @@ export default function TicketsPage({
   if (!selected) {
     return <div className="page-placeholder">動画データを読み込み中...</div>;
   }
-
-  const heroBackground = selected.thumbnail || SUPERBON_IMAGES[0];
-  const matchTitle = selected.athletes.join(' vs ');
-  const heroDate = selected.date
-    ? new Date(selected.date).toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : '日付未定';
-  const heroStyle = {
-    '--ticket-hero-image': `url(${heroBackground})`,
-  } as CSSProperties;
 
   const primaryStockLabel = (() => {
     if (inventoryLoading) return '在庫情報を取得しています...';
@@ -155,15 +140,6 @@ export default function TicketsPage({
   return (
     <div className="tickets-page">
       {/* Figma参照: figma-ui/src/components/TicketsPage.tsx */}
-      <section className="ticket-hero" style={heroStyle}>
-        <div className="ticket-hero-inner">
-          <p className="ticket-hero-title">PREMIUM TICKET NFT</p>
-          <p className="ticket-hero-subtitle">ONE CHAMPIONSHIP</p>
-          <p className="ticket-hero-body">世界最高峰の格闘技を、プレミアムチケットNFTで体験。完全版映像と限定アーカイブを収録。</p>
-          <p className="ticket-hero-date">{heroDate}</p>
-        </div>
-      </section>
-
       <section className="tickets-availability">
         <div>
           <p className="tickets-availability__label">AVAILABLE TICKETS</p>

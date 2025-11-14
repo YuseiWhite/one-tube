@@ -13,6 +13,11 @@ export function Header({
   onConnectWallet,
   onDisconnectWallet,
 }: HeaderProps) {
+  const displayAddress =
+    walletAddress && walletAddress.length > 10
+      ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+      : walletAddress;
+
   return (
     <header className="bg-black border-b border-zinc-800 px-8 py-4">
       <div className="flex items-center justify-between max-w-[1440px] mx-auto">
@@ -38,8 +43,7 @@ export function Header({
           {isWalletConnected ? (
             <div className="flex items-center gap-3">
               <div className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2">
-                <span className="text-zinc-400">0x...</span>
-                <span className="text-white">{walletAddress.slice(-4)}</span>
+                <span className="text-white font-mono">{displayAddress}</span>
               </div>
               <Button
                 variant="outline"

@@ -219,6 +219,9 @@ video {
   letter-spacing: 0.28em;
   border-left: 4px solid transparent;
   transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .onetube-sidebar__button:hover {
@@ -237,6 +240,12 @@ video {
   letter-spacing: 0.32em;
 }
 
+.onetube-sidebar__icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
 .onetube-sidebar__info {
   border: 1px solid var(--onetube-border);
   background: var(--onetube-panel);
@@ -248,26 +257,49 @@ video {
   gap: 12px;
 }
 
+.onetube-sidebar__info--compact {
+  gap: 8px;
+}
+
+.onetube-sidebar__info-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  letter-spacing: 0.2em;
+  font-size: 11px;
+  color: var(--onetube-accent-yellow);
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.onetube-sidebar__info-icon {
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
 .onetube-sidebar__info-title {
   color: var(--onetube-accent-yellow);
   letter-spacing: 0.22em;
   font-size: 11px;
 }
 
-.onetube-sidebar__info-list {
-  list-style: none;
+.onetube-sidebar__info-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  line-height: 1.6;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
 }
 
-.onetube-sidebar__bullet {
-  color: var(--onetube-accent-yellow);
-}
-
-.onetube-sidebar__caption {
-  font-size: 11px;
-  color: var(--onetube-text-soft);
+.onetube-sidebar__info-body.is-open {
+  max-height: 220px;
+  opacity: 1;
+  margin-top: 8px;
 }
 
 .onetube-main {
@@ -862,6 +894,25 @@ video {
 .videos-panel--text {
   font-size: 13px;
   color: var(--onetube-text-muted);
+}
+
+.videos-panel--text p + p {
+  margin-top: 10px;
+}
+
+.videos-panel__details {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--onetube-text);
+}
+
+.videos-panel__details li {
+  letter-spacing: 0.08em;
 }
 
 .videos-panel--log {

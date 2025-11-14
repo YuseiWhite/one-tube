@@ -164,14 +164,6 @@ export default function VideosPage({
               )}
             </div>
 
-            <div className="videos-panel">
-              <h3 className="videos-panel__eyebrow">⌨️ キーボード操作</h3>
-              <div className="videos-shortcuts">
-                <p>Space / P: 再生・一時停止</p>
-                <p>← / →: 1秒シーク</p>
-              </div>
-            </div>
-
             <div className="videos-panel videos-panel--log">
               <LogPanel logs={logs} />
             </div>
@@ -179,12 +171,17 @@ export default function VideosPage({
 
           <div className="videos-column videos-column--side">
             <div className="videos-panel videos-panel--text">
-              <p>
-                プレミアムチケットNFTを保有すると、プレビュー制限が解除され、完全版アーカイブや4Kマルチアングル映像にアクセスできます。ウォレット連携とセッションAPIはすでに実装済みです。
-              </p>
+              <p>プレミアムチケットを持っていない場合、10秒間のプレビュー動画しか視聴できません。</p>
+              <p>好きな試合のプレミアムチケットを購入すると、完全版を視聴することができます。</p>
             </div>
             <div className="videos-panel videos-panel--text">
-              <p>ℹ️ このデモではモック動画URLを利用しています。セッションが10秒を超えると自動的に期限切れ状態へ遷移し、再視聴ボタンからキーを取り直せます。</p>
+              <p className="videos-panel__eyebrow">Superbon vs Masaaki Noiri - full match</p>
+              <ul className="videos-panel__details">
+                <li>📅 開催日: 2024年1月15日</li>
+                <li>🥊 選手: Superbon, Masaaki Noiri</li>
+                <li>会場: 有明アリーナ</li>
+                <li>⏱️ 時間: 1:50:00</li>
+              </ul>
             </div>
           </div>
         </section>

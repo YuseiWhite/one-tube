@@ -110,7 +110,7 @@ export function TicketCard({ ticket, isOwned, onPurchase, onBuyStandard }: Ticke
             disabled={ticket.soldOut || isOwned}
             onClick={() => onPurchase(ticket.id)}
           >
-            {isOwned ? '購入済み' : 'BUY PREMIUM TICKET'}
+            {isOwned ? '購入済み' : ticket.soldOut ? 'TICKETS NOT AVAILABLE' : 'BUY PREMIUM TICKET'}
           </Button>
           <Button
             variant="outline"

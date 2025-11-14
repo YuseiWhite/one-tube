@@ -5,10 +5,17 @@ import { getHealth } from '../lib/api';
 const useNewApi = !!import.meta.env.VITE_API_BASE_URL;
 
 type HeaderProps = {
-  shortAddress: string | null;
+  address: string | null;
 };
 
-export default function Header({ shortAddress }: HeaderProps) {
+const formatAddress = (address: string) => {
+  if (address.length <= 10) return address;
+  const prefix = address.slice(0, 6);
+  const suffix = address.slice(-4);
+  return `${prefix}...${suffix}`;
+};
+
+export default function Header({ address }: HeaderProps) {
   const [apiStatus, setApiStatus] = useState<'ok' | 'loading' | 'error'>('loading');
 
   useEffect(() => {
@@ -47,7 +54,7 @@ export default function Header({ shortAddress }: HeaderProps) {
           <span className={`onetube-health__dot onetube-health__dot--${apiStatus}`} />
           <span>{useNewApi ? (apiStatus === 'ok' ? 'API OK' : 'API ...') : 'Mock API'}</span>
         </div>
-        {shortAddress && <span className="onetube-wallet">0x...{shortAddress}</span>}
+        {address && <span className="onetube-wallet">{formatAddress(address)}</span>}
         <ConnectButton className="onetube-connect" connectText="Connect Wallet" />
       </div>
     </header>

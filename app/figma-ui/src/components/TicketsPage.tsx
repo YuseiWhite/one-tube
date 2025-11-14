@@ -94,28 +94,6 @@ export function TicketsPage({ isWalletConnected, ownedTickets, onTicketPurchased
 
   return (
     <div className="p-8">
-      {/* ヒーローセクション */}
-      <div
-        className="relative mb-12 rounded-lg overflow-hidden bg-cover bg-center"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1602827114696-738d7ee10b3d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYXJ0aWFsJTIwYXJ0cyUyMGZpZ2h0ZXJ8ZW58MXx8fHwxNzYzMDU2MTk4fDA&ixlib=rb-4.1.0&q=80&w=1080')`,
-          height: '300px',
-        }}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
-        <div className="relative h-full flex flex-col justify-center items-center text-center px-8">
-          <div className="bg-yellow-400 text-black px-6 py-2 tracking-widest mb-4">
-            PREMIUM TICKET NFT
-          </div>
-          <h2 className="tracking-wider mb-2">
-            ONE CHAMPIONSHIP
-          </h2>
-          <p className="text-zinc-400 max-w-2xl">
-            世界最高峰の格闘技を、プレミアムチケットNFTで体験。
-          </p>
-        </div>
-      </div>
-
       {/* 在庫管理UI */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="tracking-wide text-yellow-400">AVAILABLE TICKETS</h2>
