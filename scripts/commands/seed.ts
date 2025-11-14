@@ -514,15 +514,26 @@ export async function seedCommand(network: SupportedNetwork): Promise<void> {
 	}
 
 	// 1. NFTミント
+	const premiumTicketDescription = [
+		"プレミアムチケット購入特典:",
+		"このチケットを購入することで One Tubeでこの試合の完全版を視聴できるだけでなく、一ヶ月間過去の全ての試合動画が見放題になります。",
+		"あなたが好きな選手を選択することによって、購入されたプレミアムチケットの70%相当額はプラットフォームを通してその選手に支払われます。",
+		"",
+		"VIPチケット購入特典:",
+		"- VIPパスと専用入場口のご利用",
+		"- 「ONE 173」大会記念品",
+		"- ファイトウィーク限定イベントへのご招待",
+		"- ONEホスピタリティラウンジへのアクセス権",
+	].join("\n");
 	const nftIds = await mintBatch(
 		client,
 		keypair,
 		config.packageId,
 		config.adminCapId,
 		10,
-		"ONE 170 Premium Ticket",
-		"Superbon vs Masaaki Noiri - Full Match Access",
-		"mock-blob-id-fullmatch-one170",
+		"ONE 173 Premium Ticket: Superbon vs. Noiri",
+		premiumTicketDescription,
+		"4wkrrgec91yqdr3txwplnr0y8y1886vkgwoklkoidyhsx09at",
 	);
 	await waitForObjectsAvailable(client, nftIds);
 
