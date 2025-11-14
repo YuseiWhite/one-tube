@@ -6,6 +6,7 @@ import App from "./App";
 
 import "@mysten/dapp-kit/dist/index.css";
 import "./styles/app.css";
+import "../figma-ui/src/index.css";
 
 // 依存パッケージ（インストール済み想定）:
 // pnpm add @mysten/dapp-kit @mysten/sui.js @tanstack/react-query

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import './styles/app.css';
 import { Toast } from './components/Toast';
-import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit';
+import { useCurrentAccount } from '@mysten/dapp-kit';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
 import TicketsPage from './pages/TicketsPage';
 import VideosPage from './pages/VideosPage';
 
@@ -11,8 +13,12 @@ import { watch, purchaseSmart } from './lib/api';
 import { getListings, createWatchSession, getVideoUrl } from './lib/api';
 
 type VideoData = {
-  id: string; title: string; thumbnail: string; previewUrl: string;
-  date: string; athletes: string[];
+  id: string;
+  title: string;
+  thumbnail: string;
+  previewUrl: string;
+  date: string;
+  athletes: string[];
 };
 
 const useNewApi = !!(import.meta as any).env?.VITE_API_BASE_URL;
@@ -53,28 +59,29 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const showToast = (msg: string) => {
     setToast(msg);
-    setTimeout(()=>setToast(null), 3200);
+    setTimeout(() => setToast(null), 3200);
   };
 
   // logs
   const [logs, setLogs] = useState<string[]>([]);
   const addLog = (msg: string) => {
-    setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+    setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
   };
 
   // Wallet connection
   const account = useCurrentAccount();
-  const shortAddress =
-    account?.address ? `0x...${account.address.slice(-4)}` : null;
+  const shortAddress = account?.address ? account.address.slice(-4) : null;
 
   useEffect(() => {
-    return () => { if (sessionTimer.current) window.clearTimeout(sessionTimer.current); };
+    return () => {
+      if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
+    };
   }, []);
 
   // セッション期限切れ監視
   useEffect(() => {
     if (sessionExpiresAt === null) return;
-    
+
     const checkInterval = setInterval(() => {
       if (Date.now() >= sessionExpiresAt) {
         setSessionExpired(true);
@@ -86,7 +93,7 @@ export default function App() {
         clearInterval(checkInterval);
       }
     }, 1000); // 1秒ごとにチェック
-    
+
     return () => clearInterval(checkInterval);
   }, [sessionExpiresAt]);
 
@@ -94,7 +101,7 @@ export default function App() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!videoRef.current) return;
-      
+
       // 入力フィールドにフォーカスがある場合はスキップ
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
@@ -120,10 +127,7 @@ export default function App() {
           break;
         case 'ArrowRight':
           e.preventDefault();
-          videoRef.current.currentTime = Math.min(
-            videoRef.current.duration || 0,
-            videoRef.current.currentTime + 1
-          );
+          videoRef.current.currentTime = Math.min(videoRef.current.duration || 0, videoRef.current.currentTime + 1);
           addLog(`keyboard: seek +1s (${Math.floor(videoRef.current.currentTime)}s)`);
           break;
       }
@@ -155,7 +159,6 @@ export default function App() {
     run();
   }, []);
 
-
   // 在庫取得関数
   const loadInventory = useCallback(async () => {
     setInventoryLoading(true);
@@ -165,8 +168,8 @@ export default function App() {
       setInventoryCount(listings.length);
       addLog(`在庫情報を取得: ${listings.length}件`);
     } catch (err) {
-      console.error("Failed to load inventory", err);
-      setInventoryError("在庫情報を取得できませんでした");
+      console.error('Failed to load inventory', err);
+      setInventoryError('在庫情報を取得できませんでした');
       setInventoryCount(null);
       addLog('在庫情報の取得に失敗');
     } finally {
@@ -181,27 +184,29 @@ export default function App() {
 
   // purchase
   const handlePurchase = async () => {
-    setPurchasing(true); setPurchaseError(''); setTxDigest('');
-    
+    setPurchasing(true);
+    setPurchaseError('');
+    setTxDigest('');
+
     // ステップ1: 処理開始
     showToast('処理中…');
     addLog('purchase: start');
-    
+
     try {
       // ステップ2: 送信中（擬似的に遅延）
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       showToast('送信中…');
       addLog('purchase: sending transaction');
-      
+
       // 現状は listingId 固定のモック呼び出し
       // 将来: 本API購入に切替する場合はここに分岐
       const result = await purchaseSmart('listing-superbon-noiri-ko');
-      
+
       // ステップ3: 確認中（擬似的に遅延）
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       showToast('確認中…');
       addLog('purchase: confirming');
-      
+
       if (result.success) {
         const digest = result.txDigest || '0xmock_tx';
         setOwned(true);
@@ -239,35 +244,35 @@ export default function App() {
       addLog('watch: error - ウォレット未接続');
       return;
     }
-    
+
     if (!owned) {
       showToast('❌ チケットを購入してください');
       addLog('watch: error - チケット未購入');
       return;
     }
-    
+
     setWatchLoading(true);
     setSessionExpired(false);
     showToast('セッション生成中…');
     addLog('watch: start');
-    
+
     try {
       if (!useNewApi) {
         const result = await watch('superbon-noiri-ko');
         if (result.success && result.videoUrl) {
           setFullUrl(result.videoUrl);
-          
+
           // expiresAt を計算（現在時刻 + TTL）
           const ttl = result.expiresInSec ?? 10;
-          const expiresAt = Date.now() + (ttl * 1000);
+          const expiresAt = Date.now() + ttl * 1000;
           setSessionExpiresAt(expiresAt);
-          
+
           addLog(`watch: url=${result.videoUrl.slice(0, 30)}..., ttl=${ttl}s`);
           addLog('視聴セッションを開始しました');
           showToast('✅ 視聴を開始します');
-          
+
           if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
-          sessionTimer.current = window.setTimeout(()=>{
+          sessionTimer.current = window.setTimeout(() => {
             setSessionExpired(true);
             showToast('⚠️ セッションが期限切れになりました');
             addLog('watch: expired');
@@ -294,8 +299,8 @@ export default function App() {
           setSessionExpiresAt(null);
           return;
         }
-        addLog(`watch: session token=${session.sessionToken.slice(0,8)}...`);
-        
+        addLog(`watch: session token=${session.sessionToken.slice(0, 8)}...`);
+
         const video = await getVideoUrl('superbon-noiri-ko', session.sessionToken);
         if (!video?.videoUrl) {
           addLog('watch: error - 動画URL取得失敗');
@@ -305,20 +310,20 @@ export default function App() {
           setSessionExpiresAt(null);
           return;
         }
-        
+
         setFullUrl(video.videoUrl);
-        
+
         // expiresAt を計算
         const ttl = session.expiresInSec ?? 10;
-        const expiresAt = Date.now() + (ttl * 1000);
+        const expiresAt = Date.now() + ttl * 1000;
         setSessionExpiresAt(expiresAt);
-        
+
         addLog(`watch: url=${video.videoUrl.slice(0, 30)}..., ttl=${ttl}s`);
         addLog('視聴セッションを開始しました');
         showToast('✅ 視聴を開始します');
-        
+
         if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
-        sessionTimer.current = window.setTimeout(()=>{
+        sessionTimer.current = window.setTimeout(() => {
           setSessionExpired(true);
           showToast('⚠️ セッションが期限切れになりました');
           addLog('watch: expired');
@@ -345,68 +350,13 @@ export default function App() {
     handleWatch();
   };
 
-  // UI
-	return (
-    <div className="app-container">
-      {/* 共通ヘッダー */}
-      <header className="app-header">
-        {/* 左側: ロゴ */}
-        <div className="app-header-left">
-          <h1 className="app-logo">ONETUBE</h1>
-          <span className="app-subtitle">Premium Fight Archive</span>
-        </div>
-
-        {/* 右側: ネットワーク + ウォレット */}
-        <div className="app-header-right">
-          {/* Network badge */}
-          <span className="network-badge" aria-label="Network: Sui devnet">
-            ● Sui devnet
-          </span>
-
-          {/* Address (connected only) */}
-          {shortAddress && (
-            <span className="wallet-address" aria-label={`Wallet address: ${shortAddress}`}>
-              {shortAddress}
-            </span>
-          )}
-
-          {/* ConnectButton */}
-          <ConnectButton
-            connectText="ウォレット接続"
-            className="connect-wallet-button"
-            aria-label="Sui Walletを接続"
-          />
-        </div>
-      </header>
-
-      {/* メインコンテンツエリア */}
-      <div className="app-main">
-        {/* 左サイドバー: タブ */}
-        <aside className="app-sidebar">
-          <nav className="app-tabs" role="navigation" aria-label="Main navigation">
-            <button
-              className={`app-tab ${activePage === 'tickets' ? 'active' : ''}`}
-              onClick={() => setActivePage('tickets')}
-              aria-label="チケット購入ページ"
-              aria-current={activePage === 'tickets' ? 'page' : undefined}
-            >
-              <span className="tab-icon">🎟</span>
-              <span className="tab-label">TICKETS</span>
-            </button>
-            <button
-              className={`app-tab ${activePage === 'videos' ? 'active' : ''}`}
-              onClick={() => setActivePage('videos')}
-              aria-label="動画視聴ページ"
-              aria-current={activePage === 'videos' ? 'page' : undefined}
-            >
-              <span className="tab-icon">▶</span>
-              <span className="tab-label">VIDEOS</span>
-            </button>
-          </nav>
-        </aside>
-
-        {/* 右コンテンツエリア */}
-        <div className="app-content">
+  return (
+    <div className="onetube-shell">
+      <div className="onetube-banner">⚠️ Sui devnet でテスト中です。これは実際の SUI ではありません。</div>
+      <Header shortAddress={shortAddress} />
+      <div className="onetube-layout">
+        <Sidebar activePage={activePage} onChange={setActivePage} />
+        <main className="onetube-main">
           {activePage === 'tickets' ? (
             <TicketsPage
               selected={selected}
@@ -440,11 +390,9 @@ export default function App() {
               addLog={addLog}
             />
           )}
+        </main>
       </div>
-      </div>
-
-      {/* トースト通知 */}
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
-		</div>
-	);
+    </div>
+  );
 }

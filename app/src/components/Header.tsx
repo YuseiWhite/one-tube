@@ -1,35 +1,55 @@
 import { useEffect, useState } from 'react';
+import { ConnectButton } from '@mysten/dapp-kit';
 import { getHealth } from '../lib/api';
 
 const useNewApi = !!import.meta.env.VITE_API_BASE_URL;
 
-export default function Header() {
-  const [health, setHealth] = useState<{status?: string; rpc?: 'ok'|'down'}>({});
+type HeaderProps = {
+  shortAddress: string | null;
+};
+
+export default function Header({ shortAddress }: HeaderProps) {
+  const [apiStatus, setApiStatus] = useState<'ok' | 'loading' | 'error'>('loading');
 
   useEffect(() => {
     let alive = true;
     if (useNewApi) {
-      getHealth().then(h => { if (alive) setHealth(h); }).catch(() => {});
+      getHealth()
+        .then((h) => {
+          if (!alive) return;
+          setApiStatus(h.status === 'ok' ? 'ok' : 'error');
+        })
+        .catch(() => {
+          if (!alive) return;
+          setApiStatus('error');
+        });
+    } else {
+      setApiStatus('ok');
     }
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   return (
-    <div className='header container'>
-      <div className='row' style={{gap:12}}>
-        <h1 style={{margin:0, fontSize:20}}>OneTube</h1>
-        <span className='kv'>NFT-Gated Video</span>
+    <header className="onetube-header">
+      {/* Figma参照: figma-ui/src/components/Header.tsx */}
+      <div className="onetube-header__brand">
+        <p className="onetube-header__logo">ONETUBE</p>
+        <p className="onetube-header__subtitle">Premium Fight Archive</p>
       </div>
-      <div className='row' style={{gap:12}}>
-        <div className='badge' role='alert' aria-label='テストネット警告'>
-          ⚠️ Sui devnetでテスト中です。これは実際のSUIではありません
+      <div className="onetube-header__actions">
+        <div className="onetube-network">
+          <span className="onetube-network__dot" />
+          <span className="onetube-network__label">Sui devnet</span>
         </div>
-        <div className='health'>
-          <span className={`dot ${health.status==='ok' ? 'ok' : ''} ${health.rpc==='down' ? 'down':''}`} />
-          <span>{useNewApi ? (health.status==='ok' ? 'API OK' : 'API ...') : 'Mock API'}</span>
+        <div className="onetube-health">
+          <span className={`onetube-health__dot onetube-health__dot--${apiStatus}`} />
+          <span>{useNewApi ? (apiStatus === 'ok' ? 'API OK' : 'API ...') : 'Mock API'}</span>
         </div>
+        {shortAddress && <span className="onetube-wallet">0x...{shortAddress}</span>}
+        <ConnectButton className="onetube-connect" connectText="Connect Wallet" />
       </div>
-    </div>
+    </header>
   );
 }
-

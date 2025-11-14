@@ -1,3 +1,4 @@
+import type { RefObject } from 'react';
 import Player from '../components/Player';
 import { LogPanel } from '../components/LogPanel';
 
@@ -23,7 +24,7 @@ type VideosPageProps = {
   onWatch: () => void;
   onRetryWatch: () => void;
   logs: string[];
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: RefObject<HTMLVideoElement>;
   account: { address: string } | null;
   addLog: (msg: string) => void;
 };
@@ -46,72 +47,71 @@ export default function VideosPage({
   addLog,
 }: VideosPageProps) {
   if (loadingVideo) {
-    return (
-      <div className="videos-page">
-        <p style={{ color: '#888', textAlign: 'center', marginTop: 60 }}>
-          動画データを読み込み中...
-        </p>
-      </div>
-    );
+    return <div className="page-placeholder">動画データを読み込み中...</div>;
   }
 
   if (videoLoadError) {
-    return (
-      <div className="videos-page">
-        <p style={{ color: '#f87171', textAlign: 'center', marginTop: 60 }}>
-          ❌ {videoLoadError}
-        </p>
-      </div>
-    );
+    return <div className="page-placeholder page-placeholder--error">❌ {videoLoadError}</div>;
   }
+
+  if (!selected) {
+    return <div className="page-placeholder">左側のアーカイブから動画を選択してください。</div>;
+  }
+
+  const formattedDate = selected.date
+    ? new Date(selected.date).toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '日付未定';
+
+  const handleSelectVideo = (video: VideoData) => {
+    setSelected(video);
+    addLog(`動画選択: ${video.title}`);
+  };
+
+  const handlePreviewPlay = () => {
+    if (!videoRef.current) return;
+    videoRef.current.src = selected.previewUrl;
+    videoRef.current.currentTime = 0;
+    videoRef.current.load();
+    videoRef.current.play().catch(() => undefined);
+    addLog('プレビュー再生開始 (10s)');
+  };
+
+  const watchButtonLabel = watchLoading
+    ? '読み込み中…'
+    : !account
+    ? 'ウォレットを接続'
+    : !owned
+    ? 'チケットを購入'
+    : '完全版を視聴';
+
+  const watchButtonDisabled = watchLoading || !account || !owned;
 
   return (
     <div className="videos-page">
-      {/* 左側: 動画一覧 */}
-      <aside className="videos-list">
-        <h3 className="videos-list-title">動画アーカイブ</h3>
-        <div className="videos-list-grid">
-          {items.map((v) => {
-            const isSelected = selected?.id === v.id;
+      {/* Figma参照: figma-ui/src/components/VideosPage.tsx */}
+      <aside className="videos-rail">
+        <p className="videos-rail__title">FIGHT ARCHIVE</p>
+        <div className="videos-list">
+          {items.map((video) => {
+            const isSelected = video.id === selected.id;
+            const classes = ['video-item'];
+            if (isSelected) classes.push('video-item--active');
+            if (!owned) classes.push('video-item--locked');
             return (
-              <button
-                key={v.id}
-                className={`video-list-card ${isSelected ? 'selected' : ''}`}
-                onClick={() => {
-                  setSelected(v);
-                  addLog(`動画選択: ${v.title}`);
-                }}
-                aria-label={`動画を選択: ${v.title}`}
-                aria-current={isSelected ? 'true' : undefined}
-              >
-                <div className="video-list-thumbnail">
-                  <img
-                    src={v.thumbnail}
-                    alt={`${v.title} - ${v.athletes.join(', ')}`}
-                    style={{
-                      filter: owned ? 'none' : 'grayscale(100%)',
-                      opacity: owned ? 1 : 0.6,
-                    }}
-                  />
-                  {/* プレビューラベル */}
-                  <span className="video-preview-label">PREVIEW</span>
-                  {/* 保有状態アイコン */}
-                  {owned ? (
-                    <span className="video-ownership-icon owned" aria-label="保有済み">
-                      🎟
-                    </span>
-                  ) : (
-                    <span className="video-ownership-icon locked" aria-label="未保有">
-                      🔒
-                    </span>
-                  )}
+              <button type="button" key={video.id} className={classes.join(' ')} onClick={() => handleSelectVideo(video)}>
+                <div className="video-item__thumb">
+                  <img src={video.thumbnail} alt={`${video.title} - ${video.athletes.join(', ')}`} loading="lazy" />
+                  {!owned && <span className="video-item__badge">PREVIEW ONLY</span>}
+                  <span className="video-item__duration">{owned ? 'FULL ACCESS' : 'PREVIEW 10s'}</span>
                 </div>
-                <div className="video-list-info">
-                  <div className="video-list-title">{v.title}</div>
-                  <div className="video-list-meta">
-                    <span>{v.date}</span>
-                    <span>{v.athletes.join(' vs ')}</span>
-                  </div>
+                <div className="video-item__info">
+                  <p className="video-item__title">{video.title}</p>
+                  <p className="video-item__meta">{new Date(video.date).toLocaleDateString('ja-JP')}</p>
+                  <p className="video-item__meta">{video.athletes.join(', ')}</p>
                 </div>
               </button>
             );
@@ -119,128 +119,75 @@ export default function VideosPage({
         </div>
       </aside>
 
-      {/* 右側: プレイヤー + 詳細 */}
-      <div className="videos-player-area">
-        {selected ? (
-          <>
-            {/* プレイヤー */}
-            <div className="videos-player-container">
-              <Player
-                previewUrl={selected.previewUrl}
-                fullUrl={fullUrl}
-                sessionExpired={sessionExpired}
-                videoRef={videoRef}
-              />
-            </div>
+      <div className="videos-main">
+        <section className="videos-player-shell">
+          <Player previewUrl={selected.previewUrl} fullUrl={fullUrl} sessionExpired={sessionExpired} videoRef={videoRef} />
+        </section>
 
-            {/* 詳細情報 */}
-            <div className="videos-details">
-              <h2 className="videos-details-title">{selected.title}</h2>
-              <div className="videos-details-meta">
-                <span className="videos-details-date">{selected.date}</span>
-                <span className="videos-details-athletes">
-                  {selected.athletes.join(' vs ')}
-                </span>
+        <section className="videos-layout">
+          <div className="videos-column">
+            <div className="videos-panel videos-panel--primary">
+              <p className="videos-panel__eyebrow">PREMIUM ARCHIVE</p>
+              <h2 className="videos-panel__title">{selected.title}</h2>
+              <div className="videos-panel__meta">
+                <span>📅 {formattedDate}</span>
+                <span>🥊 {selected.athletes.join(', ')}</span>
               </div>
 
-              {/* アクションボタン */}
               <div className="videos-actions">
-                {/* プレビュー再生ボタン */}
-                <button
-                  className="videos-action-button preview"
-                  onClick={() => {
-                    if (videoRef.current) {
-                      videoRef.current.src = selected.previewUrl;
-                      videoRef.current.load();
-                      videoRef.current.play();
-                      addLog('プレビュー再生開始');
-                    }
-                  }}
-                  aria-label="プレビューを再生（10秒）"
-                >
-                  ▶ プレビューを再生（10秒）
+                <button type="button" className="videos-actions__btn videos-actions__btn--ghost" onClick={handlePreviewPlay}>
+                  ▶ プレビュー再生（10秒）
                 </button>
-
-                {/* 完全版視聴ボタン */}
                 <button
-                  className="videos-action-button full"
+                  type="button"
+                  className="videos-actions__btn videos-actions__btn--primary"
                   onClick={onWatch}
-                  disabled={!account || !owned || watchLoading}
-                  aria-label={
-                    !account
-                      ? 'ウォレットを接続してください'
-                      : !owned
-                      ? 'チケットを購入してください'
-                      : watchLoading
-                      ? '読み込み中...'
-                      : '完全版を視聴'
-                  }
+                  disabled={watchButtonDisabled}
                 >
-                  {watchLoading
-                    ? '⏳ 読み込み中...'
-                    : !account
-                    ? '🔒 ウォレット未接続'
-                    : !owned
-                    ? '🔒 チケット未購入'
-                    : '🎬 完全版を視聴'}
+                  {watchButtonLabel}
                 </button>
-
-                {/* ヘルプテキスト */}
-                {!account && (
-                  <p className="videos-action-hint">
-                    💡 完全版を視聴するには、まずウォレットを接続してください。
-                  </p>
-                )}
-                {account && !owned && (
-                  <p className="videos-action-hint">
-                    💡 完全版を視聴するには、「TICKETS」タブでNFTチケットを購入してください。
-                  </p>
-                )}
               </div>
 
-              {/* セッション期限切れUI */}
+              {!account && <p className="videos-hint">💡 完全版を視聴するには、まずウォレットを接続してください。</p>}
+              {account && !owned && <p className="videos-hint">💡 「TICKETS」タブでNFTチケットを購入すると完全版が解放されます。</p>}
+
               {sessionExpired && (
-                <div className="videos-session-expired" role="alert">
-                  <p className="session-expired-text">
-                    ⏰ <strong>セッション期限切れ</strong>
-                  </p>
-                  <p className="session-expired-description">
-                    視聴セッションの有効期限が切れました。もう一度視聴ボタンを押してください。
-                  </p>
-                  <button
-                    className="session-retry-button"
-                    onClick={onRetryWatch}
-                    aria-label="もう一度視聴"
-                  >
+                <div className="videos-alert">
+                  <div>
+                    <p className="videos-alert__title">⏰ セッション期限切れ</p>
+                    <p className="videos-alert__text">視聴セッションの有効期限が切れました。もう一度視聴ボタンで新しいキーを取得してください。</p>
+                  </div>
+                  <button type="button" className="videos-alert__cta" onClick={onRetryWatch}>
                     🔄 もう一度視聴
                   </button>
                 </div>
               )}
+            </div>
 
-              {/* キーボードショートカットヘルプ */}
-              <div className="videos-keyboard-help">
-                <h4 className="keyboard-help-title">キーボード操作</h4>
-                <ul className="keyboard-help-list">
-                  <li>
-                    <kbd>Space</kbd> / <kbd>P</kbd>: 再生 / 一時停止
-                  </li>
-                  <li>
-                    <kbd>←</kbd> / <kbd>→</kbd>: 1秒シーク
-                  </li>
-                </ul>
-              </div>
-
-              {/* ログパネル（デバッグ用） */}
-              <div className="videos-logs">
-                <LogPanel logs={logs} />
+            <div className="videos-panel">
+              <h3 className="videos-panel__eyebrow">⌨️ キーボード操作</h3>
+              <div className="videos-shortcuts">
+                <p>Space / P: 再生・一時停止</p>
+                <p>← / →: 1秒シーク</p>
               </div>
             </div>
-          </>
-        ) : (
-          <div className="videos-no-selection">
-            <p>左側から動画を選択してください。</p>
+
+            <div className="videos-panel videos-panel--log">
+              <LogPanel logs={logs} />
+            </div>
           </div>
-        )}
+
+          <div className="videos-column videos-column--side">
+            <div className="videos-panel videos-panel--text">
+              <p>
+                プレミアムチケットNFTを保有すると、プレビュー制限が解除され、完全版アーカイブや4Kマルチアングル映像にアクセスできます。ウォレット連携とセッションAPIはすでに実装済みです。
+              </p>
+            </div>
+            <div className="videos-panel videos-panel--text">
+              <p>ℹ️ このデモではモック動画URLを利用しています。セッションが10秒を超えると自動的に期限切れ状態へ遷移し、再視聴ボタンからキーを取り直せます。</p>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

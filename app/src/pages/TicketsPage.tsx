@@ -1,3 +1,18 @@
+const SUPERBON_IMAGES = [
+  'https://images.unsplash.com/photo-1602827114696-738d7ee10b3d?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1542720046-1e772598ea39?auto=format&fit=crop&w=800&q=80',
+];
+
+const RODTANG_IMAGES = [
+  'https://images.unsplash.com/photo-1637055667163-ad033183b329?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1601039834001-7d32a613c60d?auto=format&fit=crop&w=800&q=80',
+];
+
+const TAWANCHAI_IMAGES = [
+  'https://images.unsplash.com/photo-1602827114696-738d7ee10b3d?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1681203888755-bd61fe3558eb?auto=format&fit=crop&w=800&q=80',
+];
+
 type TicketsPageProps = {
   selected: {
     id: string;
@@ -18,6 +33,21 @@ type TicketsPageProps = {
   addLog: (msg: string) => void;
 };
 
+type ReferenceTicket = {
+  id: string;
+  eventTitle: string;
+  matchTitle: string;
+  venue: string;
+  physicalPrice: string;
+  premiumAddOn: string;
+  suiPrice: string;
+  stockLabel: string;
+  soldOut: boolean;
+  imageUrls: string[];
+  isPrimary?: boolean;
+  owned?: boolean;
+};
+
 export default function TicketsPage({
   selected,
   owned,
@@ -31,181 +61,202 @@ export default function TicketsPage({
   onReloadInventory,
   addLog,
 }: TicketsPageProps) {
-  // MVP用：実際には1枚のチケットのみ
-  // 将来的には複数listing対応も可能
-  
   if (!selected) {
-    return (
-      <div className="tickets-page">
-        <p style={{ color: '#888', textAlign: 'center', marginTop: 60 }}>
-          動画データを読み込み中...
-        </p>
-      </div>
-    );
+    return <div className="page-placeholder">動画データを読み込み中...</div>;
   }
 
-  // 価格情報（仕様書より）
-  const physicalPrice = '¥20,000〜¥558,000';
-  const premiumAddOn = '+¥5,000';
-  const actualPrice = '0.5 SUI';
+  const heroBackground = selected.thumbnail || SUPERBON_IMAGES[0];
+  const matchTitle = selected.athletes.join(' vs ');
+  const heroDate = selected.date
+    ? new Date(selected.date).toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '日付未定';
 
-  // 在庫判定
-  const isSoldOut = inventoryCount === 0;
+  const primaryStockLabel = (() => {
+    if (inventoryLoading) return '在庫情報を取得しています...';
+    if (typeof inventoryCount === 'number') {
+      if (inventoryCount === 0) return '在庫なし';
+      return `残り ${inventoryCount} / 10 チケットNFT`;
+    }
+    return '在庫情報を取得できません';
+  })();
+
+  const referenceTickets: ReferenceTicket[] = [
+    {
+      id: selected.id,
+      eventTitle: `ONE 173: ${matchTitle.toUpperCase()}`,
+      matchTitle,
+      venue: 'Ariake Arena, Tokyo',
+      physicalPrice: '¥20,000 〜 ¥558,000',
+      premiumAddOn: '+¥5,000',
+      suiPrice: '0.5 SUI',
+      stockLabel: primaryStockLabel,
+      soldOut: inventoryCount === 0,
+      imageUrls: SUPERBON_IMAGES,
+      isPrimary: true,
+      owned,
+    },
+    {
+      id: 'ticket-rodtang',
+      eventTitle: 'ONE 172: RODTANG VS. PRAJANCHAI',
+      matchTitle: 'Rodtang vs Prajanchai',
+      venue: 'Impact Arena, Bangkok',
+      physicalPrice: '¥15,000 〜 ¥420,000',
+      premiumAddOn: '+¥5,000',
+      suiPrice: '0.5 SUI',
+      stockLabel: '残り 8 / 15 チケットNFT',
+      soldOut: false,
+      imageUrls: RODTANG_IMAGES,
+    },
+    {
+      id: 'ticket-tawanchai',
+      eventTitle: 'ONE 171: TAWANCHAI VS. NATTAWUT',
+      matchTitle: 'Tawanchai vs Nattawut',
+      venue: 'Singapore Indoor Stadium',
+      physicalPrice: '¥18,000 〜 ¥480,000',
+      premiumAddOn: '+¥5,000',
+      suiPrice: '0.5 SUI',
+      stockLabel: 'SOLD OUT - 在庫なし',
+      soldOut: true,
+      imageUrls: TAWANCHAI_IMAGES,
+    },
+  ];
+
+  const handleReload = () => {
+    addLog('tickets: reload inventory requested');
+    onReloadInventory();
+  };
+
+  const handlePurchase = () => {
+    addLog('tickets: purchase requested');
+    onPurchase();
+  };
+
+  const statusClassNames = (ticket: ReferenceTicket) => {
+    if (ticket.isPrimary && ticket.owned) return 'ticket-card__status ticket-card__status--owned';
+    if (ticket.soldOut) return 'ticket-card__status ticket-card__status--sold';
+    return 'ticket-card__status ticket-card__status--pending';
+  };
 
   return (
     <div className="tickets-page">
-      {/* ページタイトル */}
-      <div className="tickets-page-header">
-        <h2 className="tickets-page-title">チケット購入</h2>
-        <p className="tickets-page-description">
-          NFTチケットを購入すると、対戦の完全版映像を視聴できます。
-        </p>
-      </div>
-
-      {/* メインカードコンテナ（ONE公式風） */}
-      <div className="ticket-card-container">
-        {/* イエローバー */}
-        <div className="ticket-card-header">
-          <div className="ticket-card-title">{selected.title}</div>
+      {/* Figma参照: figma-ui/src/components/TicketsPage.tsx */}
+      <section className="tickets-hero" style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.78), rgba(0,0,0,0.92)), url(${heroBackground})` }}>
+        <div className="tickets-hero__content">
+          <span className="tickets-hero__badge">PREMIUM TICKET NFT</span>
+          <h2 className="tickets-hero__title">ONE CHAMPIONSHIP</h2>
+          <p className="tickets-hero__copy">世界最高峰の格闘技を、プレミアムチケットNFTで体験。完全版映像・限定アーカイブ・ガス代スポンサー対応。</p>
+          <p className="tickets-hero__date">{heroDate}</p>
         </div>
+      </section>
 
-        {/* カード本体 */}
-        <div className="ticket-card-body">
-          {/* 左側: サムネイル */}
-          <div className="ticket-card-thumbnail">
-            <img
-              src={selected.thumbnail}
-              alt={`${selected.title} - ${selected.athletes.join(', ')}`}
-              style={{
-                filter: owned ? 'none' : 'grayscale(80%)',
-                opacity: owned ? 1 : 0.8,
-              }}
-            />
-            {/* 保有状態バッジ */}
-            {owned && (
-              <div className="ticket-card-badge owned" aria-label="NFTチケット保有済み">
-                ✅ OWNED
-              </div>
-            )}
-            {!owned && (
-              <div className="ticket-card-badge not-owned" aria-label="NFTチケット未保有">
-                🔒 NOT OWNED
-              </div>
-            )}
-          </div>
+      <section className="tickets-availability">
+        <div>
+          <p className="tickets-availability__label">AVAILABLE TICKETS</p>
+          <p className="tickets-availability__hint">在庫が無くなり次第、次回大会まで販売停止となります。</p>
+        </div>
+        <button type="button" className="tickets-availability__reload" onClick={handleReload} disabled={inventoryLoading}>
+          {inventoryLoading ? '更新中…' : '在庫を更新'}
+        </button>
+      </section>
 
-          {/* 右側: 詳細情報 + 購入 */}
-          <div className="ticket-card-info">
-            {/* イベント情報 */}
-            <div className="ticket-info-section">
-              <h3 className="ticket-info-heading">対戦情報</h3>
-              <div className="ticket-info-row">
-                <span className="ticket-info-label">日時:</span>
-                <span className="ticket-info-value">{selected.date}</span>
-              </div>
-              <div className="ticket-info-row">
-                <span className="ticket-info-label">選手:</span>
-                <span className="ticket-info-value">{selected.athletes.join(' vs ')}</span>
-              </div>
-            </div>
+      {!owned && (
+        <div className="tickets-alert tickets-alert--warn">
+          ⚠️ チケットを購入するにはウォレットを接続してください。接続済みの場合はそのまま購入に進めます。
+        </div>
+      )}
 
-            {/* 価格情報 */}
-            <div className="ticket-info-section">
-              <h3 className="ticket-info-heading">料金</h3>
-              <div className="ticket-price-block">
-                <div className="ticket-price-row">
-                  <span className="ticket-price-label">物理チケット:</span>
-                  <span className="ticket-price-value secondary">{physicalPrice}</span>
+      {inventoryError && <div className="tickets-alert tickets-alert--error">{inventoryError}</div>}
+
+      <div className="ticket-grid">
+        {referenceTickets.map((ticket) => {
+          const statusLabel = ticket.isPrimary ? (ticket.owned ? 'OWNED' : 'NOT OWNED') : ticket.soldOut ? 'SOLD OUT' : 'NOT OWNED';
+          const galleryLock = ticket.isPrimary && !ticket.owned;
+
+          return (
+            <article key={ticket.id} className={`ticket-card${ticket.soldOut ? ' ticket-card--disabled' : ''}`}>
+              <div className="ticket-card__header">
+                <span className="ticket-card__event">{ticket.eventTitle}</span>
+                <span className={statusClassNames(ticket)}>{statusLabel}</span>
+              </div>
+
+              <div className="ticket-card__gallery">
+                {ticket.imageUrls.map((url, idx) => (
+                  <figure key={`${ticket.id}-${idx}`} className={`ticket-card__image${galleryLock ? ' ticket-card__image--locked' : ''}`}>
+                    <img src={url} alt={`${ticket.matchTitle} ${idx + 1}`} loading="lazy" />
+                  </figure>
+                ))}
+              </div>
+
+              <div className="ticket-card__body">
+                <div className="ticket-card__meta">
+                  <p className="ticket-card__match">{ticket.matchTitle}</p>
+                  <p className="ticket-card__venue">{ticket.venue}</p>
                 </div>
-                <div className="ticket-price-row">
-                  <span className="ticket-price-label">プレミアム追加:</span>
-                  <span className="ticket-price-value secondary">{premiumAddOn}</span>
-                </div>
-                <div className="ticket-price-row highlight">
-                  <span className="ticket-price-label">実購入価格:</span>
-                  <span className="ticket-price-value primary">{actualPrice}</span>
-                </div>
-              </div>
-            </div>
 
-            {/* 在庫情報 */}
-            <div className="ticket-info-section">
-              <div className="ticket-stock-header">
-                <h3 className="ticket-info-heading">在庫状況</h3>
-                <button
-                  className="ticket-stock-reload"
-                  onClick={onReloadInventory}
-                  disabled={inventoryLoading}
-                  aria-label="在庫情報を更新"
-                >
-                  {inventoryLoading ? '🔄 更新中...' : '🔄 更新'}
-                </button>
-              </div>
-              {inventoryError ? (
-                <p className="ticket-stock-error">{inventoryError}</p>
-              ) : (
-                <div className="ticket-stock-status">
-                  {isSoldOut ? (
-                    <span className="ticket-stock-text sold-out">
-                      <strong>Sold Out</strong> - 在庫なし
-                    </span>
+                <div className="ticket-card__price">
+                  <div className="ticket-card__priceRow">
+                    <span>物理チケット:</span>
+                    <strong>{ticket.physicalPrice}</strong>
+                  </div>
+                  <div className="ticket-card__priceRow">
+                    <span>プレミアム追加:</span>
+                    <strong>{ticket.premiumAddOn}</strong>
+                  </div>
+                  <div className="ticket-card__priceRow ticket-card__priceRow--accent">
+                    <span>実購入価格:</span>
+                    <strong>{ticket.suiPrice}</strong>
+                  </div>
+                </div>
+
+                <div className="ticket-card__stock">
+                  {ticket.soldOut ? (
+                    <p className="ticket-card__stockMessage ticket-card__stockMessage--sold">SOLD OUT - 次回ロットをお待ちください</p>
                   ) : (
-                    <span className="ticket-stock-text available">
-                      残り <strong>{inventoryCount ?? '?'}</strong> チケットNFT
-                    </span>
+                    <p className="ticket-card__stockMessage">{ticket.stockLabel}</p>
                   )}
                 </div>
-              )}
-            </div>
 
-            {/* 購入ボタンエリア */}
-            <div className="ticket-purchase-section">
-              {!owned && (
-                <button
-                  className="ticket-purchase-button"
-                  onClick={onPurchase}
-                  disabled={purchasing || isSoldOut}
-                  aria-label={
-                    isSoldOut
-                      ? '在庫切れのため購入できません'
-                      : purchasing
-                      ? '購入処理中...'
-                      : 'NFTチケットを購入'
-                  }
-                >
-                  {purchasing
-                    ? '⏳ 購入処理中...'
-                    : isSoldOut
-                    ? '❌ Sold Out'
-                    : '💳 購入する'}
-                </button>
-              )}
-              {owned && (
-                <div className="ticket-owned-message">
-                  ✅ 購入済みです。「VIDEOS」タブから視聴できます。
-                </div>
-              )}
-              {purchaseError && (
-                <p className="ticket-purchase-error" role="alert">
-                  ❌ {purchaseError}
-                </p>
-              )}
-              {txDigest && (
-                <p className="ticket-purchase-success">
-                  ✅ トランザクション: <code>{txDigest.slice(0, 10)}...</code>
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+                {ticket.isPrimary ? (
+                  <>
+                    {ticket.owned ? (
+                      <div className="ticket-card__notice ticket-card__notice--owned">✅ 購入済みです。「VIDEOS」タブから完全版を視聴できます。</div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="ticket-card__cta"
+                        onClick={handlePurchase}
+                        disabled={purchasing || ticket.soldOut}
+                      >
+                        {purchasing ? 'PURCHASING…' : ticket.soldOut ? 'SOLD OUT' : 'BUY PREMIUM TICKET'}
+                      </button>
+                    )}
+
+                    {!ticket.owned && !ticket.soldOut && <p className="ticket-card__helper">ガス代なし（Sponsored Tx）</p>}
+
+                    {purchaseError && !ticket.owned && <div className="ticket-card__notice ticket-card__notice--error">❌ {purchaseError}</div>}
+
+                    {txDigest && (
+                      <div className="ticket-card__notice ticket-card__notice--success">
+                        ✅ トランザクション: <code>{txDigest.slice(0, 10)}...</code>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <button type="button" className="ticket-card__cta ticket-card__cta--disabled" disabled>
+                    {ticket.soldOut ? 'SOLD OUT' : 'COMING SOON'}
+                  </button>
+                )}
+              </div>
+            </article>
+          );
+        })}
       </div>
 
-      {/* 補足情報 */}
-      <div className="tickets-page-footer">
-        <p className="tickets-note">
-          💡 <strong>Note:</strong> このプロトタイプではモックAPIを使用しています。実際のSuiトランザクションは発生しません。
-        </p>
-      </div>
+      <p className="tickets-footnote">ℹ️ このプレビューではモックAPI/トランザクションを使用しています。本番環境ではSui本番ネットワークでの決済・映像配信に接続されます。</p>
     </div>
   );
 }

@@ -1,24 +1,18 @@
-/* ===== app/src/styles/app.css ===== */
-
-/* ===== Variables ===== */
 :root {
-  --bg: #0f1115;
-  --bg-dark: #0a0b0e;
-  --panel: #151820;
-  --panel-dark: #111419;
-  --text: #e7e9ee;
-  --text-muted: #9aa4b2;
-  --text-secondary: #6b7280;
-  --accent: #4aa7ff;
-  --accent-yellow: #facc15;
-  --warn: #ffc107;
-  --danger: #ff5577;
-  --ok: #30d158;
-  --border: #242938;
-  --border-light: #333;
+  --bg: #080808;
+  --surface: #0f0f12;
+  --surface-alt: #151518;
+  --border: #25252a;
+  --border-light: #35353c;
+  --text: #f5f5f7;
+  --text-muted: #a0a0ab;
+  --text-soft: #6f6f79;
+  --accent: #f5c33b;
+  --accent-dark: #c9970f;
+  --danger: #f87171;
+  --success: #4ade80;
 }
 
-/* ===== Reset & Base ===== */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -32,917 +26,751 @@ body,
 }
 
 body {
-  margin: 0;
-  background: var(--bg-dark);
+  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
-    Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
-  line-height: 1.5;
-}
-
-a {
-  color: var(--accent);
-  text-decoration: none;
+  line-height: 1.6;
 }
 
 button {
-  font-family: inherit;
-}
-
-/* ===== App Layout (Figma-based) ===== */
-
-.app-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: var(--bg-dark);
-}
-
-/* ===== ヘッダー ===== */
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px;
-  background: var(--panel-dark);
-  border-bottom: 1px solid var(--border);
-  height: 60px;
-  flex-shrink: 0;
-}
-
-.app-header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.app-logo {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  color: var(--accent-yellow);
-  margin: 0;
-}
-
-.app-subtitle {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.app-header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.network-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 193, 7, 0.15);
-  color: var(--warn);
-  border: 1px solid rgba(255, 193, 7, 0.5);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 12px;
-}
-
-.wallet-address {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: var(--panel);
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-.connect-wallet-button {
-  /* @mysten/dapp-kit の ConnectButton にデフォルトスタイルがあるため、上書きは最小限に */
-}
-
-/* ===== メインコンテンツエリア ===== */
-.app-main {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-/* ===== 左サイドバー（タブ） ===== */
-.app-sidebar {
-  width: 200px;
-  background: var(--panel-dark);
-  border-right: 1px solid var(--border);
-  padding: 16px 0;
-  flex-shrink: 0;
-}
-
-.app-tabs {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 0 12px;
-}
-
-.app-tab {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-}
-
-.app-tab:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.app-tab.active {
-  background: var(--accent-yellow);
-  color: #000;
-  border-color: var(--accent-yellow);
-}
-
-.app-tab .tab-icon {
-  font-size: 16px;
-  line-height: 1;
-}
-
-.app-tab .tab-label {
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-@media (max-width: 768px) {
-  .app-sidebar {
-    width: 160px;
-  }
-  .app-tab {
-    padding: 10px 12px;
-  }
-  .app-tab .tab-label {
-    font-size: 11px;
-  }
-}
-
-/* ===== 右コンテンツエリア ===== */
-.app-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px;
-  background: var(--bg);
-}
-
-/* ===== チケット購入ページ ===== */
-.tickets-page {
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.tickets-page-header {
-  margin-bottom: 24px;
-}
-
-.tickets-page-title {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text);
-}
-
-.tickets-page-description {
-  font-size: 14px;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
-/* ONE風チケットカード */
-.ticket-card-container {
-  background: var(--panel-dark);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-}
-
-.ticket-card-header {
-  background: var(--accent-yellow);
-  padding: 12px 20px;
-  text-align: center;
-}
-
-.ticket-card-title {
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #000;
-}
-
-.ticket-card-body {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 20px;
-  padding: 24px;
-  background: var(--panel);
-}
-
-@media (max-width: 768px) {
-  .ticket-card-body {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* サムネイル */
-.ticket-card-thumbnail {
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-
-.ticket-card-thumbnail img {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  display: block;
-  transition: filter 0.3s ease, opacity 0.3s ease;
-}
-
-.ticket-card-badge {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  padding: 6px 14px;
-  border-radius: 16px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-}
-
-.ticket-card-badge.owned {
-  background: var(--ok);
-  color: #fff;
-}
-
-.ticket-card-badge.not-owned {
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-}
-
-/* 詳細情報 */
-.ticket-card-info {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.ticket-info-section {
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.ticket-info-section:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.ticket-info-heading {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 10px;
-}
-
-.ticket-info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-  font-size: 13px;
-}
-
-.ticket-info-label {
-  color: var(--text-secondary);
-}
-
-.ticket-info-value {
-  color: var(--text);
-  font-weight: 500;
-}
-
-/* 価格ブロック */
-.ticket-price-block {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 14px;
-}
-
-.ticket-price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 13px;
-}
-
-.ticket-price-row:last-child {
-  margin-bottom: 0;
-}
-
-.ticket-price-row.highlight {
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
-  margin-top: 4px;
-}
-
-.ticket-price-label {
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-
-.ticket-price-value {
-  font-weight: 600;
-}
-
-.ticket-price-value.secondary {
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
-.ticket-price-value.primary {
-  color: var(--accent-yellow);
-  font-size: 18px;
-  font-weight: 700;
-}
-
-/* 在庫情報 */
-.ticket-stock-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.ticket-stock-reload {
-  padding: 4px 10px;
-  font-size: 11px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.ticket-stock-reload:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.ticket-stock-reload:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.ticket-stock-status {
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
-.ticket-stock-text {
-  display: block;
-}
-
-.ticket-stock-text.available {
-  color: var(--ok);
-}
-
-.ticket-stock-text.sold-out {
-  color: var(--danger);
-}
-
-.ticket-stock-error {
-  color: var(--danger);
-  font-size: 12px;
-}
-
-/* 購入ボタンエリア */
-.ticket-purchase-section {
-  margin-top: auto;
-}
-
-.ticket-purchase-button {
-  width: 100%;
-  padding: 14px 20px;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  border-radius: 8px;
-  border: none;
-  background: var(--accent-yellow);
-  color: #000;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-}
-
-.ticket-purchase-button:hover {
-  background: #fbbf24;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(250, 204, 21, 0.3);
-}
-
-.ticket-purchase-button:disabled {
-  background: var(--text-secondary);
-  color: var(--text-muted);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.ticket-owned-message {
-  padding: 12px;
-  background: rgba(48, 209, 88, 0.15);
-  border: 1px solid rgba(48, 209, 88, 0.3);
-  border-radius: 8px;
-  color: var(--ok);
-  font-size: 13px;
-  text-align: center;
-  font-weight: 600;
-}
-
-.ticket-purchase-error {
-  margin-top: 10px;
-  padding: 10px;
-  background: rgba(255, 85, 119, 0.15);
-  border: 1px solid rgba(255, 85, 119, 0.3);
-  border-radius: 6px;
-  color: var(--danger);
-  font-size: 12px;
-}
-
-.ticket-purchase-success {
-  margin-top: 10px;
-  padding: 10px;
-  background: rgba(48, 209, 88, 0.15);
-  border: 1px solid rgba(48, 209, 88, 0.3);
-  border-radius: 6px;
-  color: var(--ok);
-  font-size: 12px;
-}
-
-.ticket-purchase-success code {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-}
-
-/* フッター */
-.tickets-page-footer {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-}
-
-.tickets-note {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
-/* ===== 動画視聴ページ（YouTube風） ===== */
-.videos-page {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
-  height: 100%;
-}
-
-@media (max-width: 1024px) {
-  .videos-page {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 左側: 動画一覧 */
-.videos-list {
-  background: var(--panel-dark);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.videos-list-title {
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-
-.videos-list-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* 動画カード */
-.video-list-card {
-  display: block;
-  background: var(--panel);
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-}
-
-.video-list-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--border-light);
-}
-
-.video-list-card.selected {
-  border-color: var(--accent-yellow);
-  background: rgba(250, 204, 21, 0.1);
-}
-
-.video-list-thumbnail {
-  position: relative;
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.video-list-thumbnail img {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  display: block;
-  transition: filter 0.3s ease, opacity 0.3s ease;
-}
-
-.video-preview-label {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  background: rgba(0, 0, 0, 0.85);
-  color: #fff;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.video-ownership-icon {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  font-size: 16px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-}
-
-.video-ownership-icon.owned {
-  opacity: 1;
-}
-
-.video-ownership-icon.locked {
-  opacity: 0.8;
-}
-
-.video-list-info {
-  padding: 0 4px;
-}
-
-.video-list-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 4px;
-  line-height: 1.3;
-}
-
-.video-list-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-
-/* 右側: プレイヤー + 詳細 */
-.videos-player-area {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
-}
-
-.videos-player-container {
-  background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-
-.videos-details {
-  background: var(--panel-dark);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.videos-details-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: var(--text);
-}
-
-.videos-details-meta {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.videos-details-date,
-.videos-details-athletes {
-  display: flex;
-  align-items: center;
-}
-
-/* アクションボタン */
-.videos-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-.videos-action-button {
-  padding: 12px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 8px;
+  font: inherit;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
+  background: none;
+  color: inherit;
 }
 
-.videos-action-button.preview {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-
-.videos-action-button.preview:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.videos-action-button.full {
-  background: var(--accent-yellow);
-  color: #000;
-}
-
-.videos-action-button.full:hover {
-  background: #fbbf24;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(250, 204, 21, 0.3);
-}
-
-.videos-action-button:disabled {
-  background: var(--text-secondary);
-  color: var(--text-muted);
+button:disabled {
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-  border: 1px solid var(--border);
+  opacity: 0.6;
 }
 
-.videos-action-hint {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.5;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  border: 1px solid var(--border);
+img,
+video {
+  display: block;
+  max-width: 100%;
 }
 
-/* セッション期限切れUI */
-.videos-session-expired {
-  padding: 16px;
-  background: rgba(255, 193, 7, 0.15);
-  border: 1px solid rgba(255, 193, 7, 0.5);
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.session-expired-text {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--warn);
-  margin-bottom: 6px;
-}
-
-.session-expired-description {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-  line-height: 1.5;
-}
-
-.session-retry-button {
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 6px;
-  border: none;
-  background: var(--warn);
-  color: #000;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.session-retry-button:hover {
-  background: #ffb300;
-}
-
-/* キーボードショートカット */
-.videos-keyboard-help {
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.keyboard-help-title {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 10px;
-}
-
-.keyboard-help-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.keyboard-help-list kbd {
-  display: inline-block;
-  padding: 2px 6px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  color: var(--text);
-}
-
-/* ログパネル */
-.videos-logs {
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.videos-no-selection {
+.page-placeholder {
+  min-height: calc(100vh - 200px);
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 400px;
   color: var(--text-muted);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-placeholder--error {
+  color: var(--danger);
+}
+
+/* Shell Layout -------------------------------------------------- */
+.onetube-shell {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+.onetube-banner {
+  background: rgba(245, 195, 59, 0.1);
+  border-bottom: 1px solid rgba(245, 195, 59, 0.3);
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.onetube-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 40px;
+  border-bottom: 1px solid var(--border);
+  background: #050505;
+}
+
+.onetube-header__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.onetube-header__logo {
+  font-size: 20px;
+  letter-spacing: 0.35em;
+  color: var(--accent);
+}
+
+.onetube-header__subtitle {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.onetube-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.onetube-network,
+.onetube-health {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.onetube-network__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse 2s infinite;
+}
+
+.onetube-health__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.onetube-health__dot--loading {
+  background: #facc15;
+}
+
+.onetube-health__dot--ok {
+  background: #22c55e;
+}
+
+.onetube-health__dot--error {
+  background: #f87171;
+}
+
+.onetube-wallet {
+  border: 1px solid var(--border-light);
+  padding: 8px 14px;
+  background: var(--surface);
+  letter-spacing: 0.15em;
+  font-size: 12px;
+}
+
+.onetube-connect button {
+  background: var(--accent);
+  color: #0f0f12;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  border: none;
+}
+
+.onetube-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.onetube-sidebar {
+  width: 240px;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.onetube-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.onetube-sidebar__button {
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  letter-spacing: 0.2em;
+  font-size: 13px;
+  transition: border 0.2s, color 0.2s, background 0.2s;
+}
+
+.onetube-sidebar__button.is-active {
+  border-left: 4px solid var(--accent);
+  background: var(--surface-alt);
+  color: var(--accent);
+}
+
+.onetube-sidebar__label {
+  letter-spacing: 0.3em;
+}
+
+.onetube-sidebar__info {
+  border: 1px solid var(--border);
+  padding: 16px;
+  background: var(--surface-alt);
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.onetube-sidebar__info-title {
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  font-size: 12px;
+}
+
+.onetube-sidebar__info-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.onetube-sidebar__info-list li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.onetube-sidebar__bullet {
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.onetube-sidebar__caption {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+.onetube-main {
+  flex: 1;
+  padding: 40px;
+  background: var(--surface);
+  min-height: calc(100vh - 160px);
+}
+
+/* Tickets Page -------------------------------------------------- */
+.tickets-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.tickets-hero {
+  min-height: 280px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+.tickets-hero__content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  padding: 32px;
+}
+
+.tickets-hero__badge {
+  background: var(--accent);
+  color: #050505;
+  padding: 8px 24px;
+  letter-spacing: 0.35em;
+  font-size: 11px;
+}
+
+.tickets-hero__title {
+  font-size: 28px;
+  letter-spacing: 0.4em;
+}
+
+.tickets-hero__copy {
+  color: var(--text-muted);
+  max-width: 560px;
   font-size: 14px;
 }
 
-/* ===== トースト通知 ===== */
-.toast {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  background: var(--panel-dark);
-  border: 1px solid var(--border);
-  padding: 14px 18px;
-  border-radius: 10px;
-  color: var(--text);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  font-size: 13px;
-  font-weight: 500;
-  z-index: 9999;
-  animation: slideIn 0.3s ease;
+.tickets-hero__date {
+  letter-spacing: 0.3em;
+  font-size: 12px;
+  color: var(--text-soft);
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* ===== その他のユーティリティ ===== */
-.health {
+.tickets-availability {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
   align-items: center;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  padding: 16px 20px;
+  gap: 12px;
+}
+
+.tickets-availability__label {
+  letter-spacing: 0.3em;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.tickets-availability__hint {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.tickets-availability__reload {
+  border: 1px solid var(--border-light);
+  background: transparent;
+  padding: 8px 18px;
+  color: var(--text);
+  letter-spacing: 0.15em;
+}
+
+.tickets-alert {
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+}
+
+.tickets-alert--warn {
+  border-color: rgba(245, 195, 59, 0.4);
+  background: rgba(245, 195, 59, 0.08);
+  color: var(--accent);
+}
+
+.tickets-alert--error {
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.08);
+  color: var(--danger);
+}
+
+.ticket-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.ticket-card {
+  border: 1px solid var(--border);
+  background: #050505;
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket-card--disabled {
+  opacity: 0.55;
+}
+
+.ticket-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--accent);
+  color: #050505;
+  letter-spacing: 0.25em;
+  font-size: 11px;
+}
+
+.ticket-card__status {
+  border: 1px solid #050505;
+  padding: 4px 10px;
+  letter-spacing: 0.15em;
+  font-size: 10px;
+  background: transparent;
+}
+
+.ticket-card__status--owned {
+  background: #050505;
+  color: var(--accent);
+}
+
+.ticket-card__status--sold,
+.ticket-card__status--pending {
+  border-color: var(--border-light);
+  color: var(--text-soft);
+}
+
+.ticket-card__gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 16px;
+  background: var(--surface-alt);
+}
+
+.ticket-card__image {
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.ticket-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ticket-card__image--locked img {
+  filter: grayscale(100%);
+}
+
+.ticket-card__body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ticket-card__match {
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  font-size: 13px;
+}
+
+.ticket-card__venue {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.ticket-card__price {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.ticket-card__priceRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ticket-card__priceRow--accent strong {
+  color: #4fd1c5;
+}
+
+.ticket-card__stockMessage {
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.ticket-card__stockMessage--sold {
+  color: var(--danger);
+}
+
+.ticket-card__cta {
+  width: 100%;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 12px;
+  letter-spacing: 0.3em;
+  background: transparent;
+}
+
+.ticket-card__cta--disabled {
+  border-color: var(--border);
+  color: var(--text-soft);
+}
+
+.ticket-card__notice {
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.ticket-card__notice--owned,
+.ticket-card__notice--success {
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--success);
+}
+
+.ticket-card__notice--error {
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--danger);
+}
+
+.ticket-card__helper {
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 11px;
+}
+
+.tickets-footnote {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+/* Videos Page --------------------------------------------------- */
+.videos-page {
+  display: flex;
+  gap: 0;
+}
+
+.videos-rail {
+  width: 320px;
+  border-right: 1px solid var(--border);
+  background: var(--surface-alt);
+  padding: 24px;
+}
+
+.videos-rail__title {
+  letter-spacing: 0.3em;
+  font-size: 12px;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.videos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.video-item {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-item--active {
+  border-color: var(--accent);
+}
+
+.video-item__thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.video-item__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-item--locked .video-item__thumb img {
+  filter: grayscale(100%);
+}
+
+.video-item__badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.75);
+  padding: 4px 8px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+}
+
+.video-item__duration {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.video-item__info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.video-item__title {
+  font-size: 14px;
+}
+
+.video-item__meta {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.videos-main {
+  flex: 1;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.videos-player-shell {
+  border: 1px solid var(--border);
+  background: #000;
+  padding: 16px;
+}
+
+.videos-layout {
+  display: flex;
+  gap: 24px;
+}
+
+.videos-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.videos-column--side {
+  max-width: 360px;
+}
+
+.videos-panel {
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  padding: 18px;
+}
+
+.videos-panel--primary {
+  background: var(--surface);
+}
+
+.videos-panel__eyebrow {
+  letter-spacing: 0.3em;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.videos-panel__title {
+  font-size: 24px;
+  margin: 8px 0;
+}
+
+.videos-panel__meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.videos-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.videos-actions__btn {
+  flex: 1;
+  min-width: 160px;
+  padding: 12px;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--border);
+  background: transparent;
+}
+
+.videos-actions__btn--ghost {
+  color: var(--text);
+}
+
+.videos-actions__btn--primary {
+  background: var(--accent);
+  color: #050505;
+  border-color: var(--accent);
+}
+
+.videos-hint {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-soft);
+  border: 1px dashed var(--border);
+  padding: 10px;
+}
+
+.videos-alert {
+  margin-top: 16px;
+  border: 1px solid rgba(245, 195, 59, 0.4);
+  background: rgba(245, 195, 59, 0.08);
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.videos-alert__title {
+  letter-spacing: 0.15em;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.videos-alert__text {
   font-size: 12px;
   color: var(--text-muted);
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--text-muted);
+.videos-alert__cta {
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  padding: 6px 12px;
+  letter-spacing: 0.1em;
 }
 
-.dot.ok {
-  background: var(--ok);
+.videos-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
-.dot.down {
-  background: var(--danger);
+.videos-panel--text {
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
-/* ===== レスポンシブ調整 ===== */
-@media (max-width: 1024px) {
-  .app-sidebar {
-    width: 80px;
-  }
+.videos-panel--log {
+  background: var(--surface);
+}
 
-  .app-tab .tab-label {
-    display: none;
+@keyframes pulse {
+  0% {
+    opacity: 0.3;
   }
-
-  .app-tab {
-    justify-content: center;
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
   }
 }
 
-@media (max-width: 768px) {
-  .app-header {
-    padding: 12px 16px;
-  }
-
-  .app-logo {
-    font-size: 20px;
-  }
-
-  .app-subtitle {
-    display: none;
-  }
-
-  .app-content {
-    padding: 16px;
-  }
-
-  .videos-page {
-    grid-template-columns: 1fr;
-  }
-
-  .videos-list {
-    max-height: 300px;
-  }
-}
