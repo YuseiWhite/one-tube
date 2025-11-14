@@ -426,9 +426,11 @@ video {
 }
 
 .ticket-card__status-chip {
-  position: absolute;
-  top: 18px;
-  right: 18px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--onetube-border);
+  background: var(--onetube-panel);
+  display: flex;
+  justify-content: flex-start;
 }
 
 .ticket-card__gallery {
@@ -580,7 +582,7 @@ video {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 6px 20px;
+  padding: 14px 28px;
   border-bottom: 1px solid var(--onetube-border-strong);
 }
 
@@ -603,7 +605,9 @@ video {
 }
 
 .onetube-status-label--available {
-  color: var(--onetube-text-muted);
+  color: var(--onetube-accent-yellow);
+  border-color: rgba(246, 196, 69, 0.5);
+  background: rgba(246, 196, 69, 0.12);
 }
 
 .onetube-status-label--sold {
