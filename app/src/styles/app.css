@@ -85,3 +85,475 @@ a { color: var(--accent); text-decoration: none; }
   box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
+/* ===== ONE 風 TICKETS ページ ===== */
+
+.onetube-ticket-page {
+  color: #e5e7eb;
+}
+
+.onetube-ticket-header {
+  margin-bottom: 12px;
+}
+
+.onetube-ticket-header-label {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.onetube-ticket-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.onetube-ticket-tab {
+  flex: 0 0 auto;
+  padding: 6px 14px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  border: 1px solid #333;
+  background: #111;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+.onetube-ticket-tab.active {
+  background: #facc15;
+  color: #000;
+  border-color: #facc15;
+}
+
+.onetube-ticket-main {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1.2fr);
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .onetube-ticket-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.onetube-ticket-card-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.onetube-ticket-card {
+  width: 100%;
+  max-width: 480px;
+  background: #111;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  border: 1px solid #333;
+}
+
+.onetube-ticket-card-header {
+  background: #facc15;
+  padding: 10px 16px;
+  text-align: center;
+}
+
+.onetube-ticket-card-header-text {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.onetube-ticket-card-body {
+  display: grid;
+  grid-template-columns: 1.2fr 1.4fr;
+  gap: 16px;
+  padding: 16px;
+  background: #181818;
+}
+
+.onetube-ticket-card-thumb {
+  position: relative;
+}
+
+.onetube-ticket-card-thumb img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #000;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.onetube-ticket-card-thumb .ownership-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.onetube-ticket-card-thumb .ownership-badge.owned {
+  background: #10b981;
+  color: #fff;
+}
+
+.onetube-ticket-card-thumb .ownership-badge.locked {
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+}
+
+.onetube-ticket-card-meta {
+  font-size: 12px;
+}
+
+.onetube-ticket-card-meta-row {
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.onetube-ticket-card-meta-row .label {
+  color: #9ca3af;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.onetube-ticket-card-meta-row .value {
+  color: #e5e7eb;
+}
+
+.onetube-ticket-card-vs {
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.onetube-ticket-card-vs .name {
+  font-weight: 700;
+}
+
+.onetube-ticket-card-vs .vs {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.onetube-ticket-card-footer {
+  background: #f3f4f6;
+  padding: 16px;
+  border-top: 1px solid #ddd;
+}
+
+.onetube-ticket-price-block {
+  background: #fff;
+  border-radius: 2px;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.onetube-ticket-price-block .row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.onetube-ticket-price-block .row.emphasis .label {
+  font-weight: 700;
+}
+
+.onetube-ticket-price-block .row.emphasis .value {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.onetube-ticket-price-block .label {
+  color: #4b5563;
+}
+
+.onetube-ticket-price-block .value {
+  color: #111827;
+}
+
+.onetube-ticket-price-block .divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 6px 0;
+}
+
+.onetube-ticket-stock-block {
+  font-size: 12px;
+}
+
+.onetube-ticket-stock-block .stock-row {
+  margin-bottom: 4px;
+}
+
+.onetube-ticket-stock-block .stock-row.muted {
+  color: #6b7280;
+}
+
+.onetube-ticket-stock-block .stock-row.error,
+.onetube-ticket-stock-block .stock-row.error-inline {
+  color: #b91c1c;
+}
+
+.onetube-ticket-stock-block .stock-row.success {
+  color: #166534;
+}
+
+.onetube-ticket-stock-block .tx-code {
+  background: #f9fafb;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.onetube-ticket-stock-block .stock-actions {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+/* サイドの「出品中の動画」 */
+
+.onetube-ticket-side-title {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.onetube-ticket-side-info {
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: #9ca3af;
+}
+
+.onetube-ticket-side-info.error {
+  color: #f87171;
+}
+
+.onetube-ticket-side-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.onetube-ticket-side-card {
+  border-radius: 4px;
+  border: 1px solid #27272a;
+  background: #18181b;
+  text-align: left;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.onetube-ticket-side-card.active {
+  border-color: #facc15;
+}
+
+.onetube-ticket-side-card.locked {
+  opacity: 0.85;
+}
+
+.onetube-ticket-side-card .thumbnail-wrapper {
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.onetube-ticket-side-card img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 2px;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.onetube-ticket-side-card .lock-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.onetube-ticket-side-card .title {
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+.onetube-ticket-side-card .meta {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* 共通ボタン */
+
+.onetube-btn-primary {
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 2px;
+  border: none;
+  background: #111827;
+  color: #f9fafb;
+  cursor: pointer;
+}
+
+.onetube-btn-primary.full {
+  width: 100%;
+  text-align: center;
+}
+
+.onetube-btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.onetube-btn-outline {
+  padding: 6px 14px;
+  font-size: 11px;
+  border-radius: 2px;
+  border: 1px solid #4b5563;
+  background: transparent;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+.onetube-btn-secondary {
+  padding: 8px 18px;
+  font-size: 12px;
+  border-radius: 2px;
+  border: 1px solid #facc15;
+  background: #1f2933;
+  color: #facc15;
+  cursor: pointer;
+}
+
+.onetube-btn-secondary.full {
+  width: 100%;
+}
+
+/* ===== YouTube 風 VIDEO ページ ===== */
+
+.onetube-video-page {
+  color: #e5e7eb;
+}
+
+.onetube-video-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(260px, 1.3fr);
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .onetube-video-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.onetube-video-player {
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+  margin-bottom: 12px;
+}
+
+.onetube-video-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.onetube-video-meta {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 12px;
+}
+
+.onetube-video-description {
+  font-size: 13px;
+  line-height: 1.6;
+  background: #111827;
+  border-radius: 8px;
+  padding: 12px 14px;
+  border: 1px solid #1f2937;
+}
+
+.onetube-video-description .note {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+.onetube-video-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.onetube-video-side-card {
+  background: #111827;
+  border-radius: 8px;
+  padding: 12px 14px;
+  border: 1px solid #1f2937;
+  font-size: 13px;
+}
+
+.onetube-video-side-card h2 {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.onetube-video-side-card .status {
+  margin-bottom: 8px;
+}
+
+.session-alert {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fff3cd;
+  color: #856404;
+  font-size: 12px;
+}
+
+.session-alert .title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.onetube-video-side-card.logs {
+  font-size: 12px;
+}
+
+.onetube-video-side-card .log-list {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.onetube-video-side-card .log-line {
+  border-bottom: 1px solid #1f2937;
+  padding: 2px 0;
+}
+
+.onetube-video-side-card .log-empty {
+  color: #9ca3af;
+}

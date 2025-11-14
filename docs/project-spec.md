@@ -51,7 +51,7 @@
 - **NFT保有による動画視聴のUXをデモ**
   - Walrusサイトにデプロイ済みのモック動画を表示
   - 価格表示（物理チケット + プレミアムチケット差額）
-  - セッション期限切れ体験（30秒）
+  - セッション期限切れ体験（10秒）
 - **Web2的なシームレスな購入体験を実現**
   - Sponsored Transactionによるガス代不要（モック）
   - Sui Walletによるシンプルな認証
@@ -176,7 +176,7 @@
    - セッションキー生成（.envから復号キー読み込み）
    - 有効期限: 環境変数（SEAL_SESSION_DURATION）で設定可能
      - 本番環境: 1時間（3600秒）
-     - テスト環境: 30秒（期限切れテストのため）
+     - MVP環境: 10秒（期限切れテストのため）
 
 10. **Walrus: コンテンツ配信**
     - 暗号化BLOBを復号
@@ -313,7 +313,7 @@
 **主な機能（MVP: モック実装）:**
 - 暗号化（AES-256）
 - on-chain SealPolicy（アクセス条件: NFT所有）
-- セッションキー発行（有効期限: 30秒、.envから復号キー読み込み）
+- セッションキー発行（有効期限: 10秒、.envから復号キー読み込み）
 
 ### 5.2 フロントエンド・バックエンド
 
@@ -464,7 +464,7 @@ SPONSOR_PRIVATE_KEY=suiprivkey...   # サーバ用秘密鍵（モック）
 
 # Seal復号用
 SEAL_DECRYPTION_KEY=your-seal-key   # Seal復号キー（モック）
-SEAL_SESSION_DURATION=30            # セッション有効期限（秒）
+SEAL_SESSION_DURATION=10            # セッション有効期限（秒、MVP: 10秒）
 ```
 
 ### 8.2 エンドポイント一覧
@@ -550,7 +550,7 @@ Frontend
 - 形式: セッションキー（JWT等、モック）
 - 有効期限: 環境変数（SEAL_SESSION_DURATION）で設定可能
   - 本番環境: 1時間（3600秒）
-  - テスト環境: 30秒（検証用）
+  - MVP環境: 10秒（検証用）
 - スコープ: 特定のBLOB IDへのアクセス権限
 
 **セキュリティ:**
@@ -597,7 +597,7 @@ Frontend
 - ✅ **Seal統合（モック実装）**
   - on-chain SealPolicy設定（モック）
   - NFT所有確認に基づく復号キー発行（モック）
-  - セッションキー管理（有効期限: 30秒、.envから復号キー読み込み）
+  - セッションキー管理（有効期限: 10秒、.envから復号キー読み込み）
 
 - ✅ **シンプルなUI（App.tsx単一コンポーネント）**
   - 試合一覧表示
@@ -689,7 +689,7 @@ KIOSK_PACKAGE_ID=0x...              # 公式Kiosk
 SPONSOR_PRIVATE_KEY=suiprivkey...   # サーバ用秘密鍵（モック）
 
 # セッション管理（モック）
-SEAL_SESSION_DURATION=30            # 秒単位（テスト用: 30秒、本番: 3600秒）
+SEAL_SESSION_DURATION=10            # 秒単位（MVP: 10秒、本番: 3600秒）
 SEAL_DECRYPTION_KEY=your-seal-key   # Seal復号キー（モック）
 
 # Walrus（モック）

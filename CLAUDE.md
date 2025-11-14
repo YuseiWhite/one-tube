@@ -262,7 +262,7 @@ Real implementations are deferred to **Phase 2** (post-MVP)
 ### Walrus & Seal (Mock Implementation)
 - Video storage: Mock videos deployed to Walrus site
 - Encryption: Mock implementation using .env variables
-- Session management: 30 seconds for testing (configurable via SEAL_SESSION_DURATION)
+- Session management: 10 seconds for MVP demo (configurable via SEAL_SESSION_DURATION)
 - Decryption key: Stored in .env (SEAL_DECRYPTION_KEY)
 
 ### Environment Variables
@@ -285,7 +285,7 @@ KIOSK_PACKAGE_ID=0x...              # Official Kiosk package
 SPONSOR_PRIVATE_KEY=suiprivkey...   # Server private key
 
 # Session Management (Mock)
-SEAL_SESSION_DURATION=30            # Seconds (30 for testing, 3600 for production)
+SEAL_SESSION_DURATION=10            # Seconds (10 for MVP demo, 3600 for production)
 SEAL_DECRYPTION_KEY=your-seal-key   # Seal decryption key
 
 # Walrus (Mock)

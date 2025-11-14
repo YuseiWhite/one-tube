@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import './styles/app.css';
 import Header from './components/Header';
-import VideoCard from './components/VideoCard';
 import Player from './components/Player';
 import { Toast } from './components/Toast';
-import { LogPanel } from './components/LogPanel';
 import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit';
 
 // Legacy mock API
@@ -22,6 +20,9 @@ const useNewApi = !!(import.meta as any).env?.VITE_API_BASE_URL;
 type Listing = { listingId: string; objectId: string; price: number };
 
 export default function App() {
+  // ページ切り替え: 'tickets' = チケット購入, 'video' = 動画視聴
+  const [page, setPage] = useState<'tickets' | 'video'>('tickets');
+  
   // tabs: 'list' | 'owned' | 'debug'
   const [tab, setTab] = useState<'list'|'owned'|'debug'>('list');
 
@@ -451,404 +452,492 @@ export default function App() {
       </header>
 
       <Header />
+      
+      {/* ページ切り替えタブ：チケット購入 / 動画視聴 */}
+      <div style={{ maxWidth: 1040, margin: '0 auto', padding: '0 24px 8px' }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => setPage('tickets')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 999,
+              border: '1px solid #333',
+              background: page === 'tickets' ? '#facc15' : '#111',
+              color: page === 'tickets' ? '#000' : '#e5e7eb',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            🎟 チケット購入
+          </button>
+          <button
+            onClick={() => setPage('video')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 999,
+              border: '1px solid #333',
+              background: page === 'video' ? '#facc15' : '#111',
+              color: page === 'video' ? '#000' : '#e5e7eb',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            ▶ 動画視聴
+          </button>
+        </div>
+      </div>
+
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: 24 }}>
-        <div className='container layout'>
-        {/* Sidebar */}
-        <aside className='sidebar'>
-          <div className='tabs'>
-            <div className={`tab ${tab==='list'?'active':''}`} onClick={()=>setTab('list')}>一覧</div>
-            <div className={`tab ${tab==='owned'?'active':''}`} onClick={()=>setTab('owned')}>マイアクセス</div>
-            <div className={`tab ${tab==='debug'?'active':''}`} onClick={()=>setTab('debug')}>デバッグ</div>
-          </div>
-        </aside>
+        {page === 'tickets' ? (
+          <TicketPage
+            tab={tab}
+            setTab={setTab}
+            items={items}
+            selected={selected}
+            setSelected={setSelected}
+            loadingVideo={loadingVideo}
+            videoLoadError={videoLoadError}
+            owned={owned}
+            purchasing={purchasing}
+            purchaseError={purchaseError}
+            txDigest={txDigest}
+            inventoryCount={inventoryCount}
+            inventoryLoading={inventoryLoading}
+            inventoryError={inventoryError}
+            onPurchase={handlePurchase}
+            onReloadInventory={loadInventory}
+            addLog={addLog}
+          />
+        ) : (
+          <VideoPage
+            selected={selected}
+            previewUrl={selected?.previewUrl ?? null}
+            fullUrl={fullUrl ?? null}
+            sessionExpired={sessionExpired}
+            watchLoading={watchLoading}
+            onWatch={handleWatch}
+            onRetryWatch={handleRetryWatch}
+            logs={logs}
+            videoRef={videoRef}
+            owned={owned}
+          />
+        )}
+      </div>
 
-        {/* Main */}
-        <main className='main'>
-          {/* Listings */}
-          <div className='card'>
-            <div className='row'>
-              <h2 style={{margin:0}}>コンテンツ</h2>
-              <div className='kv'>{useNewApi ? 'Backend Listings' : 'Mock Listing (videos.json)'}</div>
-            </div>
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+    </div>
+  );
+}
 
-            {tab==='list' && (
-              <>
-                {useNewApi ? (
+// ============================
+// TicketPage コンポーネント
+// ============================
+
+type TicketPageProps = {
+  tab: 'list' | 'owned' | 'debug';
+  setTab: (t: 'list' | 'owned' | 'debug') => void;
+  items: VideoData[];
+  selected: VideoData | null;
+  setSelected: (v: VideoData | null) => void;
+  loadingVideo: boolean;
+  videoLoadError: string;
+  owned: boolean;
+  purchasing: boolean;
+  purchaseError: string;
+  txDigest: string;
+  inventoryCount: number | null;
+  inventoryLoading: boolean;
+  inventoryError: string | null;
+  onPurchase: () => void;
+  onReloadInventory: () => void;
+  addLog: (msg: string) => void;
+};
+
+function TicketPage(props: TicketPageProps) {
+  const {
+    tab,
+    setTab,
+    items,
+    selected,
+    setSelected,
+    loadingVideo,
+    videoLoadError,
+    owned,
+    purchasing,
+    purchaseError,
+    txDigest,
+    inventoryCount,
+    inventoryLoading,
+    inventoryError,
+    onPurchase,
+    onReloadInventory,
+    addLog,
+  } = props;
+
+  const isSoldOut = inventoryCount === 0;
+
+  return (
+    <div className='onetube-ticket-page'>
+      {/* 上部ラベル "TICKETS" */}
+      <div className='onetube-ticket-header'>
+        <span className='onetube-ticket-header-label'>TICKETS</span>
+      </div>
+
+      {/* ONE 公式風 タブ（一覧 / マイアクセス / デバッグ） */}
+      <div className='onetube-ticket-tabs'>
+        <button
+          className={`onetube-ticket-tab ${tab === 'list' ? 'active' : ''}`}
+          onClick={() => setTab('list')}
+        >
+          一覧
+        </button>
+        <button
+          className={`onetube-ticket-tab ${tab === 'owned' ? 'active' : ''}`}
+          onClick={() => setTab('owned')}
+        >
+          マイアクセス
+        </button>
+        <button
+          className={`onetube-ticket-tab ${tab === 'debug' ? 'active' : ''}`}
+          onClick={() => setTab('debug')}
+        >
+          デバッグ
+        </button>
+      </div>
+
+      {/* メインカードエリア */}
+      <div className='onetube-ticket-main'>
+        {/* 左側：選択中イベントの ONE 公式風カード */}
+        <div className='onetube-ticket-card-wrapper'>
+          <article className='onetube-ticket-card'>
+            {/* 黄色バー */}
+            <header className='onetube-ticket-card-header'>
+              <span className='onetube-ticket-card-header-text'>
+                {selected?.title || 'ONE 173: SUPERBON VS. NOIRI'}
+              </span>
+            </header>
+
+            {/* 中央：サムネ + VS 表記（ざっくりで OK） */}
+            <div className='onetube-ticket-card-body'>
+              <div className='onetube-ticket-card-thumb'>
+                {selected && (
                   <>
-                    {loadingListings ? <div className='kv'>読み込み中...</div> : (
-                      <div className='grid' style={{marginTop:12}}>
-                        {listings.map((it, idx) => (
-                          <VideoCard
-                            key={idx}
-                            title={`Premium Ticket ${it.objectId.slice(0,6)}…`}
-                            thumb={selected?.thumbnail}
-                            priceLabel={`${(it.price/1e9).toFixed(3)} SUI`}
-                            onPurchase={handlePurchase}
-                            disabled={purchasing}
-                          />
-                        ))}
-                        {listings.length===0 && <div className='kv'>リスティングが見つかりません</div>}
+                    <img
+                      src={selected.thumbnail}
+                      alt={`${selected.title} - ${selected.athletes.join(', ')}`}
+                      style={{
+                        filter: owned ? 'none' : 'grayscale(100%)',
+                        opacity: owned ? 1 : 0.7,
+                      }}
+                    />
+                    {owned && (
+                      <div className='ownership-badge owned'>
+                        ✅ 保有中
                       </div>
                     )}
-                  </>
-                ) : (
-                  <>
-                    {loadingVideo && <div className='kv'>読み込み中...</div>}
-                    {videoLoadError && <div className='kv' style={{color:'var(--danger)'}}>❌ {videoLoadError}</div>}
-                    {selected && (
-                      <div className='grid' style={{marginTop:12}}>
-                        <VideoCard
-                          title={selected.title}
-                          thumb={selected.thumbnail}
-                          priceLabel={'0.5 SUI'}
-                          onPurchase={handlePurchase}
-                          disabled={purchasing || stock === 0}
-                        />
+                    {!owned && (
+                      <div className='ownership-badge locked'>
+                        🔒 未購入
                       </div>
                     )}
                   </>
                 )}
-            </>
-            )}
-            {tab==='owned' && (
-              <div className='kv'>購入済み: {owned ? 'はい（視聴可能）' : 'いいえ'}</div>
-            )}
-            {tab==='debug' && (
-              <div className='kv'>
-                <div>API: {useNewApi ? '本API' : 'モック'}</div>
-                <div>txDigest: {txDigest || '-'}</div>
-                <div>sessionToken: {sessionToken ? `${sessionToken.slice(0, 16)}...` : '-'}</div>
-                <div>sessionExpiresAt: {sessionExpiresAt ? new Date(sessionExpiresAt).toLocaleString('ja-JP') : '-'}</div>
               </div>
-            )}
-          </div>
-
-          {/* 出品中の動画 */}
-          {tab === 'list' && items.length > 0 && (
-            <div style={{ marginBottom: 20 }}>
-              <h2 style={{ margin: '6px 0 12px' }}>出品中の動画</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
-                {items.map(v => (
-                  <button key={v.id}
-                    onClick={() => { setSelected(v); addLog(`動画選択: ${v.title}`); }}
-                    style={{
-                      textAlign: 'left',
-                      background: selected?.id === v.id ? '#242424' : '#181818',
-                      border: '1px solid #2b2b2b',
-                      borderRadius: 10, padding: 10, cursor: 'pointer'
-                    }}
-                    aria-label={`動画を選択: ${v.title}`}>
-                    <img src={v.thumbnail} alt={`${v.title} - ${v.athletes.join(', ')}`}
-                      style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 6, marginBottom: 8 }}
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden'; }} />
-                    <div style={{ fontWeight: 600, fontSize: 14, color: '#e5e7eb' }}>{v.title}</div>
-                    <div style={{ fontSize: 12, color: '#9ca3af' }}>{v.date}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 選択された動画の詳細 */}
-          {selected && (
-            <div className='card'>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 20 }}>
-                {/* サムネイル */}
-                <div>
-                  <img 
-                    src={selected.thumbnail} 
-                    alt={`${selected.title} - ${selected.athletes.join(', ')}`}
-                    style={{ 
-                      width: '100%', 
-                      aspectRatio: '16/9', 
-                      objectFit: 'cover', 
-                      borderRadius: 8,
-                      border: '1px solid #2b2b2b'
-                    }}
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden'; }}
-                  />
+              <div className='onetube-ticket-card-meta'>
+                <div className='onetube-ticket-card-meta-row onetube-ticket-card-vs'>
+                  <span className='name'>
+                    {selected?.athletes[0] ?? 'Superbon'}
+                  </span>
+                  <span className='vs'>VS</span>
+                  <span className='name'>
+                    {selected?.athletes[1] ?? 'Masaaki Noiri'}
+                  </span>
                 </div>
-
-                {/* タイトル・日付・出演情報 */}
-                <div>
-                  <h2 style={{ margin: '0 0 8px 0', fontSize: 20, color: '#e5e7eb' }}>
-                    {selected.title}
-                  </h2>
-                  <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 8 }}>
-                    📅 {selected.date}
-                  </div>
-                  <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 16 }}>
-                    👤 出演: {selected.athletes.join(', ')}
-                  </div>
-
-                  {/* Price Display Block */}
-                  <div
-                    style={{
-                      backgroundColor: "#1f2937",
-                      border: "1px solid #374151",
-                      borderRadius: "8px",
-                      padding: "20px",
-                      marginTop: "16px",
-                    }}
-                    aria-label="価格情報"
-                  >
-                    <h3 style={{ marginTop: 0, marginBottom: "15px", fontSize: "18px", color: '#e5e7eb' }}>
-                      💰 価格情報
-                    </h3>
-
-                    <div style={{ marginBottom: "10px", color: '#d1d5db' }}>
-                      <strong>物理チケット:</strong>{" "}
-                      <span style={{ color: "#9ca3af" }}>¥20,000 〜 ¥558,000</span>
-                    </div>
-
-                    <div style={{ marginBottom: "10px", color: '#d1d5db' }}>
-                      <strong>プレミアム追加:</strong>{" "}
-                      <span style={{ color: "#9ca3af" }}>+¥5,000</span>
-                    </div>
-
-                    <div
-                      style={{
-                        marginTop: "15px",
-                        paddingTop: "15px",
-                        borderTop: "1px solid #374151",
-                      }}
-                    >
-                      <strong style={{ fontSize: "16px", color: '#e5e7eb' }}>実購入価格:</strong>{" "}
-                      <span
-                        style={{
-                          fontSize: "20px",
-                          fontWeight: "bold",
-                          color: "#4aa7ff",
-                        }}
-                      >
-                        0.5 SUI
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Inventory / Stock Block */}
-                  <div
-                    style={{
-                      backgroundColor: "#101010",
-                      border: "1px solid #333",
-                      borderRadius: "8px",
-                      padding: "16px",
-                      marginTop: "16px",
-                    }}
-                    aria-label="チケット在庫情報"
-                  >
-                    <h3 style={{ marginTop: 0, marginBottom: "10px", fontSize: "16px", color: '#e5e7eb' }}>
-                      🎟 チケット在庫
-                    </h3>
-
-                    {inventoryLoading && <p style={{ color: '#9ca3af' }}>在庫情報を読み込み中...</p>}
-
-                    {!inventoryLoading && inventoryError && (
-                      <p style={{ color: "#f66", marginBottom: "8px" }}>{inventoryError}</p>
-                    )}
-
-                    {!inventoryLoading && !inventoryError && (
-                      <>
-                        {inventoryCount === 0 && (
-                          <p style={{ color: "#f66", marginBottom: "8px" }}>
-                            Sold Out：現在販売中のチケットNFTはありません
-                          </p>
-                        )}
-                        {inventoryCount !== null && inventoryCount > 0 && (
-                          <p style={{ color: "#ddd", marginBottom: "8px" }}>
-                            残り <strong>{inventoryCount}</strong> チケットNFT
-                          </p>
-                        )}
-                        {inventoryCount === null && (
-                          <p style={{ color: "#aaa", marginBottom: "8px" }}>
-                            在庫情報は未取得です
-                          </p>
-                        )}
-                      </>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={loadInventory}
-                      style={{
-                        marginTop: "8px",
-                        padding: "6px 12px",
-                        fontSize: "12px",
-                        borderRadius: "4px",
-                        border: "1px solid #555",
-                        backgroundColor: "#222",
-                        color: "#fff",
-                        cursor: inventoryLoading ? "not-allowed" : "pointer",
-                        opacity: inventoryLoading ? 0.6 : 1,
-                      }}
-                      disabled={inventoryLoading}
-                      aria-label="在庫情報を再読み込み"
-                    >
-                      在庫を更新
-                    </button>
-                  </div>
+                <div className='onetube-ticket-card-meta-row'>
+                  <span className='label'>DATE</span>
+                  <span className='value'>{selected?.date ?? '2024-01-15'}</span>
+                </div>
+                <div className='onetube-ticket-card-meta-row'>
+                  <span className='label'>VENUE</span>
+                  <span className='value'>Ariake Arena, Tokyo</span>
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Player */}
-          <Player
-            previewUrl={selected?.previewUrl}
-            fullUrl={fullUrl}
-            sessionExpired={sessionExpired}
-            videoRef={videoRef}
-          />
+            {/* 下部：価格 + 在庫 + BUY ボタン */}
+            <footer className='onetube-ticket-card-footer'>
+              <div className='onetube-ticket-price-block'>
+                <div className='row'>
+                  <span className='label'>物理チケット</span>
+                  <span className='value'>¥20,000 〜 ¥558,000</span>
+                </div>
+                <div className='row'>
+                  <span className='label'>プレミアム追加</span>
+                  <span className='value'>+¥5,000</span>
+                </div>
+                <div className='divider' />
+                <div className='row emphasis'>
+                  <span className='label'>実購入価格</span>
+                  <span className='value'>0.5 SUI</span>
+                </div>
+              </div>
 
-          {/* Purchase Section */}
-          <div className='card'>
-            <div style={{ marginBottom: "20px" }}>
-              {(() => {
-                const isSoldOut = inventoryCount === 0;
-                return (
+              <div className='onetube-ticket-stock-block'>
+                {inventoryLoading && (
+                  <div className='stock-row muted'>在庫情報を読み込み中...</div>
+                )}
+                {!inventoryLoading && inventoryError && (
+                  <div className='stock-row error'>{inventoryError}</div>
+                )}
+                {!inventoryLoading && !inventoryError && (
+                  <>
+                    {inventoryCount === 0 && (
+                      <div className='stock-row error'>
+                        Sold Out：現在販売中のチケットNFTはありません
+                      </div>
+                    )}
+                    {inventoryCount !== null && inventoryCount > 0 && (
+                      <div className='stock-row'>
+                        残り <strong>{inventoryCount}</strong> チケットNFT
+                      </div>
+                    )}
+                    {inventoryCount === null && (
+                      <div className='stock-row muted'>在庫情報は未取得です</div>
+                    )}
+                  </>
+                )}
+
+                <div className='stock-actions'>
                   <button
-                    onClick={handlePurchase}
+                    type='button'
+                    className='onetube-btn-outline'
+                    onClick={onReloadInventory}
+                    disabled={inventoryLoading}
+                    aria-label='在庫情報を再読み込み'
+                  >
+                    在庫を更新
+                  </button>
+
+                  <button
+                    type='button'
+                    className='onetube-btn-primary'
+                    onClick={onPurchase}
                     disabled={owned || purchasing || isSoldOut}
-                    style={{
-                      padding: "12px 24px",
-                      backgroundColor: isSoldOut ? "#6c757d" : (owned ? "#6c757d" : (purchasing ? "#ccc" : "#28a745")),
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      fontSize: "16px",
-                      fontWeight: "bold",
-                      cursor: owned || purchasing || isSoldOut ? "not-allowed" : "pointer",
-                      marginRight: "10px",
-                    }}
                     aria-label={
                       isSoldOut
-                        ? "Sold Out"
+                        ? 'Sold Out'
                         : owned
-                        ? "購入済み"
-                        : "クリックしてプレミアムチケットを購入"
+                        ? '購入済み'
+                        : 'クリックしてプレミアムチケットを購入'
                     }
                   >
-                    {isSoldOut ? "Sold Out" : (owned ? "購入済み" : (purchasing ? "購入中..." : "購入する"))}
+                    {isSoldOut
+                      ? 'Sold Out'
+                      : owned
+                      ? '購入済み'
+                      : purchasing
+                      ? '購入中...'
+                      : 'BUY TICKET'}
                   </button>
-                );
-              })()}
+                </div>
 
-              {/* 購入エラー */}
-              {purchaseError && (
-                <div
-                  style={{
-                    display: "inline-block",
-                    backgroundColor: "#f8d7da",
-                    border: "1px solid #f5c6cb",
-                    borderRadius: "4px",
-                    padding: "8px 12px",
-                    marginLeft: "10px",
-                    color: "#721c24",
-                    verticalAlign: "middle",
-                  }}
-                >
-                  ❌ {purchaseError}
-				</div>
-			)}
-            </div>
+                {purchaseError && (
+                  <div className='stock-row error-inline'>❌ {purchaseError}</div>
+                )}
 
-            {/* 購入成功メッセージ */}
-            {owned && txDigest && (
-              <div
-                style={{
-                  backgroundColor: "#d4edda",
-                  border: "1px solid #c3e6cb",
-                  borderRadius: "4px",
-                  padding: "12px",
-                  marginBottom: "16px",
-                  color: "#155724",
-                }}
-              >
-                ✅ 購入が完了しました（Tx: <code style={{ background: "#fff", padding: "2px 6px", borderRadius: "3px" }}>{txDigest}</code>）
+                {owned && txDigest && (
+                  <div className='stock-row success'>
+                    ✅ 購入完了（Tx:{' '}
+                    <code className='tx-code'>{txDigest}</code>）
+                  </div>
+                )}
               </div>
-            )}
+            </footer>
+          </article>
+        </div>
 
-            {/* 開発用: 購入状態リセット */}
-            <button
-              onClick={() => { 
-                setOwned(false); 
-                setTxDigest(""); 
-                setPurchaseError(""); 
-                addLog('購入状態をリセット');
-              }}
-              style={{ marginLeft: 8, padding: "6px 10px", borderRadius: 4, border: "1px solid #ddd", cursor: "pointer" }}
-            >
-              開発用: 購入状態リセット
-            </button>
+        {/* 右側：出品中の動画一覧（ONE の SHOW MORE の横に出てくるカード群イメージ） */}
+        <div className='onetube-ticket-side'>
+          <h3 className='onetube-ticket-side-title'>出品中の動画</h3>
+
+          {loadingVideo && (
+            <div className='onetube-ticket-side-info'>読み込み中...</div>
+          )}
+          {videoLoadError && (
+            <div className='onetube-ticket-side-info error'>
+              ❌ {videoLoadError}
+            </div>
+          )}
+
+          <div className='onetube-ticket-side-grid'>
+            {items.map((v) => (
+              <button
+                key={v.id}
+                className={`onetube-ticket-side-card ${
+                  selected?.id === v.id ? 'active' : ''
+                } ${!owned ? 'locked' : ''}`}
+                onClick={() => {
+                  setSelected(v);
+                  addLog(`動画選択: ${v.title}`);
+                }}
+                aria-label={`動画を選択: ${v.title}`}
+              >
+                <div className='thumbnail-wrapper'>
+                  <img
+                    src={v.thumbnail}
+                    alt={`${v.title} - ${v.athletes.join(', ')}`}
+                    style={{
+                      filter: owned ? 'none' : 'grayscale(100%)',
+                      opacity: owned ? 1 : 0.6,
+                    }}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.visibility =
+                        'hidden';
+                    }}
+                  />
+                  {!owned && (
+                    <div className='lock-badge'>
+                      🔒 未購入
+                    </div>
+                  )}
+                </div>
+                <div className='title'>{v.title}</div>
+                <div className='meta'>{v.date}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================
+// VideoPage コンポーネント
+// ============================
+
+type VideoPageProps = {
+  selected: VideoData | null;
+  previewUrl: string | null;
+  fullUrl: string | null;
+  sessionExpired: boolean;
+  watchLoading: boolean;
+  onWatch: () => void;
+  onRetryWatch: () => void;
+  logs: string[];
+  owned: boolean;
+  videoRef: React.RefObject<HTMLVideoElement>;
+};
+
+function VideoPage(props: VideoPageProps) {
+  const {
+    selected,
+    previewUrl,
+    fullUrl,
+    sessionExpired,
+    watchLoading,
+    onWatch,
+    onRetryWatch,
+    logs,
+    owned,
+    videoRef,
+  } = props;
+
+  return (
+    <div className='onetube-video-page'>
+      <div className='onetube-video-layout'>
+        {/* 左：YouTube 風プレイヤー＋タイトル＋メタ情報 */}
+        <div className='onetube-video-main'>
+          <div className='onetube-video-player'>
+            <Player
+              previewUrl={previewUrl ?? undefined}
+              fullUrl={fullUrl ?? undefined}
+              sessionExpired={sessionExpired}
+              videoRef={videoRef}
+            />
           </div>
 
-          {/* Controls */}
-          <div className='row'>
-            <button 
-              className='btn success' 
-              onClick={handleWatch} 
-              disabled={!account?.address || !owned || watchLoading}
-              aria-label="完全版を視聴"
+          <h1 className='onetube-video-title'>
+            {selected?.title ?? 'Premium Fight Highlight'}
+          </h1>
+
+          <div className='onetube-video-meta'>
+            <span>{selected?.date ?? '2024-01-15'}</span>
+            {selected?.athletes && selected.athletes.length > 0 && (
+              <span> • {selected.athletes.join(' vs ')}</span>
+            )}
+          </div>
+
+          <div className='onetube-video-description'>
+            <p>
+              この動画は OneTube のデモコンテンツです。プレミアムチケット NFT
+              を保有している場合、完全版を視聴できます。
+            </p>
+            <p className='note'>
+              ※ 本番環境では 4K・マルチアングル配信や、選手ごとの追加コンテンツが利用可能になります。
+            </p>
+          </div>
+        </div>
+
+        {/* 右：サイドパネル（視聴ボタン + セッション状態 + ログ） */}
+        <aside className='onetube-video-side'>
+          <div className='onetube-video-side-card'>
+            <h2>視聴コントロール</h2>
+            <p className='status'>
+              プレミアムチケット:{' '}
+              <strong>{owned ? '保有中 ✅' : '未保有 ❌'}</strong>
+            </p>
+
+            <button
+              className='onetube-btn-primary full'
+              onClick={onWatch}
+              disabled={watchLoading || !owned}
+              aria-label='完全版を視聴'
             >
-              {watchLoading ? 'セッション生成中...' : '完全版を視聴'}
+              {watchLoading
+                ? 'セッション生成中...'
+                : owned
+                ? '完全版を視聴'
+                : 'チケット未保有'}
             </button>
+
             {sessionExpired && (
-              <button 
-                className='btn warn' 
-                onClick={handleRetryWatch}
+              <button
+                className='onetube-btn-secondary full'
+                onClick={onRetryWatch}
                 disabled={watchLoading}
               >
                 もう一度視聴
               </button>
             )}
+
+            {sessionExpired && fullUrl && (
+              <div className='session-alert' role='alert'>
+                <div className='title'>⚠️ セッション期限切れ</div>
+                <div className='body'>
+                  セッションが期限切れになりました。もう一度視聴ボタンから新しいキーを取得してください。
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* セッション期限切れ UI */}
-          {sessionExpired && fullVideoUrl && (
-            <div 
-              style={{
-                backgroundColor: '#fff3cd',
-                border: '1px solid #ffc107',
-                borderRadius: '8px',
-                padding: '16px',
-                marginTop: '16px',
-                color: '#856404',
-              }}
-              role="alert"
-            >
-              <div style={{ marginBottom: '12px', fontWeight: 'bold' }}>
-                ⚠️ セッション期限切れ
-              </div>
-              <div style={{ marginBottom: '12px' }}>
-                セッションが期限切れになりました。もう一度視聴ボタンから新しいキーを取得してください。
-              </div>
-              <button
-                onClick={handleRetryWatch}
-                disabled={watchLoading}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: watchLoading ? '#ccc' : '#ffc107',
-                  color: '#000',
-                  border: 'none',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  cursor: watchLoading ? 'not-allowed' : 'pointer',
-                }}
-                aria-label="もう一度視聴"
-              >
-                {watchLoading ? 'セッション生成中...' : 'もう一度視聴'}
-              </button>
+          <div className='onetube-video-side-card logs'>
+            <h2>ログ</h2>
+            <div className='log-list'>
+              {logs.length === 0 && (
+                <div className='log-empty'>まだログはありません。</div>
+              )}
+              {logs.map((line, idx) => (
+                <div className='log-line' key={idx}>
+                  {line}
+                </div>
+              ))}
             </div>
-          )}
-
-          {/* Log Panel - 購入/視聴イベントを表示 */}
-          <LogPanel logs={logs} />
-        </main>
+          </div>
+        </aside>
       </div>
-      </div>
-
-      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
-		</div>
-	);
+    </div>
+  );
 }
