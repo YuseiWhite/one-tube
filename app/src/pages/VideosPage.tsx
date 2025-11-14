@@ -71,7 +71,9 @@ export default function VideosPage({
     addLog(`動画選択: ${video.title}`);
   };
 
-  const handlePreviewPlay = () => {
+  const handlePreviewPlay = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
     if (!videoRef.current) return;
     videoRef.current.src = selected.previewUrl;
     videoRef.current.currentTime = 0;

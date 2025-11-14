@@ -255,40 +255,65 @@ export default function App() {
     addLog('watch: start');
 
     try {
-      if (!useNewApi) {
-        const result = await watch('superbon-noiri-ko');
-        if (result.success && result.videoUrl) {
-          setFullUrl(result.videoUrl);
+      const isAbbasovLee = selected?.id === 'abbasov-lee-173';
+      const videoIdForSession = isAbbasovLee ? 'abbasov-lee-173' : 'superbon-noiri-ko';
 
-          // expiresAt を計算（現在時刻 + TTL）
-          const ttl = result.expiresInSec ?? 10;
+      if (!useNewApi) {
+        if (isAbbasovLee) {
+          const videoUrl = '/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4';
+          setFullUrl(videoUrl);
+          addLog(`watch: direct asset url=${videoUrl}`);
+
+          const ttl = 30;
           const expiresAt = Date.now() + ttl * 1000;
           setSessionExpiresAt(expiresAt);
-
-          addLog(`watch: url=${result.videoUrl.slice(0, 30)}..., ttl=${ttl}s`);
-          addLog('視聴セッションを開始しました');
+          addLog(`視聴セッションを開始しました (local), ttl=${ttl}s`);
           showToast('✅ 視聴を開始します');
 
           if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
           sessionTimer.current = window.setTimeout(() => {
             setSessionExpired(true);
             showToast('⚠️ セッションが期限切れになりました');
-            addLog('watch: expired');
+            addLog('watch: expired (local)');
             if (videoRef.current) {
               videoRef.current.pause();
             }
           }, ttl * 1000);
         } else {
-          const errMsg = result.message || 'URL取得失敗';
-          addLog(`watch: error - ${errMsg}`);
-          showToast(`❌ 動画URLの取得に失敗: ${errMsg}`);
-          // エラー時はクリア
-          setFullUrl(undefined);
-          setSessionExpiresAt(null);
+          const result = await watch(videoIdForSession);
+          if (result.success && result.videoUrl) {
+            setFullUrl(result.videoUrl);
+
+            // expiresAt を計算（現在時刻 + TTL）
+            const ttl = result.expiresInSec ?? 30;
+            const expiresAt = Date.now() + ttl * 1000;
+            setSessionExpiresAt(expiresAt);
+
+            addLog(`watch: url=${result.videoUrl.slice(0, 30)}..., ttl=${ttl}s`);
+            addLog('視聴セッションを開始しました');
+            showToast('✅ 視聴を開始します');
+
+            if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
+            sessionTimer.current = window.setTimeout(() => {
+              setSessionExpired(true);
+              showToast('⚠️ セッションが期限切れになりました');
+              addLog('watch: expired');
+              if (videoRef.current) {
+                videoRef.current.pause();
+              }
+            }, ttl * 1000);
+          } else {
+            const errMsg = result.message || 'URL取得失敗';
+            addLog(`watch: error - ${errMsg}`);
+            showToast(`❌ 動画URLの取得に失敗: ${errMsg}`);
+            // エラー時はクリア
+            setFullUrl(undefined);
+            setSessionExpiresAt(null);
+          }
         }
       } else {
         // 本API: セッション作成 → videoURL取得
-        const session = await createWatchSession('superbon-noiri-ko');
+        const session = await createWatchSession(videoIdForSession);
         if (!session?.sessionToken) {
           addLog('watch: error - セッション作成失敗');
           showToast('❌ セッション作成に失敗');
@@ -299,7 +324,7 @@ export default function App() {
         }
         addLog(`watch: session token=${session.sessionToken.slice(0, 8)}...`);
 
-        const video = await getVideoUrl('superbon-noiri-ko', session.sessionToken);
+        const video = await getVideoUrl(videoIdForSession, session.sessionToken);
         if (!video?.videoUrl) {
           addLog('watch: error - 動画URL取得失敗');
           showToast('❌ 動画URL取得に失敗');
@@ -312,7 +337,7 @@ export default function App() {
         setFullUrl(video.videoUrl);
 
         // expiresAt を計算
-        const ttl = session.expiresInSec ?? 10;
+        const ttl = session.expiresInSec ?? 30;
         const expiresAt = Date.now() + ttl * 1000;
         setSessionExpiresAt(expiresAt);
 
