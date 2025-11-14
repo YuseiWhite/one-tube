@@ -50,10 +50,12 @@ export default function Header({ address }: HeaderProps) {
           <span className="onetube-network__dot" />
           <span className="onetube-network__label">Sui devnet</span>
         </div>
-        <div className="onetube-health">
-          <span className={`onetube-health__dot onetube-health__dot--${apiStatus}`} />
-          <span>{useNewApi ? (apiStatus === 'ok' ? 'API OK' : 'API ...') : 'Mock API'}</span>
-        </div>
+        {useNewApi && (
+          <div className="onetube-health">
+            <span className={`onetube-health__dot onetube-health__dot--${apiStatus}`} />
+            <span>{apiStatus === 'ok' ? 'API OK' : 'API ...'}</span>
+          </div>
+        )}
         {address && <span className="onetube-wallet">{formatAddress(address)}</span>}
         <ConnectButton className="onetube-connect" connectText="Connect Wallet" />
       </div>
