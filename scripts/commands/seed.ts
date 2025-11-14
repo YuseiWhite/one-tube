@@ -533,7 +533,7 @@ export async function seedCommand(network: SupportedNetwork): Promise<void> {
 		10,
 		"ONE 173 Premium Ticket: Superbon vs. Noiri",
 		premiumTicketDescription,
-		"mock-blob-id-fullmatch-one173",
+		"4wkrrgec91yqdr3txwplnr0y8y1886vkgwoklkoidyhsx09at",
 	);
 	await waitForObjectsAvailable(client, nftIds);
 
