@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 const SUPERBON_IMAGES = [
   'https://images.unsplash.com/photo-1602827114696-738d7ee10b3d?auto=format&fit=crop&w=800&q=80',
   'https://images.unsplash.com/photo-1542720046-1e772598ea39?auto=format&fit=crop&w=800&q=80',
@@ -74,6 +76,9 @@ export default function TicketsPage({
         day: 'numeric',
       })
     : '日付未定';
+  const heroStyle = {
+    '--ticket-hero-image': `url(${heroBackground})`,
+  } as CSSProperties;
 
   const primaryStockLabel = (() => {
     if (inventoryLoading) return '在庫情報を取得しています...';
@@ -135,21 +140,21 @@ export default function TicketsPage({
     onPurchase();
   };
 
-  const statusClassNames = (ticket: ReferenceTicket) => {
-    if (ticket.isPrimary && ticket.owned) return 'ticket-card__status ticket-card__status--owned';
-    if (ticket.soldOut) return 'ticket-card__status ticket-card__status--sold';
-    return 'ticket-card__status ticket-card__status--pending';
+  const statusLabelClass = (ticket: ReferenceTicket) => {
+    if (ticket.isPrimary && ticket.owned) return 'onetube-status-label onetube-status-label--owned';
+    if (ticket.soldOut) return 'onetube-status-label onetube-status-label--sold';
+    return 'onetube-status-label onetube-status-label--available';
   };
 
   return (
     <div className="tickets-page">
       {/* Figma参照: figma-ui/src/components/TicketsPage.tsx */}
-      <section className="tickets-hero" style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.78), rgba(0,0,0,0.92)), url(${heroBackground})` }}>
-        <div className="tickets-hero__content">
-          <span className="tickets-hero__badge">PREMIUM TICKET NFT</span>
-          <h2 className="tickets-hero__title">ONE CHAMPIONSHIP</h2>
-          <p className="tickets-hero__copy">世界最高峰の格闘技を、プレミアムチケットNFTで体験。完全版映像・限定アーカイブ・ガス代スポンサー対応。</p>
-          <p className="tickets-hero__date">{heroDate}</p>
+      <section className="ticket-hero" style={heroStyle}>
+        <div className="ticket-hero-inner">
+          <p className="ticket-hero-title">PREMIUM TICKET NFT</p>
+          <p className="ticket-hero-subtitle">ONE CHAMPIONSHIP</p>
+          <p className="ticket-hero-body">世界最高峰の格闘技を、プレミアムチケットNFTで体験。完全版映像・限定アーカイブ・ガス代スポンサー対応。</p>
+          <p className="ticket-hero-date">{heroDate}</p>
         </div>
       </section>
 
@@ -178,9 +183,9 @@ export default function TicketsPage({
 
           return (
             <article key={ticket.id} className={`ticket-card${ticket.soldOut ? ' ticket-card--disabled' : ''}`}>
-              <div className="ticket-card__header">
-                <span className="ticket-card__event">{ticket.eventTitle}</span>
-                <span className={statusClassNames(ticket)}>{statusLabel}</span>
+              <div className="ticket-card__title onetube-accent-bar">{ticket.eventTitle}</div>
+              <div className="ticket-card__status-chip">
+                <span className={statusLabelClass(ticket)}>{statusLabel}</span>
               </div>
 
               <div className="ticket-card__gallery">
