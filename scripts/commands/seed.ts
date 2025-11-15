@@ -6,6 +6,8 @@ import type { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { Inputs, Transaction } from "@mysten/sui/transactions";
 import type { SuiObjectChange } from "@mysten/sui/client";
 import * as dotenv from "dotenv";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 import type { SupportedNetwork } from "../shared/utils";
 import {
@@ -513,7 +515,40 @@ export async function seedCommand(network: SupportedNetwork): Promise<void> {
 		);
 	}
 
-	// 1. NFTミント
+	// 1. videos.json から blobId を読み込む
+	const videosJsonPath = path.join(
+		__dirname,
+		"../../app/src/assets/videos.json",
+	);
+	if (!fs.existsSync(videosJsonPath)) {
+		throw new Error(
+			`videos.json not found at ${videosJsonPath}\n` +
+				"Solution: Ensure videos.json exists in app/src/assets/",
+		);
+	}
+
+	const videosData = JSON.parse(
+		fs.readFileSync(videosJsonPath, "utf-8"),
+	) as { videos: Array<{ id: string; blobId: string }> };
+
+	const video = videosData.videos.find((v) => v.id === "one-173-premium-ticket");
+	if (!video) {
+		throw new Error(
+			`Video with id "one-173-premium-ticket" not found in videos.json`,
+		);
+	}
+
+	if (!video.blobId || video.blobId === "TEMP_PLACEHOLDER") {
+		throw new Error(
+			`blobId not set or still placeholder in videos.json\n` +
+				`Current blobId: ${video.blobId}\n` +
+				"Solution: Run 'tsx scripts/utils/update-videos-metadata.ts' after Walrus deployment",
+		);
+	}
+
+	console.log(`✅ Using blobId from videos.json: ${video.blobId.substring(0, 20)}...`);
+
+	// 2. NFTミント
 	const premiumTicketDescription = [
 		"プレミアムチケット購入特典:",
 		"このチケットを購入することで One Tubeでこの試合の完全版を視聴できるだけでなく、一ヶ月間過去の全ての試合動画が見放題になります。",
@@ -533,7 +568,7 @@ export async function seedCommand(network: SupportedNetwork): Promise<void> {
 		10,
 		"ONE 173 Premium Ticket: Superbon vs. Noiri",
 		premiumTicketDescription,
-		"4wkrrgec91yqdr3txwplnr0y8y1886vkgwoklkoidyhsx09at",
+		video.blobId,
 	);
 	await waitForObjectsAvailable(client, nftIds);
 

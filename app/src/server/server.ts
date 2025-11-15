@@ -1,17 +1,19 @@
 import express from "express";
 import dotenv from "dotenv";
 import { sponsorPurchase, getSponsorBalance } from "./sponsor.js";
-import { getKioskListings } from "./kiosk.js";
+import { getKioskListings, getListingInfo } from "./kiosk.js";
 import {
 	createSession,
 	validateSession,
 	cleanupExpiredSessions,
 	getActiveSessionCount,
 } from "./seal.js";
+import { getVideoUrl, getSiteIdPrefix } from "./videos.js";
 import type {
 	PurchaseRequest,
 	WatchRequest,
 	HealthResponse,
+	SessionMetadata,
 } from "../shared/types.js";
 
 dotenv.config();
@@ -114,9 +116,32 @@ app.post("/api/watch", async (req, res) => {
 			request.blobId,
 		);
 
+		// BLOB IDからサイトIDプレフィックスを取得
+		const siteIdPrefix = getSiteIdPrefix(request.blobId);
+		if (!siteIdPrefix) {
+			return res.status(500).json({
+				success: false,
+				error: "Failed to resolve site ID prefix for blobId",
+			});
+		}
+
+		// セッションURLを構築
+		const sessionUrl = `http://${siteIdPrefix}.localhost:3000/api/video?session=${session.sessionId}`;
+
+		// セッションメタ情報のみを返す（videoUrl を含まない）
+		const sessionMetadata: SessionMetadata = {
+			sessionId: session.sessionId,
+			userAddress: session.userAddress,
+			nftId: session.nftId,
+			decryptionKey: session.decryptionKey,
+			sessionUrl,
+			expiresAt: session.expiresAt,
+			createdAt: session.createdAt,
+		};
+
 		res.json({
 			success: true,
-			session,
+			session: sessionMetadata,
 		});
 	} catch (error) {
 		console.error("❌ Watch endpoint error:", error);
@@ -138,20 +163,50 @@ app.post("/api/watch", async (req, res) => {
 
 /**
  * GET /api/video?session=<sessionId>
- * 動画コンテンツ配信
+ * 動画コンテンツ配信（セッション経由）
  */
 app.get("/api/video", async (req, res) => {
 	try {
 		const sessionId = req.query.session as string;
+		const nftId = req.query.nftId as string;
 
-		if (!sessionId) {
-			return res.status(400).json({
+		// NFT ID でリクエストされた場合
+		if (nftId) {
+			console.log("🎥 Video request received (by NFT ID):", nftId);
+
+			const listing = await getListingInfo(nftId);
+			if (!listing) {
+				return res.status(404).json({
+					success: false,
+					error: "NFT not found in listings",
+				});
+			}
+
+			// プレビュー動画URLを返す（誰でも見れる）
+			if (listing.previewUrl) {
+				return res.json({
+					success: true,
+					videoUrl: listing.previewUrl,
+					type: "preview",
+				});
+			}
+
+			// プレビューURLがない場合はエラー
+			return res.status(404).json({
 				success: false,
-				error: "Missing session parameter",
+				error: "Preview URL not available",
 			});
 		}
 
-		console.log("🎥 Video request received:", sessionId);
+		// セッションIDでリクエストされた場合（Seal復号フロー）
+		if (!sessionId) {
+			return res.status(400).json({
+				success: false,
+				error: "Missing session or nftId parameter",
+			});
+		}
+
+		console.log("🎥 Video request received (by session):", sessionId);
 
 		const session = await validateSession(sessionId);
 
@@ -162,10 +217,21 @@ app.get("/api/video", async (req, res) => {
 			});
 		}
 
-		// セッションに保存されているvideoUrlを返す
+		// Seal復号キーを使って動画URLを取得（モック実装）
+		// 実際の実装では、blobId と decryptionKey を使って復号済みストリームを提供
+		const videoUrl =
+			getVideoUrl(session.blobId) ||
+			process.env.MOCK_VIDEO_URL ||
+			"https://example.walrus.site/mock-video.mp4";
+
+		console.log(`🔓 Decrypting video with Seal key for blobId: ${session.blobId}`);
+		console.log(`📹 Video URL resolved: ${videoUrl}`);
+
+		// 復号済み動画URL（またはストリーム）を返す
 		res.json({
 			success: true,
-			videoUrl: session.videoUrl,
+			videoUrl,
+			type: "full",
 		});
 	} catch (error) {
 		console.error("❌ Video endpoint error:", error);

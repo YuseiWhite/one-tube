@@ -9,3 +9,6 @@ contracts/build
 # Private keys
 .keys/
 *.key
+
+# movies (.mp4) and thumbnailsfor depoly to walrus
+app/public/assets
