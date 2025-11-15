@@ -29,7 +29,7 @@ export default function App() {
   // ページ切り替え: 'tickets' = チケット購入, 'videos' = 動画視聴
   const [activePage, setActivePage] = useState<'tickets' | 'videos'>('tickets');
 
-  // mock videos.json (複数アイテム + 選択中)
+  // videos-display.json (複数アイテム + 選択中)
   const [items, setItems] = useState<VideoData[]>([]);
   const [selected, setSelected] = useState<VideoData | null>(null);
   const [loadingVideo, setLoadingVideo] = useState(true);
@@ -139,12 +139,12 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // load mock videos.json (for preview + mock flow)
+  // load videos-display.json (for preview + mock flow)
   useEffect(() => {
     const run = async () => {
       try {
-        const r = await fetch('/src/assets/videos.json');
-        if (!r.ok) throw new Error('Failed to load videos.json');
+        const r = await fetch('/src/assets/videos-display.json');
+        if (!r.ok) throw new Error('Failed to load videos-display.json');
         const arr: VideoData[] = await r.json();
         setItems(arr);
         setSelected(arr[0] ?? null);
