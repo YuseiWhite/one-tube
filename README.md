@@ -1,6 +1,11 @@
-# OneTube
+<div align="center">
+
+![OneTube Logo](docs/assets/one-tube-logo.png)
+
 
 NFT保有による動画視聴権限管理のデモプラットフォーム（MVP）
+
+</div>
 
 ## 📖 概要
 
