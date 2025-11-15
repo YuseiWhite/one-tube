@@ -286,4 +286,14 @@ app.listen(port, () => {
 	console.log(`✅ OneTube API Server running on http://localhost:${port}`);
 	console.log(`📍 Network: ${process.env.NETWORK || "devnet"}`);
 	console.log(`📍 RPC: ${process.env.RPC_URL || "default"}`);
+}).on("error", (err: NodeJS.ErrnoException) => {
+	if (err.code === "EADDRINUSE") {
+		console.error(`❌ ポート ${port} は既に使用されています。`);
+		console.error(`   既存のプロセスを停止するか、別のポートを使用してください。`);
+		console.error(`   ポート ${port} を使用しているプロセスを確認: lsof -ti:${port}`);
+		process.exit(1);
+	} else {
+		console.error("❌ サーバー起動エラー:", err);
+		process.exit(1);
+	}
 });
