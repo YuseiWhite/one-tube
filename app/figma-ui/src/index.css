@@ -1,0 +1,17 @@
+/* Placeholder for the Figma UI kit styles.
+   The real design tokens/components can be dropped in later, but we keep
+   a minimal scaffold so the Vite import in src/main.tsx resolves. */
+
+:root {
+	/* Provide a couple of safe fallbacks in case designers rely on these tokens. */
+	--figma-font-base: 'IBM Plex Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+	--figma-color-bg: #050507;
+	--figma-color-text: #f5f2ea;
+}
+
+body {
+	font-family: var(--figma-font-base);
+	background-color: var(--figma-color-bg);
+	color: var(--figma-color-text);
+}
+

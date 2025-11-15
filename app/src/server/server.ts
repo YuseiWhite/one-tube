@@ -1,4 +1,6 @@
+import "dotenv/config";
 import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 import { sponsorPurchase, getSponsorBalance } from "./sponsor.js";
 import { getKioskListings, getListingInfo } from "./kiosk.js";
@@ -21,8 +23,14 @@ dotenv.config();
 const app = express();
 const port = 3001;
 
-app.use(express.json());
+// Middleware
+app.use(cors());
+app.use(express.json()); // JSON ボディを受けられるようにする
 
+/**
+ * GET /api/health
+ * サーバーヘルスチェック
+ */
 app.get("/api/health", async (_req, res) => {
 	try {
 		const sponsorBalance = await getSponsorBalance();
@@ -278,4 +286,14 @@ app.listen(port, () => {
 	console.log(`✅ OneTube API Server running on http://localhost:${port}`);
 	console.log(`📍 Network: ${process.env.NETWORK || "devnet"}`);
 	console.log(`📍 RPC: ${process.env.RPC_URL || "default"}`);
+}).on("error", (err: NodeJS.ErrnoException) => {
+	if (err.code === "EADDRINUSE") {
+		console.error(`❌ ポート ${port} は既に使用されています。`);
+		console.error(`   既存のプロセスを停止するか、別のポートを使用してください。`);
+		console.error(`   ポート ${port} を使用しているプロセスを確認: lsof -ti:${port}`);
+		process.exit(1);
+	} else {
+		console.error("❌ サーバー起動エラー:", err);
+		process.exit(1);
+	}
 });

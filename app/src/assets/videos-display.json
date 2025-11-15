@@ -1,0 +1,20 @@
+[
+	{
+		"id": "abbasov-lee-173",
+		"title": "Christian Lee vs Kiamrian Abbasov - ONE 173",
+		"thumbnail": "/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png",
+		"previewUrl": "/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		"fullUrl": "/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		"date": "2025-10-28",
+		"athletes": ["Christian Lee", "Kiamrian Abbasov"]
+	},
+	{
+		"id": "superbon-noiri-ko",
+		"title": "Superbon vs Masaaki Noiri - KO Scene",
+		"thumbnail": "/thumbs/superbon-noiri.jpg",
+		"previewUrl": "/videos/superbon-noiri-preview.mp4",
+		"date": "2024-01-15",
+		"athletes": ["Superbon", "Masaaki Noiri"]
+	}
+]
+
