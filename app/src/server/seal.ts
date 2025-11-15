@@ -3,7 +3,6 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import type { Session } from "../shared/types.js";
 import { NFTNotOwnedError, SessionExpiredError } from "../shared/types.js";
-import { getVideoUrl } from "./videos.js";
 
 dotenv.config();
 
@@ -83,17 +82,12 @@ export async function createSession(
 	const sessionId = generateSessionId(userAddress, nftId);
 	const decryptionKey = generateDecryptionKey(nftId);
 
-	const videoUrl =
-		getVideoUrl(blobId) ||
-		process.env.MOCK_VIDEO_URL ||
-		"https://example.walrus.site/mock-video.mp4";
-
 	const session: Session = {
 		sessionId,
 		userAddress,
 		nftId,
+		blobId, // BLOB IDを保存（動画URLは /api/video で解決）
 		decryptionKey,
-		videoUrl,
 		createdAt: now,
 		expiresAt: now + SEAL_SESSION_DURATION * 1000,
 	};
@@ -103,7 +97,7 @@ export async function createSession(
 	console.log(
 		`✅ Session created: ${sessionId} (expires in ${SEAL_SESSION_DURATION}s)`,
 	);
-	console.log(`📹 Video URL: ${videoUrl}`);
+	console.log(`📦 Blob ID: ${blobId}`);
 	return session;
 }
 

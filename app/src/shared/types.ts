@@ -22,8 +22,19 @@ export interface Session {
 	sessionId: string;
 	userAddress: string;
 	nftId: string;
+	blobId: string; // NFTのBLOB ID（動画URL取得用）
 	decryptionKey: string;
-	videoUrl: string; // Walrus動画URL
+	expiresAt: number; // Unix timestamp (ms)
+	createdAt: number; // Unix timestamp (ms)
+}
+
+// セッションメタ情報（/api/watch のレスポンス用、videoUrl を含まない）
+export interface SessionMetadata {
+	sessionId: string;
+	userAddress: string;
+	nftId: string;
+	decryptionKey: string;
+	sessionUrl: string; // セッションURL: http://<site-id-prefix>.localhost:3000/api/video?session=<session-id>
 	expiresAt: number; // Unix timestamp (ms)
 	createdAt: number; // Unix timestamp (ms)
 }
@@ -54,7 +65,7 @@ export interface PurchaseResponse {
 
 export interface WatchResponse {
 	success: boolean;
-	session?: Session;
+	session?: SessionMetadata; // セッションメタ情報のみ（videoUrl を含まない）
 	error?: string;
 }
 
