@@ -8,7 +8,8 @@ import type {
 	WatchResponse,
 } from "../shared/types";
 
-const API_BASE_URL = "http://localhost:3001/api";
+// Viteのプロキシを通すため、相対パスを使用
+const API_BASE_URL = "/api";
 
 export async function purchaseNFT(
 	request: PurchaseRequest,
