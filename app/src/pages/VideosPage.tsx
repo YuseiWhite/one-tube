@@ -91,6 +91,14 @@ export default function VideosPage({
     : '完全版を視聴';
 
   const watchButtonDisabled = watchLoading || !account || !owned;
+  const comingSoonSlots = [
+    {
+      id: 'coming-soon-alpha',
+      title: 'COMING SOON',
+      date: 'TBA',
+      description: '新しいPremiumアーカイブを調整中です。近日中に追加されます。',
+    },
+  ];
 
   return (
     <div className="videos-page">
@@ -118,6 +126,18 @@ export default function VideosPage({
               </button>
             );
           })}
+          {comingSoonSlots.map((slot) => (
+            <div key={slot.id} className="video-item video-item--soon">
+              <div className="video-item__thumb video-item__thumb--soon">
+                <span className="video-item__badge video-item__badge--soon">COMING SOON</span>
+              </div>
+              <div className="video-item__info video-item__info--soon">
+                <p className="video-item__title">{slot.title}</p>
+                <p className="video-item__meta">{slot.date}</p>
+                <p className="video-item__meta">{slot.description}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </aside>
 

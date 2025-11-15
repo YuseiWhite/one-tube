@@ -688,10 +688,24 @@ video {
   border-color: var(--onetube-accent-yellow);
 }
 
+.video-item--soon {
+  border-style: dashed;
+  border-color: var(--onetube-border);
+  background: rgba(255, 255, 255, 0.02);
+  pointer-events: none;
+}
+
 .video-item__thumb {
   position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
+}
+
+.video-item__thumb--soon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(246, 196, 69, 0.05), rgba(255, 255, 255, 0.01));
 }
 
 .video-item__thumb img {
@@ -729,6 +743,16 @@ video {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.video-item__info--soon {
+  text-align: center;
+  color: var(--onetube-text-muted);
+}
+
+.video-item__badge--soon {
+  border-style: dashed;
+  letter-spacing: 0.3em;
 }
 
 .video-item__title {
