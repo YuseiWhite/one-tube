@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ConnectButton } from '@mysten/dapp-kit';
-import { getHealth } from '../lib/api';
+import { checkHealth } from '../lib/api';
 import logoSrc from '../assets/onetube-logo.png';
 
 const useNewApi = !!import.meta.env.VITE_API_BASE_URL;
@@ -22,7 +22,7 @@ export default function Header({ address }: HeaderProps) {
   useEffect(() => {
     let alive = true;
     if (useNewApi) {
-      getHealth()
+      checkHealth()
         .then((h) => {
           if (!alive) return;
           setApiStatus(h.status === 'ok' ? 'ok' : 'error');

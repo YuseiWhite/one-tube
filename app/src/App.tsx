@@ -7,10 +7,8 @@ import Sidebar from './components/Sidebar';
 import TicketsPage from './pages/TicketsPage';
 import VideosPage from './pages/VideosPage';
 
-// Legacy mock API
-import { watch, purchaseSmart } from './lib/api';
 // New API (Issue #009)
-import { getListings, createWatchSession, getVideoUrl } from './lib/api';
+import { getListings, createWatchSession, getVideoContent, purchaseNFT } from './lib/api';
 
 type VideoData = {
   id: string;
@@ -202,7 +200,13 @@ export default function App() {
 
       // 現状は listingId 固定のモック呼び出し
       // 将来: 本API購入に切替する場合はここに分岐
-      const result = await purchaseSmart('listing-superbon-noiri-ko');
+      if (!account?.address) {
+        throw new Error('ウォレットが接続されていません');
+      }
+      const result = await purchaseNFT({
+        userAddress: account.address,
+        nftId: 'listing-superbon-noiri-ko', // TODO: 選択された動画のnftIdを使用
+      });
 
       // ステップ3: 確認中（擬似的に遅延）
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -223,7 +227,7 @@ export default function App() {
         // 在庫情報を更新
         loadInventory();
       } else {
-        const errMsg = result.message || '購入に失敗しました';
+        const errMsg = result.error || '購入に失敗しました';
         setPurchaseError(errMsg);
         addLog(`purchase: error=${errMsg}`);
         showToast(`❌ 購入に失敗しました: ${errMsg}`);
@@ -285,67 +289,66 @@ export default function App() {
             }
           }, SESSION_TTL_MS);
         } else {
-          const result = await watch(videoIdForSession);
-          if (result.success && result.videoUrl) {
-            setFullUrl(result.videoUrl);
-
-            // expiresAt を計算（現在時刻 + TTL）
-            const expiresAt = Date.now() + SESSION_TTL_MS;
-            setSessionExpiresAt(expiresAt);
-
-            addLog(`watch: url=${result.videoUrl.slice(0, 30)}..., ttl=${SESSION_TTL_SECONDS}s`);
-            addLog('視聴セッションを開始しました');
-            showToast('✅ 視聴を開始します');
-
-            if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
-            sessionTimer.current = window.setTimeout(() => {
-              setSessionExpired(true);
-              setSessionPromptVisible(true);
-              showToast('⚠️ セッションが期限切れになりました');
-              addLog('watch: expired');
-              if (videoRef.current) {
-                videoRef.current.pause();
-              }
-            }, SESSION_TTL_MS);
-          } else {
-            const errMsg = result.message || 'URL取得失敗';
-            addLog(`watch: error - ${errMsg}`);
-            showToast(`❌ 動画URLの取得に失敗: ${errMsg}`);
-            // エラー時はクリア
-            setFullUrl(undefined);
-            setSessionExpiresAt(null);
-          }
+          // useNewApi=false の場合、他の動画は未対応
+          addLog('watch: error - この動画はローカルファイルモードでは対応していません');
+          showToast('❌ この動画は視聴できません');
+          setFullUrl(undefined);
+          setSessionExpiresAt(null);
         }
       } else {
         // 本API: セッション作成 → videoURL取得
-        const session = await createWatchSession(videoIdForSession);
-        if (!session?.sessionToken) {
+        if (!account?.address) {
+          addLog('watch: error - ウォレット未接続');
+          showToast('❌ ウォレットを接続してください');
+          setFullUrl(undefined);
+          setSessionExpiresAt(null);
+          return;
+        }
+
+        // listingsからblobIdを取得
+        const listings = await getListings();
+        const listing = listings.find((v) => v.id === videoIdForSession);
+        if (!listing || !listing.fullBlobId) {
+          addLog('watch: error - 動画情報が見つかりません');
+          showToast('❌ 動画情報が見つかりません');
+          setFullUrl(undefined);
+          setSessionExpiresAt(null);
+          return;
+        }
+
+        const sessionResponse = await createWatchSession({
+          nftId: listing.id,
+          userAddress: account.address,
+          blobId: listing.fullBlobId,
+        });
+
+        if (!sessionResponse?.success || !sessionResponse?.session?.sessionId) {
           addLog('watch: error - セッション作成失敗');
           showToast('❌ セッション作成に失敗');
-          // エラー時はクリア
           setFullUrl(undefined);
           setSessionExpiresAt(null);
           return;
         }
-        addLog(`watch: session token=${session.sessionToken.slice(0, 8)}...`);
 
-        const video = await getVideoUrl(videoIdForSession, session.sessionToken);
-        if (!video?.videoUrl) {
+        const sessionId = sessionResponse.session.sessionId;
+        addLog(`watch: session id=${sessionId.slice(0, 8)}...`);
+
+        const videoResponse = await getVideoContent(sessionId);
+        if (!videoResponse?.success || !videoResponse?.videoUrl) {
           addLog('watch: error - 動画URL取得失敗');
           showToast('❌ 動画URL取得に失敗');
-          // エラー時はクリア
           setFullUrl(undefined);
           setSessionExpiresAt(null);
           return;
         }
 
-        setFullUrl(video.videoUrl);
+        setFullUrl(videoResponse.videoUrl);
 
-        // expiresAt を計算
-        const expiresAt = Date.now() + SESSION_TTL_MS;
+        // expiresAt をセッションから取得
+        const expiresAt = sessionResponse.session.expiresAt;
         setSessionExpiresAt(expiresAt);
 
-        addLog(`watch: url=${video.videoUrl.slice(0, 30)}..., ttl=${SESSION_TTL_SECONDS}s`);
+        addLog(`watch: url=${videoResponse.videoUrl.slice(0, 30)}..., expiresAt=${new Date(expiresAt).toLocaleTimeString()}`);
         addLog('視聴セッションを開始しました');
         showToast('✅ 視聴を開始します');
 
