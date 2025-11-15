@@ -2,6 +2,7 @@ import { KioskClient, Network } from "@mysten/kiosk";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import dotenv from "dotenv";
 import type { Video } from "../shared/types.js";
+import { getVideoByBlobId } from "./videos.js";
 
 dotenv.config();
 
@@ -75,13 +76,18 @@ function convertItemToVideo(
 	const fields = (content.fields as Record<string, any>) || {};
 	const listingId = item.listing?.listingId;
 	const price = Number(item.listing?.price ?? 0);
+	const blobId = fields.blob_id || "";
+
+	// videos.json から動画メタデータを取得
+	const videoMetadata = blobId ? getVideoByBlobId(blobId) : null;
 
 	return {
 		id: item.objectId,
-		title: fields.name || `OneTube Listing #${index + 1}`,
-		description: fields.description || "Premium ticket NFT",
-		previewBlobId: fields.preview_blob_id || "mock-preview-blob-id",
-		fullBlobId: fields.blob_id || "mock-full-blob-id",
+		title: fields.name || videoMetadata?.title || `OneTube Listing #${index + 1}`,
+		description: fields.description || videoMetadata?.description || "Premium ticket NFT",
+		previewBlobId: videoMetadata?.previewBlobId || "",
+		fullBlobId: blobId,
+		previewUrl: videoMetadata?.previewUrl || undefined, // プレビュー動画URL（誰でも見れる）
 		price: Number.isNaN(price) ? 0 : price,
 		listingId: listingId || item.objectId,
 	};

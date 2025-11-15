@@ -12,6 +12,7 @@ export interface Video {
 	description: string;
 	previewBlobId: string;
 	fullBlobId: string;
+	previewUrl?: string; // プレビュー動画URL（誰でも見れる）
 	price: number; // MIST単位
 	listingId?: string;
 }
