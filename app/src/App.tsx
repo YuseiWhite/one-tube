@@ -22,6 +22,8 @@ type VideoData = {
 };
 
 const useNewApi = !!(import.meta as any).env?.VITE_API_BASE_URL;
+const SESSION_TTL_SECONDS = 30;
+const SESSION_TTL_MS = SESSION_TTL_SECONDS * 1000;
 
 export default function App() {
   // ページ切り替え: 'tickets' = チケット購入, 'videos' = 動画視聴
@@ -51,6 +53,7 @@ export default function App() {
   const [fullUrl, setFullUrl] = useState<string | undefined>(undefined);
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [sessionPromptVisible, setSessionPromptVisible] = useState(false);
   const [watchLoading, setWatchLoading] = useState(false);
   const sessionTimer = useRef<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -83,6 +86,7 @@ export default function App() {
     const checkInterval = setInterval(() => {
       if (Date.now() >= sessionExpiresAt) {
         setSessionExpired(true);
+        setSessionPromptVisible(true);
         addLog('セッション期限切れを検知');
         // 動画を一時停止
         if (videoRef.current) {
@@ -251,6 +255,7 @@ export default function App() {
 
     setWatchLoading(true);
     setSessionExpired(false);
+    setSessionPromptVisible(false);
     showToast('セッション生成中…');
     addLog('watch: start');
 
@@ -264,44 +269,44 @@ export default function App() {
           setFullUrl(videoUrl);
           addLog(`watch: direct asset url=${videoUrl}`);
 
-          const ttl = 30;
-          const expiresAt = Date.now() + ttl * 1000;
+          const expiresAt = Date.now() + SESSION_TTL_MS;
           setSessionExpiresAt(expiresAt);
-          addLog(`視聴セッションを開始しました (local), ttl=${ttl}s`);
+          addLog(`視聴セッションを開始しました (local), ttl=${SESSION_TTL_SECONDS}s`);
           showToast('✅ 視聴を開始します');
 
           if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
           sessionTimer.current = window.setTimeout(() => {
             setSessionExpired(true);
+            setSessionPromptVisible(true);
             showToast('⚠️ セッションが期限切れになりました');
             addLog('watch: expired (local)');
             if (videoRef.current) {
               videoRef.current.pause();
             }
-          }, ttl * 1000);
+          }, SESSION_TTL_MS);
         } else {
           const result = await watch(videoIdForSession);
           if (result.success && result.videoUrl) {
             setFullUrl(result.videoUrl);
 
             // expiresAt を計算（現在時刻 + TTL）
-            const ttl = result.expiresInSec ?? 30;
-            const expiresAt = Date.now() + ttl * 1000;
+            const expiresAt = Date.now() + SESSION_TTL_MS;
             setSessionExpiresAt(expiresAt);
 
-            addLog(`watch: url=${result.videoUrl.slice(0, 30)}..., ttl=${ttl}s`);
+            addLog(`watch: url=${result.videoUrl.slice(0, 30)}..., ttl=${SESSION_TTL_SECONDS}s`);
             addLog('視聴セッションを開始しました');
             showToast('✅ 視聴を開始します');
 
             if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
             sessionTimer.current = window.setTimeout(() => {
               setSessionExpired(true);
+              setSessionPromptVisible(true);
               showToast('⚠️ セッションが期限切れになりました');
               addLog('watch: expired');
               if (videoRef.current) {
                 videoRef.current.pause();
               }
-            }, ttl * 1000);
+            }, SESSION_TTL_MS);
           } else {
             const errMsg = result.message || 'URL取得失敗';
             addLog(`watch: error - ${errMsg}`);
@@ -337,23 +342,23 @@ export default function App() {
         setFullUrl(video.videoUrl);
 
         // expiresAt を計算
-        const ttl = session.expiresInSec ?? 30;
-        const expiresAt = Date.now() + ttl * 1000;
+        const expiresAt = Date.now() + SESSION_TTL_MS;
         setSessionExpiresAt(expiresAt);
 
-        addLog(`watch: url=${video.videoUrl.slice(0, 30)}..., ttl=${ttl}s`);
+        addLog(`watch: url=${video.videoUrl.slice(0, 30)}..., ttl=${SESSION_TTL_SECONDS}s`);
         addLog('視聴セッションを開始しました');
         showToast('✅ 視聴を開始します');
 
         if (sessionTimer.current) window.clearTimeout(sessionTimer.current);
         sessionTimer.current = window.setTimeout(() => {
           setSessionExpired(true);
+          setSessionPromptVisible(true);
           showToast('⚠️ セッションが期限切れになりました');
           addLog('watch: expired');
           if (videoRef.current) {
             videoRef.current.pause();
           }
-        }, ttl * 1000);
+        }, SESSION_TTL_MS);
       }
     } catch (e) {
       const errMsg = e instanceof Error ? e.message : '再生準備に失敗';
@@ -370,6 +375,7 @@ export default function App() {
   const handleRetryWatch = () => {
     addLog('watch: retry requested');
     showToast('再取得中…');
+    setSessionPromptVisible(false);
     handleWatch();
   };
 
@@ -405,6 +411,7 @@ export default function App() {
               owned={owned}
               fullUrl={fullUrl}
               sessionExpired={sessionExpired}
+              sessionPromptVisible={sessionPromptVisible}
               watchLoading={watchLoading}
               onWatch={handleWatch}
               onRetryWatch={handleRetryWatch}

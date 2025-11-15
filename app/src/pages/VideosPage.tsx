@@ -20,6 +20,7 @@ type VideosPageProps = {
   owned: boolean;
   fullUrl?: string;
   sessionExpired: boolean;
+  sessionPromptVisible: boolean;
   watchLoading: boolean;
   onWatch: () => void;
   onRetryWatch: () => void;
@@ -38,6 +39,7 @@ export default function VideosPage({
   owned,
   fullUrl,
   sessionExpired,
+  sessionPromptVisible,
   watchLoading,
   onWatch,
   onRetryWatch,
@@ -142,7 +144,7 @@ export default function VideosPage({
       </aside>
 
       <div className="videos-main">
-        <section className="videos-player-shell">
+        <section className="videos-player-shell videos-player-shell--xl">
           <Player previewUrl={selected.previewUrl} fullUrl={fullUrl} sessionExpired={sessionExpired} videoRef={videoRef} />
         </section>
 
@@ -173,11 +175,13 @@ export default function VideosPage({
               {!account && <p className="videos-hint">💡 完全版を視聴するには、まずウォレットを接続してください。</p>}
               {account && !owned && <p className="videos-hint">💡 「TICKETS」タブでNFTチケットを購入すると完全版が解放されます。</p>}
 
-              {sessionExpired && (
+              {sessionPromptVisible && (
                 <div className="videos-alert">
                   <div>
                     <p className="videos-alert__title">⏰ セッション期限切れ</p>
-                    <p className="videos-alert__text">視聴セッションの有効期限が切れました。もう一度視聴ボタンで新しいキーを取得してください。</p>
+                    <p className="videos-alert__text">
+                      視聴セッション（30秒）が終了しました。「完全版を視聴」ボタンで新しいキーを取得してください。
+                    </p>
                   </div>
                   <button type="button" className="videos-alert__cta" onClick={onRetryWatch}>
                     🔄 もう一度視聴

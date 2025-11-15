@@ -17,8 +17,8 @@ app.get("/api/health", (_req, res) => {
 // Watch endpoint - returns mock session token and video URL
 app.post("/api/watch", (_req, res) => {
 	try {
-		// Issue #11: セッション期限を10秒に設定（MVPデモ用）
-		const expiresInSec = Number(process.env.SEAL_SESSION_DURATION ?? 10);
+		// Issue #11: セッション期限を30秒に設定
+		const expiresInSec = Number(process.env.SEAL_SESSION_DURATION ?? 30);
 		res.json({
 			success: true,
 			sessionToken: "mock-token",
