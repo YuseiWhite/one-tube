@@ -6,6 +6,8 @@ import type { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { Inputs, Transaction } from "@mysten/sui/transactions";
 import type { SuiObjectChange } from "@mysten/sui/client";
 import * as dotenv from "dotenv";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 import type { SupportedNetwork } from "../shared/utils";
 import {
@@ -225,8 +227,8 @@ async function createKiosk(
 				change.objectType?.startsWith("0x2::kiosk::KioskOwnerCap<")),
 	)?.objectId;
 
-	const kioskInitialSharedVersion =
-		(kioskChange as any)?.owner?.Shared?.initial_shared_version;
+	const kioskInitialSharedVersion = (kioskChange as any)?.owner?.Shared
+		?.initial_shared_version;
 
 	if (!kioskId || !kioskCapId || !kioskInitialSharedVersion) {
 		// Diagnosable: デバッグ用に全出力を表示
@@ -321,9 +323,7 @@ async function waitForObjectsAvailable(
 		}
 
 		if (attempt === retries) {
-			throw new Error(
-				`Objects not yet available on chain: ${ids.join(", ")}`,
-			);
+			throw new Error(`Objects not yet available on chain: ${ids.join(", ")}`);
 		}
 		await sleep(delayMs);
 	}
@@ -515,16 +515,60 @@ export async function seedCommand(network: SupportedNetwork): Promise<void> {
 		);
 	}
 
-	// 1. NFTミント
+	// 1. videos.json から blobId を読み込む
+	const videosJsonPath = path.join(
+		__dirname,
+		"../../app/src/assets/videos.json",
+	);
+	if (!fs.existsSync(videosJsonPath)) {
+		throw new Error(
+			`videos.json not found at ${videosJsonPath}\n` +
+				"Solution: Ensure videos.json exists in app/src/assets/",
+		);
+	}
+
+	const videosData = JSON.parse(
+		fs.readFileSync(videosJsonPath, "utf-8"),
+	) as { videos: Array<{ id: string; blobId: string }> };
+
+	const video = videosData.videos.find((v) => v.id === "one-173-premium-ticket");
+	if (!video) {
+		throw new Error(
+			`Video with id "one-173-premium-ticket" not found in videos.json`,
+		);
+	}
+
+	if (!video.blobId || video.blobId === "TEMP_PLACEHOLDER") {
+		throw new Error(
+			`blobId not set or still placeholder in videos.json\n` +
+				`Current blobId: ${video.blobId}\n` +
+				"Solution: Run 'tsx scripts/utils/update-videos-metadata.ts' after Walrus deployment",
+		);
+	}
+
+	console.log(`✅ Using blobId from videos.json: ${video.blobId.substring(0, 20)}...`);
+
+	// 2. NFTミント
+	const premiumTicketDescription = [
+		"プレミアムチケット購入特典:",
+		"このチケットを購入することで One Tubeでこの試合の完全版を視聴できるだけでなく、一ヶ月間過去の全ての試合動画が見放題になります。",
+		"あなたが好きな選手を選択することによって、購入されたプレミアムチケットの70%相当額はプラットフォームを通してその選手に支払われます。",
+		"",
+		"VIPチケット購入特典:",
+		"- VIPパスと専用入場口のご利用",
+		"- 「ONE 173」大会記念品",
+		"- ファイトウィーク限定イベントへのご招待",
+		"- ONEホスピタリティラウンジへのアクセス権",
+	].join("\n");
 	const nftIds = await mintBatch(
 		client,
 		keypair,
 		config.packageId,
 		config.adminCapId,
 		10,
-		"ONE 170 Premium Ticket",
-		"Superbon vs Masaaki Noiri - Full Match Access",
-		"mock-blob-id-fullmatch-one170",
+		"ONE 173 Premium Ticket: Superbon vs. Noiri",
+		premiumTicketDescription,
+		video.blobId,
 	);
 	await waitForObjectsAvailable(client, nftIds);
 

@@ -1,6 +1,7 @@
 node_modules
 .DS_Store
 app/dist
+app/dist-server
 contracts/build
 .env
 .vscode
@@ -8,3 +9,6 @@ contracts/build
 # Private keys
 .keys/
 *.key
+
+# movies (.mp4) and thumbnailsfor depoly to walrus
+app/public/assets

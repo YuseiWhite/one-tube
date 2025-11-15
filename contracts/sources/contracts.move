@@ -26,7 +26,7 @@ public struct PremiumTicketNFT has key, store {
     id: sui::object::UID,
     name: String,
     description: String,
-    blob_id: String,  // Walrus BLOB ID（MVP用モック）
+    blob_id: String,  // Walrus BLOB ID
 }
 
 /// 収益分配ルール用Witness
@@ -91,7 +91,7 @@ public fun mint_batch(
 }
 
 /// ミント＆転送: NFTをバッチでミントして呼び出し元に転送
-public entry fun mint_and_transfer_batch(
+public fun mint_and_transfer_batch(
     admin_cap: &AdminCap,
     count: u64,
     name: String,
