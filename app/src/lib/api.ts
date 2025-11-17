@@ -9,7 +9,8 @@ import type {
 } from "../shared/types";
 
 // Viteのプロキシを通すため、相対パスを使用
-const API_BASE_URL = "/api";
+// VITE_API_BASE_URLが設定されている場合はそれを使用（本番環境など）
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 export async function purchaseNFT(
 	request: PurchaseRequest,

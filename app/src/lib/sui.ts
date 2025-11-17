@@ -1,10 +1,16 @@
-import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
+import { SuiClient } from "@mysten/sui/client";
 import type { PremiumTicketNFT } from "../shared/types";
 
-const NETWORK = "devnet";
-const PACKAGE_ID = (import.meta as any).env?.VITE_PACKAGE_ID || "";
+// 環境変数から取得（Vite用）
+const RPC_URL = import.meta.env.VITE_RPC_URL || "https://fullnode.devnet.sui.io:443";
+const PACKAGE_ID = import.meta.env.VITE_PACKAGE_ID || "";
 
-export const suiClient = new SuiClient({ url: getFullnodeUrl(NETWORK) });
+// PACKAGE_IDが未設定の場合は警告を出す（開発時のみ）
+if (!PACKAGE_ID && import.meta.env.DEV) {
+	console.warn("⚠️ VITE_PACKAGE_ID is not set in environment variables");
+}
+
+export const suiClient = new SuiClient({ url: RPC_URL });
 
 export async function getUserNFTs(
 	address: string,

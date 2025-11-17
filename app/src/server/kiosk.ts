@@ -10,8 +10,12 @@ const RPC_URL = process.env.RPC_URL || getFullnodeUrl("devnet");
 const KIOSK_ID = process.env.KIOSK_ID;
 const PACKAGE_ID = process.env.PACKAGE_ID;
 
-if (!KIOSK_ID || !PACKAGE_ID) {
-	throw new Error("Missing KIOSK_ID or PACKAGE_ID in environment");
+// 環境変数の検証（明確なエラーメッセージ）
+if (!KIOSK_ID) {
+	throw new Error("KIOSK_ID is not set in environment variables");
+}
+if (!PACKAGE_ID) {
+	throw new Error("PACKAGE_ID is not set in environment variables");
 }
 
 const client = new SuiClient({ url: RPC_URL });

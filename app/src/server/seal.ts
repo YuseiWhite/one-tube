@@ -15,8 +15,9 @@ const SEAL_SESSION_DURATION = parseInt(
 const SEAL_DECRYPTION_KEY =
 	process.env.SEAL_DECRYPTION_KEY || "mock-decryption-key-dev";
 
+// 環境変数の検証（明確なエラーメッセージ）
 if (!PACKAGE_ID) {
-	throw new Error("Missing PACKAGE_ID in environment");
+	throw new Error("PACKAGE_ID is not set in environment variables");
 }
 
 const client = new SuiClient({ url: RPC_URL });

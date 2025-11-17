@@ -20,6 +20,24 @@ import type {
 
 dotenv.config();
 
+// 起動時の環境変数チェック（必須変数のみ）
+const requiredEnvVars = [
+	"PACKAGE_ID",
+	"KIOSK_ID",
+	"TRANSFER_POLICY_ID",
+	"SPONSOR_PRIVATE_KEY",
+	"KIOSK_INITIAL_SHARED_VERSION",
+	"TRANSFER_POLICY_INITIAL_SHARED_VERSION",
+];
+
+const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
+if (missingVars.length > 0) {
+	console.error("❌ Missing required environment variables:");
+	missingVars.forEach((key) => console.error(`   - ${key}`));
+	console.error("\nPlease check your .env file in the app directory.");
+	process.exit(1);
+}
+
 const app = express();
 const port = 3001;
 
@@ -38,7 +56,7 @@ app.get("/api/health", async (_req, res) => {
 
 		const health: HealthResponse = {
 			status: "ok",
-			network: process.env.NETWORK || "devnet",
+			network: process.env.NETWORK || process.env.ordinary || "devnet",
 			rpcConnected: true,
 			sponsorBalance,
 			activeSessions,
@@ -47,9 +65,11 @@ app.get("/api/health", async (_req, res) => {
 
 		res.json(health);
 	} catch (error) {
+		console.error("❌ Health check error:", error);
+		const errorMessage = error instanceof Error ? error.message : "Unknown error";
 		res.status(500).json({
 			status: "error",
-			error: error instanceof Error ? error.message : "Unknown error",
+			error: errorMessage,
 			timestamp: Date.now(),
 		});
 	}
@@ -284,8 +304,9 @@ setInterval(() => {
 // ===== サーバー起動 =====
 app.listen(port, () => {
 	console.log(`✅ OneTube API Server running on http://localhost:${port}`);
-	console.log(`📍 Network: ${process.env.NETWORK || "devnet"}`);
-	console.log(`📍 RPC: ${process.env.RPC_URL || "default"}`);
+	console.log(`📍 Network: ${process.env.NETWORK || process.env.ordinary || "devnet"}`);
+	console.log(`📍 RPC: ${process.env.RPC_URL || "https://fullnode.devnet.sui.io:443"}`);
+	console.log(`📍 Package ID: ${process.env.PACKAGE_ID?.slice(0, 10)}...`);
 }).on("error", (err: NodeJS.ErrnoException) => {
 	if (err.code === "EADDRINUSE") {
 		console.error(`❌ ポート ${port} は既に使用されています。`);

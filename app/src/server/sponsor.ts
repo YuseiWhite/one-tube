@@ -17,12 +17,24 @@ const KIOSK_INITIAL_SHARED_VERSION = process.env.KIOSK_INITIAL_SHARED_VERSION;
 const TRANSFER_POLICY_INITIAL_SHARED_VERSION =
 	process.env.TRANSFER_POLICY_INITIAL_SHARED_VERSION;
 
-if (!SPONSOR_PRIVATE_KEY || !PACKAGE_ID || !KIOSK_ID || !TRANSFER_POLICY_ID) {
-	throw new Error("Missing required environment variables for sponsor.ts");
+// 環境変数の検証（明確なエラーメッセージ）
+if (!SPONSOR_PRIVATE_KEY) {
+	throw new Error("SPONSOR_PRIVATE_KEY is not set in environment variables");
 }
-
-if (!KIOSK_INITIAL_SHARED_VERSION || !TRANSFER_POLICY_INITIAL_SHARED_VERSION) {
-	throw new Error("Missing shared object version environment variables");
+if (!PACKAGE_ID) {
+	throw new Error("PACKAGE_ID is not set in environment variables");
+}
+if (!KIOSK_ID) {
+	throw new Error("KIOSK_ID is not set in environment variables");
+}
+if (!TRANSFER_POLICY_ID) {
+	throw new Error("TRANSFER_POLICY_ID is not set in environment variables");
+}
+if (!KIOSK_INITIAL_SHARED_VERSION) {
+	throw new Error("KIOSK_INITIAL_SHARED_VERSION is not set in environment variables");
+}
+if (!TRANSFER_POLICY_INITIAL_SHARED_VERSION) {
+	throw new Error("TRANSFER_POLICY_INITIAL_SHARED_VERSION is not set in environment variables");
 }
 
 // ヘルパー関数: SPONSOR_PRIVATE_KEYを Uint8Array に変換
