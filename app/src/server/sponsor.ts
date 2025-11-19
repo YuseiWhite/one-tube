@@ -4,9 +4,15 @@ import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { fromHEX } from "@mysten/sui/utils";
 import { decodeSuiPrivateKey } from "@mysten/sui/cryptography";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import type { PurchaseRequest, PurchaseResponse } from "../shared/types.js";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ルートディレクトリの .env を読み込む
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
 const RPC_URL = process.env.RPC_URL || "https://fullnode.devnet.sui.io:443";
 const SPONSOR_PRIVATE_KEY = process.env.SPONSOR_PRIVATE_KEY;
