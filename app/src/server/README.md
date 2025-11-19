@@ -46,10 +46,8 @@ WALRUS_API_URL=https://publisher.walrus-testnet.walrus.space
 WALRUS_AGGREGATOR_URL=https://aggregator.walrus-testnet.walrus.space
 ```
 
-**重要**: `app/.env` にも同じ内容をコピーしてください：
-```bash
-cp .env app/.env
-```
+**重要**: ルートディレクトリの `.env` ファイルを直接使用します。
+`app/.env` へのコピーは不要です。サーバーは自動的にルート `.env` を読み込みます。
 
 ---
 
@@ -347,8 +345,8 @@ curl -s "http://localhost:3001/api/video?session=invalid-session-id" | jq
 # ルートディレクトリの .env を確認
 cat .env
 
-# app/.env にコピー
-cp .env app/.env
+# 環境変数が正しく設定されていることを確認
+# サーバーは自動的にルート .env を読み込みます
 ```
 
 ---
@@ -412,5 +410,5 @@ sui client objects $USER_ADDRESS --filter '{"StructType": "PACKAGE_ID::contracts
 
 ---
 
-**Last Updated**: 2025-01-13
+**Last Updated**: 2025-01-19
 **Author**: YuseiWhite, Claude Code
