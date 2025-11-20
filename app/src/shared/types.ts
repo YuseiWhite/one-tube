@@ -105,3 +105,24 @@ export class InvalidInputError extends Error {
 		this.name = "InvalidInputError";
 	}
 }
+
+// ===== zkLogin Types =====
+export type OpenIdProvider = "Google";
+
+export type SetupData = {
+	provider: OpenIdProvider;
+	maxEpoch: number;
+	randomness: string;
+	ephemeralPrivateKey: string;
+};
+
+export type ZkLoginAccount = {
+	provider: OpenIdProvider;
+	userAddr: string;
+	zkProofs: any;
+	ephemeralPrivateKey: string;
+	userSalt: string;
+	sub: string;
+	aud: string;
+	maxEpoch: number;
+};
