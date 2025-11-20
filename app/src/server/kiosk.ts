@@ -1,10 +1,16 @@
 import { KioskClient, Network } from "@mysten/kiosk";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import type { Video } from "../shared/types.js";
 import { getVideoByBlobId } from "./videos.js";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ルートディレクトリの .env を読み込む
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
 const RPC_URL = process.env.RPC_URL || getFullnodeUrl("devnet");
 const KIOSK_ID = process.env.KIOSK_ID;

@@ -1,10 +1,16 @@
 import { SuiClient } from "@mysten/sui/client";
 import crypto from "crypto";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import type { Session } from "../shared/types.js";
 import { NFTNotOwnedError, SessionExpiredError } from "../shared/types.js";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ルートディレクトリの .env を読み込む
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
 const RPC_URL = process.env.RPC_URL || "https://fullnode.devnet.sui.io:443";
 const PACKAGE_ID = process.env.PACKAGE_ID;

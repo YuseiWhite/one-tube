@@ -1,5 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import { sponsorPurchase, getSponsorBalance } from "./sponsor.js";
 import { getKioskListings, getListingInfo } from "./kiosk.js";
 import {
@@ -16,7 +18,11 @@ import type {
 	SessionMetadata,
 } from "../shared/types.js";
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ルートディレクトリの .env を読み込む
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
 const app = express();
 const port = 3001;
