@@ -22,7 +22,7 @@ if (!KIOSK_ID || !PACKAGE_ID) {
 
 const client = new SuiClient({ url: RPC_URL });
 const kioskClient = new KioskClient({
-	client,
+	client: client,
 	network: Network.CUSTOM,
 });
 type KioskClientItem = Awaited<

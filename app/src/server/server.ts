@@ -27,6 +27,18 @@ dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 const app = express();
 const port = 3001;
 
+// CORS設定
+app.use((req, res, next) => {
+	res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+	res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+	res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+	if (req.method === "OPTIONS") {
+		res.sendStatus(200);
+	} else {
+		next();
+	}
+});
+
 app.use(express.json());
 
 app.get("/api/health", async (_req, res) => {
@@ -49,6 +61,62 @@ app.get("/api/health", async (_req, res) => {
 			status: "error",
 			error: error instanceof Error ? error.message : "Unknown error",
 			timestamp: Date.now(),
+		});
+	}
+});
+
+/**
+ * GET /api/debug/zklogin
+ * zkLoginのデバッグ用エンドポイント（動作確認用）
+ */
+app.get("/api/debug/zklogin", async (req, res) => {
+	try {
+		const { id_token } = req.query;
+		
+		if (!id_token || typeof id_token !== "string") {
+			return res.status(400).json({
+				success: false,
+				error: "id_token is required",
+			});
+		}
+
+		console.log("[Debug] id_token受信:", id_token.substring(0, 50) + "...");
+		
+		// JWTをデコード（簡易版）
+		const parts = id_token.split(".");
+		if (parts.length !== 3) {
+			return res.status(400).json({
+				success: false,
+				error: "Invalid JWT format",
+			});
+		}
+
+		const payload = JSON.parse(
+			Buffer.from(parts[1], "base64url").toString("utf-8"),
+		);
+		
+		console.log("[Debug] JWT Payload:", {
+			sub: payload.sub,
+			email: payload.email,
+			aud: payload.aud,
+			iss: payload.iss,
+		});
+
+		res.json({
+			success: true,
+			message: "id_token received successfully",
+			payload: {
+				sub: payload.sub,
+				email: payload.email,
+				aud: payload.aud,
+				iss: payload.iss,
+			},
+		});
+	} catch (error) {
+		console.error("[Debug] Error:", error);
+		res.status(500).json({
+			success: false,
+			error: error instanceof Error ? error.message : "Unknown error",
 		});
 	}
 });

@@ -6,9 +6,8 @@
 		"skipLibCheck": true,
 
 		/* Bundler mode */
-		"moduleResolution": "bundler",
+		"moduleResolution": "node",
 		"noEmit": true,
-		"allowImportingTsExtensions": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"outDir": "dist-server",
@@ -21,7 +20,8 @@
 
 		/* Node.js specific */
 		"esModuleInterop": true,
-		"allowSyntheticDefaultImports": true
+		"allowSyntheticDefaultImports": true,
+		"types": ["node"]
 	},
-	"include": ["src/server/**/*", "vite.config.ts"]
+	"include": ["src/server/**/*"]
 }

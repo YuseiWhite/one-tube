@@ -8,7 +8,9 @@
 
 		/* Bundler mode */
 		"moduleResolution": "bundler",
+		"baseUrl": ".",
 		"allowImportingTsExtensions": true,
+		"allowSyntheticDefaultImports": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"noEmit": true,
@@ -20,5 +22,10 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true
 	},
-	"include": ["src"]
+	"include": ["src"],
+	"exclude": [
+		"src/server/**/*",
+		"vite.config.ts",
+		"node_modules"
+	]
 }

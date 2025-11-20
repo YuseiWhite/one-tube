@@ -17,6 +17,7 @@ OneTubeは、ONE Championshipの試合動画をNFT保有によって視聴でき
 - 🎬 **動画視聴**: NFT保有者だけが完全版動画を視聴可能
 - 💰 **収益分配**: 購入時に自動で収益を分配（アスリート70% / ONE 25% / Platform 5%）
 - ⛽ **ガス代不要**: Sponsored Transactionでユーザーのガス代をプラットフォームが負担
+- 🔐 **zkLogin認証**: Googleアカウントでログイン可能（Enoki SDK使用）
 
 ## 🚀 クイックスタート
 
@@ -25,6 +26,8 @@ OneTubeは、ONE Championshipの試合動画をNFT保有によって視聴でき
 - Node.js 18+
 - pnpm 10.x
 - Sui CLI
+- Enokiアカウント（zkLogin機能を使用する場合）
+- Google Cloud Consoleアカウント（zkLogin機能を使用する場合）
 
 ### セットアップ
 
@@ -35,6 +38,12 @@ pnpm install
 # 環境変数の設定
 cp .env.example .env
 # .envファイルを編集して必要な値を設定
+# - VITE_ENOKI_API_KEY: Enoki APIキー（zkLogin機能を使用する場合）
+# - VITE_ENOKI_NETWORK: devnet または testnet（zkLogin機能を使用する場合）
+
+# Google OAuth設定（zkLogin機能を使用する場合）
+cp app/src/config.example.json app/src/config.json
+# app/src/config.jsonを編集してCLIENT_ID_GOOGLEを設定
 
 # スマートコントラクトのデプロイ
 pnpm run deploy:devnet
@@ -48,6 +57,25 @@ pnpm run dev
 # バックエンドの起動
 pnpm run dev:server
 ```
+
+### zkLogin機能のセットアップ（オプション）
+
+zkLogin機能を使用する場合は、以下の追加設定が必要です：
+
+1. **Enokiアカウントの作成**
+   - [Enokiダッシュボード](https://enoki.mystenlabs.com/)にアクセス
+   - アカウントを作成してAPIキーを取得
+   - `.env`ファイルに`VITE_ENOKI_API_KEY`と`VITE_ENOKI_NETWORK`を設定
+
+2. **Google OAuth設定**
+   - [Google Cloud Console](https://console.cloud.google.com/)にアクセス
+   - 新しいプロジェクトを作成
+   - OAuth同意画面を設定（ユーザータイプ: 外部）
+   - OAuth 2.0クライアントIDを作成
+   - 承認済みのリダイレクトURIに`http://localhost:3000`を追加
+   - `app/src/config.json`に`CLIENT_ID_GOOGLE`を設定
+
+詳細は`docs/issues/028-zk-login-wallet/plan.md`を参照してください。
 
 ## 📁 プロジェクト構成
 
@@ -67,6 +95,7 @@ one-tube/
 - **ガス代負担**: Sponsored Transaction
 - **ストレージ**: Walrus Testnet（分散型動画保存）
 - **アクセス制御**: Seal（暗号化/復号）
+- **認証**: zkLogin（Enoki SDK）+ Google OAuth
 - **Frontend**: React + Vite
 - **Backend**: Express + TypeScript
 
@@ -97,9 +126,20 @@ pnpm run biome:check
 
 ## 🔄 ユーザーフロー
 
+### Sui Wallet接続の場合
+
 1. **ウォレット接続**: Sui Walletで接続
 2. **NFT購入**: KioskからプレミアムチケットNFTを購入（ガス代不要）
 3. **動画視聴**: NFT保有者として完全版動画を視聴（セッション有効期限: 30秒（任意））
+
+### zkLogin接続の場合（Google認証）
+
+1. **Googleログイン**: 「Googleでログイン」ボタンをクリックしてGoogleアカウントで認証
+2. **zkLoginアドレス生成**: Enoki SDKが自動的にzkLoginアドレスを生成
+3. **NFT購入**: KioskからプレミアムチケットNFTを購入（ガス代不要、Sponsored Transaction）
+4. **動画視聴**: NFT保有者として完全版動画を視聴
+
+**注意**: Sui Wallet接続とzkLogin接続は並行して使用可能です。
 
 ## 💡 ビジネスモデル
 
@@ -113,6 +153,8 @@ pnpm run biome:check
 
 - [プロジェクト仕様書](docs/project-spec.md)
 - [開発ワークフロー](docs/development-workflow.md)
+- [zkLogin統合実装計画書](docs/issues/028-zk-login-wallet/plan.md)
+- [zkLogin統合タスクリスト](docs/issues/028-zk-login-wallet/tasks.md)
 
 ## 📄 ライセンス
 
