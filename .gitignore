@@ -12,3 +12,6 @@ contracts/build
 
 # movies (.mp4) and thumbnailsfor depoly to walrus
 app/public/assets
+
+# Configuration files with sensitive data
+app/src/config.json
