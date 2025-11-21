@@ -3,6 +3,7 @@
 import * as React from "react";
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox@1.1.4";
 import { CheckIcon } from "lucide-react@0.487.0";
+import { figma } from "@figma/code-connect";
 
 import { cn } from "./utils";
 
@@ -30,3 +31,12 @@ function Checkbox({
 }
 
 export { Checkbox };
+
+// Figma Code Connect
+figma.connect(Checkbox, {
+  props: {
+    checked: figma.boolean("Checked"),
+    disabled: figma.boolean("Disabled"),
+  },
+  example: (props) => <Checkbox {...props} />,
+});

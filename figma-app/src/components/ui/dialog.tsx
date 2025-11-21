@@ -3,6 +3,7 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog@1.1.6";
 import { XIcon } from "lucide-react@0.487.0";
+import { figma } from "@figma/code-connect";
 
 import { cn } from "./utils";
 
@@ -133,3 +134,46 @@ export {
   DialogTitle,
   DialogTrigger,
 };
+
+// Figma Code Connect
+figma.connect(Dialog, {
+  props: {
+    open: figma.boolean("Open"),
+  },
+  example: (props) => (
+    <Dialog {...props}>
+      <DialogTrigger>Open</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Title</DialogTitle>
+          <DialogDescription>Description</DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  ),
+});
+
+figma.connect(DialogContent, {
+  props: {
+    children: figma.children("Dialog Content"),
+  },
+  example: (props) => (
+    <Dialog open>
+      <DialogContent {...props} />
+    </Dialog>
+  ),
+});
+
+figma.connect(DialogTitle, {
+  props: {
+    children: figma.children("Title Text"),
+  },
+  example: (props) => <DialogTitle {...props} />,
+});
+
+figma.connect(DialogDescription, {
+  props: {
+    children: figma.children("Description Text"),
+  },
+  example: (props) => <DialogDescription {...props} />,
+});

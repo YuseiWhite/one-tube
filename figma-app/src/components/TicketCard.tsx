@@ -1,6 +1,7 @@
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { figma } from '@figma/code-connect';
 
 interface Ticket {
   id: string;
@@ -127,3 +128,32 @@ export function TicketCard({ ticket, isOwned, onPurchase }: TicketCardProps) {
     </div>
   );
 }
+
+// Figma Code Connect
+figma.connect(TicketCard, {
+  props: {
+    isOwned: figma.boolean("Owned"),
+    ticket: figma.instance("Ticket Data"),
+  },
+  example: (props) => (
+    <TicketCard
+      {...props}
+      ticket={props.ticket || {
+        id: 'ticket-1',
+        eventTitle: 'Event Title',
+        fighter1: 'Fighter 1',
+        fighter2: 'Fighter 2',
+        fighter1Image: '',
+        fighter2Image: '',
+        venue: 'Venue',
+        physicalPrice: '0.5 SUI',
+        premiumAdd: '+0.2 SUI',
+        stock: 10,
+        totalStock: 100,
+        soldOut: false,
+        ticketsNotAvailable: false,
+      }}
+      onPurchase={() => {}}
+    />
+  ),
+});

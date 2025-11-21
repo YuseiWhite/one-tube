@@ -1,4 +1,5 @@
 import { Ticket, Play } from 'lucide-react';
+import { figma } from '@figma/code-connect';
 
 interface SidebarProps {
   activePage: 'tickets' | 'videos';
@@ -56,3 +57,19 @@ export function Sidebar({ activePage, onPageChange }: SidebarProps) {
     </aside>
   );
 }
+
+// Figma Code Connect
+figma.connect(Sidebar, {
+  props: {
+    activePage: figma.enum("Active Page", {
+      tickets: "tickets",
+      videos: "videos",
+    }),
+  },
+  example: (props) => (
+    <Sidebar
+      {...props}
+      onPageChange={() => {}}
+    />
+  ),
+});

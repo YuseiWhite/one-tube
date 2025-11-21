@@ -1,4 +1,5 @@
 import * as React from "react";
+import { figma } from "@figma/code-connect";
 
 import { cn } from "./utils";
 
@@ -19,3 +20,18 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
 }
 
 export { Input };
+
+// Figma Code Connect
+figma.connect(Input, {
+  props: {
+    type: figma.enum("Type", {
+      text: "text",
+      email: "email",
+      password: "password",
+      number: "number",
+    }),
+    placeholder: figma.string("Placeholder"),
+    disabled: figma.boolean("Disabled"),
+  },
+  example: (props) => <Input {...props} />,
+});

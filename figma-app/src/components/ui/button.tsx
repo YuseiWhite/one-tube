@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot@1.1.2";
 import { cva, type VariantProps } from "class-variance-authority@0.7.1";
+import { figma } from "@figma/code-connect";
 
 import { cn } from "./utils";
 
@@ -56,3 +57,26 @@ function Button({
 }
 
 export { Button, buttonVariants };
+
+// Figma Code Connect
+figma.connect(Button, {
+  props: {
+    variant: figma.enum("Variant", {
+      default: "default",
+      destructive: "destructive",
+      outline: "outline",
+      secondary: "secondary",
+      ghost: "ghost",
+      link: "link",
+    }),
+    size: figma.enum("Size", {
+      default: "default",
+      sm: "sm",
+      lg: "lg",
+      icon: "icon",
+    }),
+    disabled: figma.boolean("Disabled"),
+    children: figma.children("Button Text"),
+  },
+  example: (props) => <Button {...props} />,
+});

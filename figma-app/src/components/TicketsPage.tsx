@@ -2,6 +2,7 @@ import { TicketCard } from './TicketCard';
 import { RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from 'sonner@2.0.3';
+import { figma } from '@figma/code-connect';
 
 interface TicketsPageProps {
   isWalletConnected: boolean;
@@ -248,3 +249,18 @@ export function TicketsPage({ isWalletConnected, ownedTickets, onTicketPurchased
     </div>
   );
 }
+
+// Figma Code Connect
+figma.connect(TicketsPage, {
+  props: {
+    isWalletConnected: figma.boolean("Wallet Connected"),
+    ownedTickets: figma.instance("Owned Tickets"),
+  },
+  example: (props) => (
+    <TicketsPage
+      {...props}
+      ownedTickets={props.ownedTickets || []}
+      onTicketPurchased={() => {}}
+    />
+  ),
+});

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot@1.1.2";
 import { cva, type VariantProps } from "class-variance-authority@0.7.1";
+import { figma } from "@figma/code-connect";
 
 import { cn } from "./utils";
 
@@ -44,3 +45,17 @@ function Badge({
 }
 
 export { Badge, badgeVariants };
+
+// Figma Code Connect
+figma.connect(Badge, {
+  props: {
+    variant: figma.enum("Variant", {
+      default: "default",
+      secondary: "secondary",
+      destructive: "destructive",
+      outline: "outline",
+    }),
+    children: figma.children("Badge Text"),
+  },
+  example: (props) => <Badge {...props} />,
+});

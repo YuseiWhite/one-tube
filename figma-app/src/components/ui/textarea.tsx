@@ -1,4 +1,5 @@
 import * as React from "react";
+import { figma } from "@figma/code-connect";
 
 import { cn } from "./utils";
 
@@ -16,3 +17,13 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
 }
 
 export { Textarea };
+
+// Figma Code Connect
+figma.connect(Textarea, {
+  props: {
+    placeholder: figma.string("Placeholder"),
+    disabled: figma.boolean("Disabled"),
+    value: figma.string("Value"),
+  },
+  example: (props) => <Textarea {...props} />,
+});

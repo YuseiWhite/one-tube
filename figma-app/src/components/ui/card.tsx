@@ -1,4 +1,5 @@
 import * as React from "react";
+import { figma } from "@figma/code-connect";
 
 import { cn } from "./utils";
 
@@ -90,3 +91,46 @@ export {
   CardDescription,
   CardContent,
 };
+
+// Figma Code Connect
+figma.connect(Card, {
+  props: {
+    children: figma.children("Card Content"),
+  },
+  example: (props) => <Card {...props} />,
+});
+
+figma.connect(CardHeader, {
+  props: {
+    children: figma.children("Header Content"),
+  },
+  example: (props) => <CardHeader {...props} />,
+});
+
+figma.connect(CardTitle, {
+  props: {
+    children: figma.children("Title Text"),
+  },
+  example: (props) => <CardTitle {...props} />,
+});
+
+figma.connect(CardDescription, {
+  props: {
+    children: figma.children("Description Text"),
+  },
+  example: (props) => <CardDescription {...props} />,
+});
+
+figma.connect(CardContent, {
+  props: {
+    children: figma.children("Content"),
+  },
+  example: (props) => <CardContent {...props} />,
+});
+
+figma.connect(CardFooter, {
+  props: {
+    children: figma.children("Footer Content"),
+  },
+  example: (props) => <CardFooter {...props} />,
+});

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs@1.1.3";
+import { figma } from "@figma/code-connect";
 
 import { cn } from "./utils";
 
@@ -64,3 +65,34 @@ function TabsContent({
 }
 
 export { Tabs, TabsList, TabsTrigger, TabsContent };
+
+// Figma Code Connect
+figma.connect(Tabs, {
+  props: {
+    defaultValue: figma.string("Default Value"),
+  },
+  example: (props) => (
+    <Tabs {...props}>
+      <TabsList>
+        <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+        <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+      </TabsList>
+      <TabsContent value="tab1">Content 1</TabsContent>
+      <TabsContent value="tab2">Content 2</TabsContent>
+    </Tabs>
+  ),
+});
+
+figma.connect(TabsTrigger, {
+  props: {
+    value: figma.string("Value"),
+    children: figma.children("Tab Label"),
+  },
+  example: (props) => (
+    <Tabs defaultValue="tab1">
+      <TabsList>
+        <TabsTrigger {...props} />
+      </TabsList>
+    </Tabs>
+  ),
+});

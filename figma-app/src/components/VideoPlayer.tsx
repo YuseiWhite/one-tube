@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
+import { figma } from '@figma/code-connect';
 
 interface Video {
   id: string;
@@ -278,3 +279,22 @@ export function VideoPlayer({ video, isOwned, isWalletConnected }: VideoPlayerPr
     </div>
   );
 }
+
+// Figma Code Connect
+figma.connect(VideoPlayer, {
+  props: {
+    isOwned: figma.boolean("Owned"),
+    isWalletConnected: figma.boolean("Wallet Connected"),
+    video: figma.instance("Video Data"),
+  },
+  example: (props) => (
+    <VideoPlayer
+      {...props}
+      video={props.video || {
+        id: 'video-1',
+        title: 'Video Title',
+        thumbnail: '',
+      }}
+    />
+  ),
+});

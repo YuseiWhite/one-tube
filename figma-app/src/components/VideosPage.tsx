@@ -5,6 +5,7 @@ import { Heart } from 'lucide-react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { motion } from 'motion/react';
+import { figma } from '@figma/code-connect';
 
 interface VideosPageProps {
   isWalletConnected: boolean;
@@ -280,3 +281,17 @@ export function VideosPage({ isWalletConnected, ownedTickets }: VideosPageProps)
     </div>
   );
 }
+
+// Figma Code Connect
+figma.connect(VideosPage, {
+  props: {
+    isWalletConnected: figma.boolean("Wallet Connected"),
+    ownedTickets: figma.instance("Owned Tickets"),
+  },
+  example: (props) => (
+    <VideosPage
+      {...props}
+      ownedTickets={props.ownedTickets || []}
+    />
+  ),
+});

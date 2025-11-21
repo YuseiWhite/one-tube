@@ -7,6 +7,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "lucide-react@0.487.0";
+import { figma } from "@figma/code-connect";
 
 import { cn } from "./utils";
 
@@ -187,3 +188,38 @@ export {
   SelectTrigger,
   SelectValue,
 };
+
+// Figma Code Connect
+figma.connect(Select, {
+  props: {
+    value: figma.string("Value"),
+  },
+  example: (props) => (
+    <Select {...props}>
+      <SelectTrigger>
+        <SelectValue placeholder="Select..." />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="option1">Option 1</SelectItem>
+        <SelectItem value="option2">Option 2</SelectItem>
+      </SelectContent>
+    </Select>
+  ),
+});
+
+figma.connect(SelectTrigger, {
+  props: {
+    size: figma.enum("Size", {
+      default: "default",
+      sm: "sm",
+    }),
+    disabled: figma.boolean("Disabled"),
+  },
+  example: (props) => (
+    <Select>
+      <SelectTrigger {...props}>
+        <SelectValue placeholder="Select..." />
+      </SelectTrigger>
+    </Select>
+  ),
+});

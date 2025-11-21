@@ -1,5 +1,6 @@
 import { Button } from './ui/button';
 import { useState } from 'react';
+import { figma } from '@figma/code-connect';
 
 interface HeaderProps {
   isWalletConnected: boolean;
@@ -92,3 +93,18 @@ export function Header({
     </header>
   );
 }
+
+// Figma Code Connect
+figma.connect(Header, {
+  props: {
+    isWalletConnected: figma.boolean("Wallet Connected"),
+    walletAddress: figma.string("Wallet Address"),
+  },
+  example: (props) => (
+    <Header
+      {...props}
+      onConnectWallet={() => {}}
+      onDisconnectWallet={() => {}}
+    />
+  ),
+});

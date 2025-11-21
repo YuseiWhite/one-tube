@@ -1,6 +1,7 @@
 import { Ticket } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { figma } from '@figma/code-connect';
 
 interface Video {
   id: string;
@@ -97,3 +98,28 @@ export function VideoCard({ video, isOwned, isSelected, onClick }: VideoCardProp
     </button>
   );
 }
+
+// Figma Code Connect
+figma.connect(VideoCard, {
+  props: {
+    isOwned: figma.boolean("Owned"),
+    isSelected: figma.boolean("Selected"),
+    video: figma.instance("Video Data"),
+  },
+  example: (props) => (
+    <VideoCard
+      {...props}
+      video={props.video || {
+        id: 'video-1',
+        ticketId: 'ticket-1',
+        title: 'Video Title',
+        thumbnail: '',
+        date: '2024.01.01',
+        fighters: 'Fighter 1, Fighter 2',
+        duration: '10:00',
+        venue: 'Venue',
+      }}
+      onClick={() => {}}
+    />
+  ),
+});

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { TicketsPage } from './components/TicketsPage';
@@ -6,10 +6,10 @@ import { VideosPage } from './components/VideosPage';
 import { Toaster } from './components/ui/sonner';
 
 export default function App() {
-  const [activePage, setActivePage] = useState<'tickets' | 'videos'>('tickets');
+  const [activePage, setActivePage] = useState('tickets' as 'tickets' | 'videos');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
-  const [ownedTickets, setOwnedTickets] = useState<string[]>([]);
+  const [ownedTickets, setOwnedTickets] = useState([] as string[]);
 
   const handleConnectWallet = () => {
     // モック接続
