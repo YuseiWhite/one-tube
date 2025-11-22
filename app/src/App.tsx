@@ -7,7 +7,7 @@ import {
 import { debugLog, infoLog, warnLog, errorLog } from "./lib/logger";
 import { Header } from "./components/Header";
 import { Sidebar, type PageType } from "./components/Sidebar";
-import { TicketsPage } from "./components/TicketsPage";
+import { TicketsPage } from "./pages/TicketsPage";
 
 function App() {
 	// OAuthコールバック処理でzkLoginアドレスを設定（将来の使用のために保持）
@@ -83,7 +83,7 @@ function App() {
 			<div style={{ display: "flex", flex: 1, overflow: "hidden", width: "100%" }}>
 				<Sidebar currentPage={currentPage} />
 				{/* メインコンテンツ領域 */}
-				<div style={{ flex: 1, overflow: "auto", width: "100%" }}>
+				<div style={{ flex: 1, overflow: "auto", width: "100%", backgroundColor: "#18181b" }}>
 					<Routes>
 						<Route path="/" element={<Navigate to="/tickets" replace />} />
 						<Route path="/tickets" element={<TicketsPage />} />
