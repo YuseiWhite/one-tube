@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-const TICKETS_ICON_URL = "https://www.figma.com/api/mcp/asset/7cb33d99-a619-4e9b-901f-e8b480d76cd9";
-const VIDEOS_ICON_URL = "https://www.figma.com/api/mcp/asset/109862d8-9b71-418c-84a5-120375d3b776";
+const TICKETS_ICON_URL = "https://www.figma.com/api/mcp/asset/2efb565f-adc6-4c76-b62c-1dcafea97d29";
+const VIDEOS_ICON_URL = "https://www.figma.com/api/mcp/asset/54fcc869-881d-4b88-ad2a-0a19ee111257";
 
 export type PageType = "tickets" | "videos";
 
@@ -14,9 +14,9 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 	return (
 		<div
 			style={{
-				backgroundColor: "#09090B",
+				backgroundColor: "#18181b",
 				borderRight: "1px solid #27272a",
-				width: "319px",
+				width: "320px",
 				height: "100%",
 				minHeight: "100%",
 				position: "relative",
@@ -27,12 +27,19 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 			{/* ナビゲーション部分 */}
 			<div
 				style={{
-					padding: "16px",
+					paddingTop: "16px",
+					paddingLeft: "16px",
+					paddingRight: "16px",
+					paddingBottom: "0",
 					display: "flex",
 					flexDirection: "column",
 					gap: "8px",
-					width: "100%",
+					width: "319px",
+					height: "136px",
 					boxSizing: "border-box",
+					position: "absolute",
+					left: 0,
+					top: 0,
 				}}
 			>
 				{/* TICKETS ボタン */}
@@ -50,13 +57,16 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 					}}
 					style={{
 						backgroundColor: currentPage === "tickets" ? "#27272a" : "transparent",
-						borderLeft: currentPage === "tickets" ? "4px solid #FDC700" : "4px solid transparent",
+						borderLeft: currentPage === "tickets" ? "4px solid #fdc700" : "4px solid transparent",
 						borderTop: "none",
 						borderRight: "none",
 						borderBottom: "none",
 						borderRadius: "10px",
 						height: "48px",
-						padding: "0 16px 0 20px",
+						paddingLeft: "20px",
+						paddingRight: "0",
+						paddingTop: "0",
+						paddingBottom: "0",
 						display: "flex",
 						alignItems: "center",
 						gap: "12px",
@@ -93,7 +103,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 							fontSize: "16px",
 							fontWeight: 400,
 							lineHeight: "24px",
-							color: currentPage === "tickets" ? "#FDC700" : "#9f9fa9",
+							color: currentPage === "tickets" ? "#fdc700" : "#9f9fa9",
 							letterSpacing: "0.4875px",
 						}}
 					>
@@ -116,13 +126,16 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 					}}
 					style={{
 						backgroundColor: currentPage === "videos" ? "#27272a" : "transparent",
-						borderLeft: currentPage === "videos" ? "4px solid #FDC700" : "4px solid transparent",
+						borderLeft: currentPage === "videos" ? "4px solid #fdc700" : "4px solid transparent",
 						borderTop: "none",
 						borderRight: "none",
 						borderBottom: "none",
 						borderRadius: "10px",
 						height: "48px",
-						padding: "0 16px",
+						paddingLeft: "16px",
+						paddingRight: "0",
+						paddingTop: "0",
+						paddingBottom: "0",
 						display: "flex",
 						alignItems: "center",
 						gap: "12px",
@@ -159,7 +172,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 							fontSize: "16px",
 							fontWeight: 400,
 							lineHeight: "24px",
-							color: currentPage === "videos" ? "#FDC700" : "#9f9fa9",
+							color: currentPage === "videos" ? "#fdc700" : "#9f9fa9",
 							letterSpacing: "0.4875px",
 						}}
 					>
@@ -173,13 +186,15 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 				style={{
 					position: "absolute",
 					left: "16px",
-					top: "160px",
-					width: "calc(100% - 32px)",
-					maxWidth: "287px",
+					top: "136px",
+					width: "287px",
 					backgroundColor: "rgba(24, 24, 27, 0.5)",
 					border: "1px solid rgba(39, 39, 42, 0.5)",
 					borderRadius: "10px",
-					padding: "17px",
+					paddingTop: "17px",
+					paddingLeft: "17px",
+					paddingRight: "17px",
+					paddingBottom: "1px",
 					display: "flex",
 					flexDirection: "column",
 					gap: "12px",
@@ -200,7 +215,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 							fontSize: "14px",
 							fontWeight: 400,
 							lineHeight: "20px",
-							color: "#FDC700",
+							color: "#fdc700",
 							letterSpacing: "-0.1504px",
 							margin: 0,
 						}}
