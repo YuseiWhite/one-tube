@@ -1,5 +1,25 @@
+import { useState } from "react";
+
 const img = "https://www.figma.com/api/mcp/asset/2839efea-21f5-432a-a410-f8e4af806ad6";
 const img1 = "https://www.figma.com/api/mcp/asset/a97a2a2d-5547-4837-8539-f43b64c6b891";
+
+// 弾むアニメーションのスタイル
+const bounceAnimation = `
+	@keyframes bounceLike {
+		0% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.4);
+		}
+		70% {
+			transform: scale(0.95);
+		}
+		100% {
+			transform: scale(1);
+		}
+	}
+`;
 
 interface VideoTitleSectionProps {
 	title: string;
@@ -18,15 +38,39 @@ export function VideoTitleSection({
 	onPremiumLike,
 	hasPremiumTicket = false,
 }: VideoTitleSectionProps) {
+	const [isLiked, setIsLiked] = useState(false);
+	const [isPremiumLiked, setIsPremiumLiked] = useState(false);
+	const [isAnimating, setIsAnimating] = useState(false);
+	const [isPremiumAnimating, setIsPremiumAnimating] = useState(false);
+
+	const handleLikeClick = () => {
+		if (!isAnimating) {
+			setIsAnimating(true);
+			setIsLiked(!isLiked);
+			onLike?.();
+			setTimeout(() => setIsAnimating(false), 400);
+		}
+	};
+
+	const handlePremiumLikeClick = () => {
+		if (hasPremiumTicket && !isPremiumAnimating) {
+			setIsPremiumAnimating(true);
+			setIsPremiumLiked(!isPremiumLiked);
+			onPremiumLike?.();
+			setTimeout(() => setIsPremiumAnimating(false), 400);
+		}
+	};
 	return (
-		<div
-			style={{
-				display: "flex",
-				alignItems: "flex-start",
-				justifyContent: "space-between",
-				width: "100%",
-			}}
-		>
+		<>
+			<style>{bounceAnimation}</style>
+			<div
+				style={{
+					display: "flex",
+					alignItems: "flex-start",
+					justifyContent: "space-between",
+					width: "100%",
+				}}
+			>
 			{/* タイトル */}
 			<div
 				style={{
@@ -76,24 +120,41 @@ export function VideoTitleSection({
 						alignItems: "center",
 						cursor: "pointer",
 					}}
-					onClick={onLike}
+					onClick={handleLikeClick}
 				>
 					<div
 						style={{
 							width: "24px",
 							height: "24px",
 							position: "relative",
+							animation: isAnimating ? "bounceLike 0.4s ease-out" : "none",
 						}}
 					>
-						<img
-							alt="いいね"
-							src={img}
-							style={{
-								width: "100%",
-								height: "100%",
-								display: "block",
-							}}
-						/>
+						{isLiked ? (
+							// 赤く塗りつぶされたハート
+							<svg
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+									fill="#ef4444"
+								/>
+							</svg>
+						) : (
+							<img
+								alt="いいね"
+								src={img}
+								style={{
+									width: "100%",
+									height: "100%",
+									display: "block",
+								}}
+							/>
+						)}
 					</div>
 					<div
 						style={{
@@ -108,16 +169,17 @@ export function VideoTitleSection({
 								fontSize: "12px",
 								fontWeight: 400,
 								lineHeight: "16px",
-								color: "#9f9fa9",
+								color: isLiked ? "#ef4444" : "#9f9fa9",
 								margin: 0,
 								position: "absolute",
 								left: "50%",
 								top: "1px",
 								transform: "translateX(-50%)",
 								textAlign: "center",
+								transition: "color 0.2s ease",
 							}}
 						>
-							{likeCount}
+							{isLiked ? likeCount + 1 : likeCount}
 						</p>
 					</div>
 				</div>
@@ -137,24 +199,52 @@ export function VideoTitleSection({
 						cursor: hasPremiumTicket ? "pointer" : "not-allowed",
 						opacity: hasPremiumTicket ? 1 : 0.5,
 					}}
-					onClick={hasPremiumTicket ? onPremiumLike : undefined}
+					onClick={handlePremiumLikeClick}
 				>
 					<div
 						style={{
 							width: "24px",
 							height: "24px",
 							position: "relative",
+							animation: isPremiumAnimating ? "bounceLike 0.4s ease-out" : "none",
 						}}
 					>
-						<img
-							alt="プレミアムいいね"
-							src={img1}
-							style={{
-								width: "100%",
-								height: "100%",
-								display: "block",
-							}}
-						/>
+						{isPremiumLiked ? (
+							// 虹色のハート
+							<svg
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<defs>
+									<linearGradient id="rainbowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+										<stop offset="0%" stopColor="#ff0000" />
+										<stop offset="16.66%" stopColor="#ff7f00" />
+										<stop offset="33.33%" stopColor="#ffff00" />
+										<stop offset="50%" stopColor="#00ff00" />
+										<stop offset="66.66%" stopColor="#0000ff" />
+										<stop offset="83.33%" stopColor="#4b0082" />
+										<stop offset="100%" stopColor="#9400d3" />
+									</linearGradient>
+								</defs>
+								<path
+									d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+									fill="url(#rainbowGradient)"
+								/>
+							</svg>
+						) : (
+							<img
+								alt="プレミアムいいね"
+								src={img1}
+								style={{
+									width: "100%",
+									height: "100%",
+									display: "block",
+								}}
+							/>
+						)}
 					</div>
 					<div
 						style={{
@@ -169,21 +259,23 @@ export function VideoTitleSection({
 								fontSize: "12px",
 								fontWeight: 400,
 								lineHeight: "16px",
-								color: "#9f9fa9",
+								color: isPremiumLiked ? "#fdc700" : "#9f9fa9",
 								margin: 0,
 								position: "absolute",
 								left: "50%",
 								top: "1px",
 								transform: "translateX(-50%)",
 								textAlign: "center",
+								transition: "color 0.2s ease",
 							}}
 						>
-							{premiumLikeCount}
+							{isPremiumLiked ? premiumLikeCount + 1 : premiumLikeCount}
 						</p>
 					</div>
 				</div>
 			</div>
 		</div>
+		</>
 	);
 }
 
