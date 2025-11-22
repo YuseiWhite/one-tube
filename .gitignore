@@ -15,3 +15,5 @@ app/public/assets
 
 # Configuration files with sensitive data
 app/src/config.json
+
+app/src/assets/public/avatars

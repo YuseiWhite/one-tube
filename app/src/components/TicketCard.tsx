@@ -6,6 +6,8 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 	const [isHovered, setIsHovered] = useState(false);
 	const [isPremiumButtonHovered, setIsPremiumButtonHovered] = useState(false);
 	const [isRegularButtonHovered, setIsRegularButtonHovered] = useState(false);
+	const [leftImageError, setLeftImageError] = useState(false);
+	const [rightImageError, setRightImageError] = useState(false);
 	
 	const isAvailable = ticket.isAvailable;
 	const isPremiumOwned = ticket.isPremiumOwned || false;
@@ -177,22 +179,41 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 								position: "relative",
 								flexShrink: 0,
 								width: "100%",
+								backgroundColor: "#18181b",
 							}}
 						>
-							<img
-								alt=""
-								src={ticket.leftImageUrl}
-								style={{
-									position: "absolute",
-									inset: 0,
-									maxWidth: "none",
-									objectFit: "cover",
-									objectPosition: "50% 50%",
-									pointerEvents: "none",
-									width: "100%",
-									height: "100%",
-								}}
-							/>
+							{!leftImageError ? (
+								<img
+									alt={ticket.fighter1}
+									src={ticket.leftImageUrl}
+									onError={() => setLeftImageError(true)}
+									style={{
+										position: "absolute",
+										inset: 0,
+										maxWidth: "none",
+										objectFit: "cover",
+										objectPosition: "50% 20%", // 顔写真がより見やすくなるように調整
+										pointerEvents: "none",
+										width: "100%",
+										height: "100%",
+									}}
+								/>
+							) : (
+								<div
+									style={{
+										position: "absolute",
+										inset: 0,
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+										color: "#71717b",
+										fontSize: "12px",
+										fontFamily: "'Inter', sans-serif",
+									}}
+								>
+									{ticket.fighter1}
+								</div>
+							)}
 						</div>
 					</div>
 					{/* 右側の画像 */}
@@ -213,22 +234,41 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 								position: "relative",
 								flexShrink: 0,
 								width: "100%",
+								backgroundColor: "#18181b",
 							}}
 						>
-							<img
-								alt=""
-								src={ticket.rightImageUrl}
-								style={{
-									position: "absolute",
-									inset: 0,
-									maxWidth: "none",
-									objectFit: "cover",
-									objectPosition: "50% 50%",
-									pointerEvents: "none",
-									width: "100%",
-									height: "100%",
-								}}
-							/>
+							{!rightImageError ? (
+								<img
+									alt={ticket.fighter2}
+									src={ticket.rightImageUrl}
+									onError={() => setRightImageError(true)}
+									style={{
+										position: "absolute",
+										inset: 0,
+										maxWidth: "none",
+										objectFit: "cover",
+										objectPosition: "50% 20%", // 顔写真がより見やすくなるように調整
+										pointerEvents: "none",
+										width: "100%",
+										height: "100%",
+									}}
+								/>
+							) : (
+								<div
+									style={{
+										position: "absolute",
+										inset: 0,
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+										color: "#71717b",
+										fontSize: "12px",
+										fontFamily: "'Inter', sans-serif",
+									}}
+								>
+									{ticket.fighter2}
+								</div>
+							)}
 						</div>
 					</div>
 				</div>
