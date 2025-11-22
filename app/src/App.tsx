@@ -64,13 +64,13 @@ function App() {
 	}, []);
 
 	return (
-		<div style={{ fontFamily: "sans-serif", minHeight: "100vh", backgroundColor: "#000000", display: "flex", flexDirection: "column" }}>
+		<div style={{ fontFamily: "sans-serif", margin: 0, padding: 0, width: "100%", height: "100vh", backgroundColor: "#000000", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 			<Header />
 			{/* サイドバーとメインコンテンツのコンテナ */}
-			<div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+			<div style={{ display: "flex", flex: 1, overflow: "hidden", width: "100%" }}>
 				<Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
 				{/* メインコンテンツ領域 */}
-				<div style={{ flex: 1, overflow: "auto" }}>
+				<div style={{ flex: 1, overflow: "auto", width: "100%" }}>
 					{currentPage === "tickets" && <TicketsPage />}
 					{currentPage === "videos" && (
 						<div>
