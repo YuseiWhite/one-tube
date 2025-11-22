@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const TICKETS_ICON_URL = "https://www.figma.com/api/mcp/asset/2efb565f-adc6-4c76-b62c-1dcafea97d29";
 const VIDEOS_ICON_URL = "https://www.figma.com/api/mcp/asset/54fcc869-881d-4b88-ad2a-0a19ee111257";
@@ -7,10 +7,10 @@ export type PageType = "tickets" | "videos";
 
 interface SidebarProps {
 	currentPage: PageType;
-	onPageChange: (page: PageType) => void;
 }
 
-export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
+export function Sidebar({ currentPage }: SidebarProps) {
+	const navigate = useNavigate();
 	return (
 		<div
 			style={{
@@ -44,7 +44,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 			>
 				{/* TICKETS ボタン */}
 				<button
-					onClick={() => onPageChange("tickets")}
+					onClick={() => navigate("/tickets")}
 					onMouseEnter={(e) => {
 						if (currentPage !== "tickets") {
 							e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
@@ -113,7 +113,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
 
 				{/* VIDEOS ボタン */}
 				<button
-					onClick={() => onPageChange("videos")}
+					onClick={() => navigate("/videos")}
 					onMouseEnter={(e) => {
 						if (currentPage !== "videos") {
 							e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.05)";

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import {
 	getZkLoginAddress,
 	handleAuthCallback,
@@ -11,8 +12,20 @@ import { TicketsPage } from "./components/TicketsPage";
 function App() {
 	// OAuthコールバック処理でzkLoginアドレスを設定（将来の使用のために保持）
 	const [zkLoginAddress, setZkLoginAddress] = useState<string | null>(null);
-	// 現在のページ状態（後からチケットページとビデオページを実装するための準備）
-	const [currentPage, setCurrentPage] = useState<PageType>("tickets");
+	const location = useLocation();
+	
+	// URLパスから現在のページを判定
+	const getCurrentPage = (): PageType => {
+		const path = location.pathname;
+		if (path === "/tickets" || path === "/") {
+			return "tickets";
+		} else if (path === "/videos") {
+			return "videos";
+		}
+		return "tickets";
+	};
+	
+	const currentPage = getCurrentPage();
 
 	// ページ読み込み時にOAuthコールバックを処理し、アカウント情報を復元
 	useEffect(() => {
@@ -68,15 +81,18 @@ function App() {
 			<Header />
 			{/* サイドバーとメインコンテンツのコンテナ */}
 			<div style={{ display: "flex", flex: 1, overflow: "hidden", width: "100%" }}>
-				<Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+				<Sidebar currentPage={currentPage} />
 				{/* メインコンテンツ領域 */}
 				<div style={{ flex: 1, overflow: "auto", width: "100%" }}>
-					{currentPage === "tickets" && <TicketsPage />}
-					{currentPage === "videos" && (
-						<div>
-							{/* ビデオページのコンテンツ（後から実装） */}
-						</div>
-					)}
+					<Routes>
+						<Route path="/" element={<Navigate to="/tickets" replace />} />
+						<Route path="/tickets" element={<TicketsPage />} />
+						<Route path="/videos" element={
+							<div>
+								{/* ビデオページのコンテンツ（後から実装） */}
+							</div>
+						} />
+					</Routes>
 				</div>
 			</div>
 		</div>
