@@ -1,8 +1,8 @@
 // チケットアイコンコンポーネント
 // プレミアムチケット所有時は虹色になる
 
-const imgVector = "https://www.figma.com/api/mcp/asset/0727bf3d-94c5-4e63-a883-d2c339b7c793";
-const imgVector1 = "https://www.figma.com/api/mcp/asset/400ffe42-ee8b-41ff-98ce-59f25b5ab703";
+const imgVector = "https://www.figma.com/api/mcp/asset/f6e2b09b-c861-4eb1-b7de-4b571ad666a4";
+const imgVector1 = "https://www.figma.com/api/mcp/asset/2d495240-73f8-4673-a113-b27dd6972e62";
 
 interface TicketIconProps {
 	isPremium?: boolean;

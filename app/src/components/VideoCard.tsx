@@ -38,10 +38,10 @@ function getThumbnailUrl(video: Video): string {
 	// メタデータから取得する必要があります
 	// ここではFigmaから取得した画像URLを使用
 	const mockThumbnails: Record<string, string> = {
-		"Superbon vs Masaaki Noiri - full match": "https://www.figma.com/api/mcp/asset/6638386c-6fa0-48de-8848-55effd26058a",
-		"Superbon vs Masaaki Noiri - KO Scene": "https://www.figma.com/api/mcp/asset/2a71a307-7710-4393-9b01-f8f71bc14dac",
-		"Rodtang vs Prajanchai - Highlights": "https://www.figma.com/api/mcp/asset/cab61810-9763-401b-8781-bfb5f521e2da",
-		"Tawanchai vs Nattawut - Championship Round": "https://www.figma.com/api/mcp/asset/47e85b42-0776-49aa-a8d1-30d9f51c897d",
+		"Superbon vs Masaaki Noiri - full match": "https://www.figma.com/api/mcp/asset/cefaf591-5956-4f2b-b243-26b39e4ace1f",
+		"Superbon vs Masaaki Noiri - KO Scene": "https://www.figma.com/api/mcp/asset/0155dbd6-2ed7-40ed-9363-927e3099321e",
+		"Rodtang vs Prajanchai - Highlights": "https://www.figma.com/api/mcp/asset/9aa78fe4-5612-44b3-a9da-8c0614e00bd7",
+		"Tawanchai vs Nattawut - Championship Round": "https://www.figma.com/api/mcp/asset/c5974f09-81b5-4e4a-8bbb-1be808c0dcd7",
 	};
 	return mockThumbnails[video.title] || "";
 }
@@ -61,9 +61,15 @@ export function VideoCard({ video, isSelected = false, onClick }: VideoCardProps
 	const uploadDate = getUploadDate(video);
 	const hasPremiumTicket = isPremiumOwned(video);
 
+	const handleClick = () => {
+		if (onClick) {
+			onClick();
+		}
+	};
+
 	return (
 		<div
-			onClick={onClick}
+			onClick={handleClick}
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 			style={{
@@ -72,8 +78,7 @@ export function VideoCard({ video, isSelected = false, onClick }: VideoCardProps
 				height: "auto",
 				overflow: "hidden",
 				position: "relative",
-				width: "100%",
-				maxWidth: "351px",
+				width: "351px",
 				boxSizing: "border-box",
 				border: "2px solid",
 				borderColor: isSelected ? "#fdc700" : "#27272a",
