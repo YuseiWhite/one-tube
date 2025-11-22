@@ -3,49 +3,24 @@ import type { TicketData } from "../types/ticket";
 
 const REFRESH_ICON_URL = "https://www.figma.com/api/mcp/asset/3c0bd1f0-ca2b-4059-b9ed-c0b49ef0e814";
 
-// 選手名から画像URLを生成する関数
-// ONE Championshipのサイト (https://www.onefc.com/tickets/) から取得可能
+// 選手名からローカル画像パスを生成する関数
+// app/public/assets フォルダ内の画像ファイルを使用
 function getFighterImageUrl(fighterName: string): string {
-	// 選手名をスラッグに変換
-	// 実際のONE Championshipのサイト構造に合わせて調整が必要な場合があります
+	// 選手名から画像ファイル名へのマッピング
 	const nameMapping: Record<string, string> = {
-		"Fabricio Andrade": "fabricio-andrade",
-		"Enkh-Orgil Baatarkhuu": "enkh-orgil-baatarkhuu",
-		"Superbon": "superbon",
-		"Masaaki Noiri": "masaaki-noiri",
-		"Tawanchai PK Saenchai": "tawanchai",
-		"Liu Mengyang": "liu-mengyang",
-		"Rodtang": "rodtang-jitmuangnon",
-		"Jonathan Haggerty": "jonathan-haggerty",
-		"Anatoly Malykhin": "anatoly-malykhin",
-		"Reug Reug": "reug-reug",
-		"Prajanchai": "prajanchai",
-		"Superlek": "superlek-kiatmoo9",
-		"Zhang Peimian": "zhang-peimian",
-		"Regian Eersel": "regian-eersel",
-		"Adriano Moraes": "adriano-moraes",
-		"Demetrious Johnson": "demetrious-johnson",
-		"Nong-O Hama": "nong-o",
-		"Felipe Lobo": "felipe-lobo",
-		"Petchtanong": "petchtanong-petkruathong",
-		"Zakaria El Jamari": "zakaria-el-jamari",
-		"Ok Rae Yoon": "ok-rae-yoon",
-		"Christian Lee": "christian-lee",
-		"Stamp Fairtex": "stamp-fairtex",
-		"Ham Seo Hee": "ham-seo-hee",
+		"Fabricio Andrade": "Fabricio_Andrade.png",
+		"Enkh-Orgil Baatarkhuu": "Enkh-Orgil.png",
+		"Tawanchai PK Saenchai": "Tawanchai.png",
+		"Liu Mengyang": "Liu_Mengyang.png",
+		"Zhang Peimian": "Zhang_Peimian.png",
+		// その他の選手については、利用可能な画像がない場合は generic_male.png をフォールバックとして使用
 	};
 	
-	const slug = nameMapping[fighterName] || fighterName
-		.toLowerCase()
-		.replace(/\s+/g, "-")
-		.replace(/\./g, "")
-		.replace(/\'/g, "")
-		.replace(/pk\s+/gi, "")
-		.replace(/\s+/g, "-");
+	// マッピングに存在する場合はその画像を使用、存在しない場合は generic_male.png を使用
+	const imageFileName = nameMapping[fighterName] || "generic_male.png";
 	
-	// ONE Championshipのサイトから取得可能な画像URL
-	// 実際のURLパターンはサイト構造に依存します
-	return `https://www.onefc.com/wp-content/uploads/athletes/${slug}.jpg`;
+	// パブリックフォルダ内の画像パスを返す
+	return `/assets/${imageFileName}`;
 }
 
 // 12個のイベントデータ
