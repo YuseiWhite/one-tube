@@ -7,7 +7,7 @@ import {
 import { debugLog, infoLog, warnLog, errorLog } from "./lib/logger";
 import { Header } from "./components/Header";
 import { Sidebar, type PageType } from "./components/Sidebar";
-import { TicketsPage } from "./components/TicketsPage";
+import { TicketsPage } from "./pages/TicketsPage";
 
 function App() {
 	// OAuthコールバック処理でzkLoginアドレスを設定（将来の使用のために保持）
