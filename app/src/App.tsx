@@ -1,14 +1,31 @@
 import { useState, useEffect } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import {
 	getZkLoginAddress,
 	handleAuthCallback,
 } from "./lib/enoki";
 import { debugLog, infoLog, warnLog, errorLog } from "./lib/logger";
 import { Header } from "./components/Header";
+import { Sidebar, type PageType } from "./components/Sidebar";
+import { TicketsPage } from "./components/TicketsPage";
 
 function App() {
 	// OAuthコールバック処理でzkLoginアドレスを設定（将来の使用のために保持）
 	const [zkLoginAddress, setZkLoginAddress] = useState<string | null>(null);
+	const location = useLocation();
+	
+	// URLパスから現在のページを判定
+	const getCurrentPage = (): PageType => {
+		const path = location.pathname;
+		if (path === "/tickets" || path === "/") {
+			return "tickets";
+		} else if (path === "/videos") {
+			return "videos";
+		}
+		return "tickets";
+	};
+	
+	const currentPage = getCurrentPage();
 
 	// ページ読み込み時にOAuthコールバックを処理し、アカウント情報を復元
 	useEffect(() => {
@@ -60,11 +77,23 @@ function App() {
 	}, []);
 
 	return (
-		<div style={{ fontFamily: "sans-serif", minHeight: "100vh", backgroundColor: "#000000" }}>
+		<div style={{ fontFamily: "sans-serif", margin: 0, padding: 0, width: "100%", height: "100vh", backgroundColor: "#000000", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 			<Header />
-			{/* メインコンテンツ領域 */}
-			<div style={{ padding: "20px" }}>
-				{/* 今後 TICKETS / VIDEOS ページが入るメインコンテンツ領域 */}
+			{/* サイドバーとメインコンテンツのコンテナ */}
+			<div style={{ display: "flex", flex: 1, overflow: "hidden", width: "100%" }}>
+				<Sidebar currentPage={currentPage} />
+				{/* メインコンテンツ領域 */}
+				<div style={{ flex: 1, overflow: "auto", width: "100%" }}>
+					<Routes>
+						<Route path="/" element={<Navigate to="/tickets" replace />} />
+						<Route path="/tickets" element={<TicketsPage />} />
+						<Route path="/videos" element={
+							<div>
+								{/* ビデオページのコンテンツ（後から実装） */}
+							</div>
+						} />
+					</Routes>
+				</div>
 			</div>
 		</div>
 	);
