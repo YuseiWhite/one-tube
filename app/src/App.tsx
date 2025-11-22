@@ -6,6 +6,7 @@ import {
 import { debugLog, infoLog, warnLog, errorLog } from "./lib/logger";
 import { Header } from "./components/Header";
 import { Sidebar, type PageType } from "./components/Sidebar";
+import { TicketsPage } from "./components/TicketsPage";
 
 function App() {
 	// OAuthコールバック処理でzkLoginアドレスを設定（将来の使用のために保持）
@@ -69,12 +70,8 @@ function App() {
 			<div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
 				<Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
 				{/* メインコンテンツ領域 */}
-				<div style={{ flex: 1, padding: "20px", overflow: "auto" }}>
-					{currentPage === "tickets" && (
-						<div>
-							{/* チケットページのコンテンツ（後から実装） */}
-						</div>
-					)}
+				<div style={{ flex: 1, overflow: "auto" }}>
+					{currentPage === "tickets" && <TicketsPage />}
 					{currentPage === "videos" && (
 						<div>
 							{/* ビデオページのコンテンツ（後から実装） */}
