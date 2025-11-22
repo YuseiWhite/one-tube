@@ -8,6 +8,7 @@ import { debugLog, infoLog, warnLog, errorLog } from "./lib/logger";
 import { Header } from "./components/Header";
 import { Sidebar, type PageType } from "./components/Sidebar";
 import { TicketsPage } from "./pages/TicketsPage";
+import { VideosPage } from "./pages/VideosPage";
 
 function App() {
 	// OAuthコールバック処理でzkLoginアドレスを設定（将来の使用のために保持）
@@ -87,11 +88,7 @@ function App() {
 					<Routes>
 						<Route path="/" element={<Navigate to="/tickets" replace />} />
 						<Route path="/tickets" element={<TicketsPage />} />
-						<Route path="/videos" element={
-							<div>
-								{/* ビデオページのコンテンツ（後から実装） */}
-							</div>
-						} />
+						<Route path="/videos" element={<VideosPage />} />
 					</Routes>
 				</div>
 			</div>
