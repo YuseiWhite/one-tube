@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 import { VideoCard } from "../components/VideoCard";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { VideoTitleSection } from "../components/VideoTitleSection";
@@ -6,16 +7,20 @@ import { VideoInfo } from "../components/VideoInfo";
 import { CommentForm } from "../components/CommentForm";
 import { PremiumTicketPrompt } from "../components/PremiumTicketPrompt";
 import { getListings } from "../lib/api";
+import { getUserNFTs } from "../lib/sui";
 import type { Video } from "../shared/types";
 
 const imgIcon = "https://www.figma.com/api/mcp/asset/09291e07-1e9a-4c3b-b850-ee95b9ca19ea";
 
 export function VideosPage() {
+	const currentAccount = useCurrentAccount();
 	const [videos, setVideos] = useState<Video[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [hasPremiumTicket, setHasPremiumTicket] = useState(false);
+	const [isFullVersion, setIsFullVersion] = useState(false);
+	const [userNFTs, setUserNFTs] = useState<string[]>([]); // ユーザーが所有するNFTのIDリスト
 
 	useEffect(() => {
 		async function fetchVideos() {
@@ -79,6 +84,51 @@ export function VideosPage() {
 	const displayVideos = videos.length > 0 ? videos : mockVideos;
 	const selectedVideo = displayVideos.find((v) => v.id === selectedVideoId) || displayVideos[0] || null;
 
+	// ユーザーのNFT所有状態を取得
+	useEffect(() => {
+		async function fetchUserNFTs() {
+			if (!currentAccount?.address) {
+				setUserNFTs([]);
+				return;
+			}
+
+			try {
+				const nfts = await getUserNFTs(currentAccount.address);
+				setUserNFTs(nfts.map((nft) => nft.id));
+			} catch (error) {
+				console.error("Failed to fetch user NFTs:", error);
+				setUserNFTs([]);
+			}
+		}
+
+		fetchUserNFTs();
+	}, [currentAccount?.address]);
+
+	// プレミアムチケット所有状態を判定
+	// ログインしていない、または該当ビデオのNFTを所有していない場合はfalse
+	const checkPremiumTicketOwnership = (videoId: string): boolean => {
+		// ログインしていない場合はfalse
+		if (!currentAccount?.address) {
+			return false;
+		}
+
+		// ユーザーが所有するNFTのIDリストに該当するビデオのNFTが含まれているか確認
+		// 現在はモック実装として、videoIdとNFTの対応関係を確認
+		// 実際の実装では、video.listingIdやvideo.fullBlobIdとNFTのblobIdを照合する必要があります
+		// ここでは、モックとして最初のビデオ（id: "1"）のみ所有状態とします
+		// 実際の実装では、userNFTsとビデオのlistingIdやfullBlobIdを照合する必要があります
+		return userNFTs.length > 0 && videoId === "1";
+	};
+
+	// 選択されたビデオのプレミアムチケット所有状態を更新
+	useEffect(() => {
+		if (selectedVideoId) {
+			setHasPremiumTicket(checkPremiumTicketOwnership(selectedVideoId));
+		} else {
+			setHasPremiumTicket(false);
+		}
+	}, [selectedVideoId, userNFTs, currentAccount?.address]);
+
 	// 最初のビデオを選択状態にする
 	useEffect(() => {
 		if (displayVideos.length > 0 && !selectedVideoId) {
@@ -87,13 +137,27 @@ export function VideosPage() {
 	}, [displayVideos]);
 
 	const handlePreviewPlay = () => {
+		setIsFullVersion(false);
 		setIsPlaying(true);
 	};
 
 	const handleFullVersionPlay = () => {
 		if (hasPremiumTicket) {
+			setIsFullVersion(true);
 			setIsPlaying(true);
 		}
+	};
+
+	// 動画URLを取得（プレミアムチケット所有時は完全版、それ以外はプレビュー）
+	const getVideoUrl = (): string | undefined => {
+		if (!selectedVideo) return undefined;
+		if (isFullVersion && hasPremiumTicket) {
+			// 完全版の動画URLを取得（モック実装）
+			// 実際の実装では、fullBlobIdから動画URLを取得する必要があります
+			// ここでは、プレビューURLを完全版として使用（実際には別のURLが必要）
+			return selectedVideo.previewUrl; // TODO: 完全版の動画URLを取得
+		}
+		return selectedVideo.previewUrl;
 	};
 
 	// 動画タイトルから情報を抽出
@@ -123,6 +187,29 @@ export function VideosPage() {
 					::-webkit-scrollbar-thumb:hover {
 						background: #52525c;
 					}
+
+					/* ボタンのホバーアニメーション */
+					@keyframes buttonHover {
+						0% {
+							transform: scale(1);
+						}
+						50% {
+							transform: scale(1.02);
+						}
+						100% {
+							transform: scale(1);
+						}
+					}
+
+					.preview-button:hover {
+						background-color: #3f3f46 !important;
+						animation: buttonHover 0.3s ease;
+					}
+
+					.full-version-button:hover:not(:disabled) {
+						background-color: #ffd700 !important;
+						animation: buttonHover 0.3s ease;
+					}
 				`}
 			</style>
 			<div
@@ -146,6 +233,7 @@ export function VideosPage() {
 					width: "383px",
 					flexShrink: 0,
 					padding: "16px",
+					paddingTop: "16px",
 					paddingBottom: "120px",
 					boxSizing: "border-box",
 					overflowY: "auto",
@@ -164,6 +252,7 @@ export function VideosPage() {
 						position: "relative",
 						width: "100%",
 						flexShrink: 0,
+						marginBottom: "0",
 					}}
 				>
 					<p
@@ -210,6 +299,7 @@ export function VideosPage() {
 								video={video}
 								isSelected={selectedVideoId === video.id}
 								onClick={() => setSelectedVideoId(video.id)}
+								hasPremiumTicket={checkPremiumTicketOwnership(video.id)}
 							/>
 						))
 					)}
@@ -225,7 +315,7 @@ export function VideosPage() {
 						flexDirection: "column",
 						gap: "24px",
 						minWidth: 0,
-						padding: "0 16px 32px 16px",
+						padding: "16px 16px 32px 16px",
 						boxSizing: "border-box",
 						overflowY: "auto",
 						overflowX: "hidden",
@@ -249,7 +339,7 @@ export function VideosPage() {
 						{/* ビデオプレイヤー */}
 						<div style={{ width: "100%" }}>
 							<VideoPlayer
-								videoUrl={hasPremiumTicket ? undefined : selectedVideo.previewUrl}
+								videoUrl={getVideoUrl()}
 								isPlaying={isPlaying}
 								onPlay={() => setIsPlaying(true)}
 								onPause={() => setIsPlaying(false)}
@@ -267,6 +357,7 @@ export function VideosPage() {
 							{/* プレビュー再生ボタン */}
 							<button
 								onClick={handlePreviewPlay}
+								className="preview-button"
 								style={{
 									flex: "1 0 0",
 									backgroundColor: "#27272a",
@@ -275,6 +366,7 @@ export function VideosPage() {
 									border: "none",
 									cursor: "pointer",
 									position: "relative",
+									transition: "background-color 0.2s ease",
 								}}
 							>
 								<img
@@ -312,6 +404,7 @@ export function VideosPage() {
 							<button
 								onClick={handleFullVersionPlay}
 								disabled={!hasPremiumTicket}
+								className="full-version-button"
 								style={{
 									flex: "1 0 0",
 									backgroundColor: hasPremiumTicket ? "#fdc700" : "#27272a",
@@ -324,6 +417,7 @@ export function VideosPage() {
 									alignItems: "center",
 									justifyContent: "center",
 									padding: "0 16px",
+									transition: "background-color 0.2s ease",
 								}}
 							>
 								<p

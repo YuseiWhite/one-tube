@@ -6,6 +6,7 @@ interface VideoCardProps {
 	video: Video;
 	isSelected?: boolean;
 	onClick?: () => void;
+	hasPremiumTicket?: boolean;
 }
 
 // 動画タイトルからファイター名を抽出する関数
@@ -46,20 +47,12 @@ function getThumbnailUrl(video: Video): string {
 	return mockThumbnails[video.title] || "";
 }
 
-// プレミアムチケット所有状態を判定（モック）
-function isPremiumOwned(video: Video): boolean {
-	// 実際の実装では、ユーザーのNFT所有状態を確認する必要があります
-	// ここでは最初のカードのみ所有状態とします
-	return video.id === "1" || false;
-}
-
-export function VideoCard({ video, isSelected = false, onClick }: VideoCardProps) {
+export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket = false }: VideoCardProps) {
 	const [imageError, setImageError] = useState(false);
 	const [isHovered, setIsHovered] = useState(false);
 	const thumbnailUrl = getThumbnailUrl(video);
 	const fighters = extractFightersFromTitle(video.title);
 	const uploadDate = getUploadDate(video);
-	const hasPremiumTicket = isPremiumOwned(video);
 
 	const handleClick = () => {
 		if (onClick) {
@@ -121,6 +114,8 @@ export function VideoCard({ video, isSelected = false, onClick }: VideoCardProps
 								pointerEvents: "none",
 								width: "100%",
 								height: "100%",
+								filter: hasPremiumTicket ? "none" : "grayscale(100%)",
+								transition: "filter 0.3s ease",
 							}}
 						/>
 					) : (
@@ -205,6 +200,9 @@ export function VideoCard({ video, isSelected = false, onClick }: VideoCardProps
 						right: "8px",
 						bottom: "8px",
 						width: "35.406px",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
 					}}
 				>
 					<p
@@ -215,9 +213,7 @@ export function VideoCard({ video, isSelected = false, onClick }: VideoCardProps
 							lineHeight: "16px",
 							color: "#ffffff",
 							margin: 0,
-							position: "absolute",
-							left: "8px",
-							top: "5px",
+							textAlign: "center",
 						}}
 					>
 						10s
