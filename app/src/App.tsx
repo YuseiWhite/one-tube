@@ -5,10 +5,13 @@ import {
 } from "./lib/enoki";
 import { debugLog, infoLog, warnLog, errorLog } from "./lib/logger";
 import { Header } from "./components/Header";
+import { Sidebar, type PageType } from "./components/Sidebar";
 
 function App() {
 	// OAuthコールバック処理でzkLoginアドレスを設定（将来の使用のために保持）
 	const [zkLoginAddress, setZkLoginAddress] = useState<string | null>(null);
+	// 現在のページ状態（後からチケットページとビデオページを実装するための準備）
+	const [currentPage, setCurrentPage] = useState<PageType>("tickets");
 
 	// ページ読み込み時にOAuthコールバックを処理し、アカウント情報を復元
 	useEffect(() => {
@@ -60,11 +63,24 @@ function App() {
 	}, []);
 
 	return (
-		<div style={{ fontFamily: "sans-serif", minHeight: "100vh", backgroundColor: "#000000" }}>
+		<div style={{ fontFamily: "sans-serif", minHeight: "100vh", backgroundColor: "#000000", display: "flex", flexDirection: "column" }}>
 			<Header />
-			{/* メインコンテンツ領域 */}
-			<div style={{ padding: "20px" }}>
-				{/* 今後 TICKETS / VIDEOS ページが入るメインコンテンツ領域 */}
+			{/* サイドバーとメインコンテンツのコンテナ */}
+			<div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+				<Sidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+				{/* メインコンテンツ領域 */}
+				<div style={{ flex: 1, padding: "20px", overflow: "auto" }}>
+					{currentPage === "tickets" && (
+						<div>
+							{/* チケットページのコンテンツ（後から実装） */}
+						</div>
+					)}
+					{currentPage === "videos" && (
+						<div>
+							{/* ビデオページのコンテンツ（後から実装） */}
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);
