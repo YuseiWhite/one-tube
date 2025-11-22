@@ -69,11 +69,10 @@ export async function handleAuthCallback(): Promise<string | null> {
 			return null;
 		}
 
-		// デバッグ情報を出力（デバッグモードのみ）
-		// 本番環境では不要なため、削除
-		// デバッグが必要な場合は、ブラウザの開発者ツールで確認
+		debugLog("[Enoki] JWT取得完了");
 
 		// EnokiFlow.handleAuthCallback()を呼び出し
+		debugLog("[Enoki] Enoki SDK呼び出し");
 		const state = await enokiFlow.handleAuthCallback(hash);
 		debugLog("[Enoki] OAuthコールバック処理完了 (state):", state);
 
@@ -82,6 +81,10 @@ export async function handleAuthCallback(): Promise<string | null> {
 
 		if (!address) {
 			warnLog("[Enoki] アドレスが取得できませんでした。Enoki APIの応答を確認してください。");
+		} else {
+			debugLog("[Enoki] アドレス生成:", address);
+			infoLog("[Enoki] ログイン完了");
+			debugLog("[Enoki] アカウント保存完了");
 		}
 
 		// URLからhashを削除（リロードを防ぐため）
