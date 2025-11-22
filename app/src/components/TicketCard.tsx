@@ -196,6 +196,9 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 										pointerEvents: "none",
 										width: "100%",
 										height: "100%",
+										filter: isPremiumOwned ? "none" : "grayscale(100%)", // 未所有の場合は白黒表示
+										opacity: isPremiumOwned ? 1 : 0.7, // 未所有の場合は少し暗く
+										transition: "filter 0.3s ease, opacity 0.3s ease",
 									}}
 								/>
 							) : (
@@ -251,6 +254,9 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 										pointerEvents: "none",
 										width: "100%",
 										height: "100%",
+										filter: isPremiumOwned ? "none" : "grayscale(100%)", // 未所有の場合は白黒表示
+										opacity: isPremiumOwned ? 1 : 0.7, // 未所有の場合は少し暗く
+										transition: "filter 0.3s ease, opacity 0.3s ease",
 									}}
 								/>
 							) : (
