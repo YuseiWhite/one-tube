@@ -105,18 +105,38 @@ export function VideosPage() {
 	const fighters = selectedVideo ? extractFighters(selectedVideo.title) : "";
 
 	return (
-		<div
-			style={{
-				backgroundColor: "#18181b",
-				boxSizing: "border-box",
-				display: "flex",
-				gap: 0,
-				padding: 0,
-				width: "100%",
-				minHeight: "100%",
-				overflow: "hidden",
-			}}
-		>
+		<>
+			<style>
+				{`
+					/* スクロールバーのスタイリング */
+					::-webkit-scrollbar {
+						width: 8px;
+						height: 8px;
+					}
+					::-webkit-scrollbar-track {
+						background: transparent;
+					}
+					::-webkit-scrollbar-thumb {
+						background: #3f3f46;
+						border-radius: 4px;
+					}
+					::-webkit-scrollbar-thumb:hover {
+						background: #52525c;
+					}
+				`}
+			</style>
+			<div
+				style={{
+					backgroundColor: "#18181b",
+					boxSizing: "border-box",
+					display: "flex",
+					gap: 0,
+					padding: 0,
+					width: "100%",
+					height: "100vh",
+					overflow: "hidden",
+				}}
+			>
 			{/* 左側: ビデオ一覧 */}
 			<div
 				style={{
@@ -126,7 +146,15 @@ export function VideosPage() {
 					width: "383px",
 					flexShrink: 0,
 					padding: "16px",
+					paddingBottom: "120px",
 					boxSizing: "border-box",
+					overflowY: "auto",
+					overflowX: "hidden",
+					height: "100%",
+					scrollBehavior: "smooth",
+					WebkitOverflowScrolling: "touch",
+					willChange: "scroll-position",
+					overscrollBehavior: "contain",
 				}}
 			>
 				{/* FIGHT ARCHIVE タイトル */}
@@ -135,6 +163,7 @@ export function VideosPage() {
 						height: "24px",
 						position: "relative",
 						width: "100%",
+						flexShrink: 0,
 					}}
 				>
 					<p
@@ -145,9 +174,6 @@ export function VideosPage() {
 							lineHeight: "24px",
 							color: "#fdc700",
 							margin: 0,
-							position: "absolute",
-							left: 0,
-							top: "-0.5px",
 							letterSpacing: "0.0875px",
 						}}
 					>
@@ -199,10 +225,16 @@ export function VideosPage() {
 						flexDirection: "column",
 						gap: "24px",
 						minWidth: 0,
-						padding: "0 16px",
+						padding: "0 16px 32px 16px",
 						boxSizing: "border-box",
-						overflow: "auto",
+						overflowY: "auto",
+						overflowX: "hidden",
 						alignItems: "flex-start",
+						height: "100%",
+						scrollBehavior: "smooth",
+						WebkitOverflowScrolling: "touch",
+						willChange: "scroll-position",
+						overscrollBehavior: "contain",
 					}}
 				>
 					{/* ビデオプレイヤーセクション */}
@@ -352,5 +384,6 @@ export function VideosPage() {
 				</div>
 			)}
 		</div>
+		</>
 	);
 }

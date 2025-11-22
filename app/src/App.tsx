@@ -85,7 +85,7 @@ function App() {
 			<div style={{ display: "flex", flex: 1, overflow: "hidden", width: "100%" }}>
 				<Sidebar currentPage={currentPage} />
 				{/* メインコンテンツ領域 */}
-				<div style={{ flex: 1, overflow: "auto", width: "100%", backgroundColor: "#18181b" }}>
+				<div style={{ flex: 1, overflow: currentPage === "videos" ? "hidden" : "auto", width: "100%", backgroundColor: "#18181b" }}>
 					<Routes>
 						<Route path="/" element={<Navigate to="/tickets" replace />} />
 						<Route path="/tickets" element={<TicketsPage />} />
