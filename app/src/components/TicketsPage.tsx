@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const REFRESH_ICON_URL = "https://www.figma.com/api/mcp/asset/3c0bd1f0-ca2b-4059-b9ed-c0b49ef0e814";
 
 // 選手名から画像URLを生成する関数
@@ -57,6 +59,7 @@ interface TicketData {
 	premiumFee: string; // "手数料無料" or "手数料有料"
 	remainingTickets: string; // "残りX/Y チケット" or "TICKETS NOT AVAILABLE"
 	isAvailable: boolean;
+	isPremiumOwned?: boolean; // プレミアムチケット購入済みかどうか
 	leftImageUrl: string;
 	rightImageUrl: string;
 }
@@ -228,6 +231,7 @@ const TICKET_DATA: TicketData[] = [
 		premiumFee: "手数料無料",
 		remainingTickets: "残り9/12 チケット",
 		isAvailable: true,
+		isPremiumOwned: true, // サンプル: 購入済みチケット
 		leftImageUrl: getFighterImageUrl("Stamp Fairtex"),
 		rightImageUrl: getFighterImageUrl("Ham Seo Hee"),
 	},
@@ -235,20 +239,87 @@ const TICKET_DATA: TicketData[] = [
 
 // チケットカードコンポーネント
 function TicketCard({ ticket }: { ticket: TicketData }) {
+	const [isHovered, setIsHovered] = useState(false);
+	const [isPremiumButtonHovered, setIsPremiumButtonHovered] = useState(false);
+	const [isRegularButtonHovered, setIsRegularButtonHovered] = useState(false);
+	
 	const isAvailable = ticket.isAvailable;
-	const buttonOpacity = isAvailable ? 1 : 0.5;
-	const buttonCursor = isAvailable ? "pointer" : "not-allowed";
+	const isPremiumOwned = ticket.isPremiumOwned || false;
+	
+	// ボタンの有効/無効状態
+	const isPremiumButtonDisabled = !isAvailable || isPremiumOwned;
+	const isRegularButtonDisabled = !isAvailable || isPremiumOwned;
+	
+	// ボタンのスタイル
+	const premiumButtonStyle = isPremiumOwned
+		? {
+				backgroundColor: "#3f3f46",
+				color: "#71717b",
+				border: "none",
+				cursor: "not-allowed",
+				opacity: 0.6,
+				transition: "all 0.2s ease",
+			}
+		: isAvailable
+			? {
+					backgroundColor: isPremiumButtonHovered ? "#000000" : "#fdc700",
+					color: isPremiumButtonHovered ? "#fdc700" : "#000000",
+					border: isPremiumButtonHovered ? "1px solid #fdc700" : "none",
+					cursor: "pointer",
+					opacity: 1,
+					transition: "all 0.2s ease",
+				}
+			: {
+					backgroundColor: "#fdc700",
+					color: "#000000",
+					border: "none",
+					cursor: "not-allowed",
+					opacity: 0.5,
+					transition: "all 0.2s ease",
+				};
+	
+	const regularButtonStyle = isPremiumOwned
+		? {
+				backgroundColor: "#3f3f46",
+				border: "1px solid #3f3f46",
+				color: "#71717b",
+				cursor: "not-allowed",
+				opacity: 0.6,
+				transition: "all 0.2s ease",
+			}
+		: isAvailable
+			? {
+					backgroundColor: isRegularButtonHovered ? "#000000" : "#ffffff",
+					border: isRegularButtonHovered ? "1px solid #fdc700" : "1px solid #3f3f46",
+					color: isRegularButtonHovered ? "#fdc700" : "#9f9fa9",
+					cursor: "pointer",
+					opacity: 1,
+					transition: "all 0.2s ease",
+				}
+			: {
+					backgroundColor: "#ffffff",
+					border: "1px solid #3f3f46",
+					color: "#9f9fa9",
+					cursor: "not-allowed",
+					opacity: 0.5,
+					transition: "all 0.2s ease",
+				};
 
 	return (
 		<div
+			onMouseEnter={() => setIsHovered(true)}
+			onMouseLeave={() => setIsHovered(false)}
 			style={{
 				backgroundColor: "#09090b", // zinc-950
-				border: "1px solid #27272a", // zinc-800
+				border: isHovered ? "1px solid #fdc700" : "1px solid #27272a", // ホバー時に黄色の縁
 				borderRadius: "10px",
 				position: "relative",
 				height: "612px",
 				overflow: "hidden",
 				width: "100%",
+				transform: isHovered ? "translateY(-2px)" : "translateY(0)",
+				boxShadow: isHovered ? "0 10px 25px rgba(0, 0, 0, 0.3)" : "none",
+				transition: "all 0.2s ease",
 			}}
 		>
 			{/* 黄色のヘッダーバー */}
@@ -397,45 +468,87 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 						</div>
 					</div>
 				</div>
-				{/* NOT OWNED バッジ */}
-				<div
-					style={{
-						position: "absolute",
-						backgroundColor: "rgba(24, 24, 27, 0.8)",
-						border: "1px solid #3f3f46",
-						height: "22px",
-						left: "229.18px",
-						borderRadius: "8px",
-						top: "14.5px",
-						width: "92.82px",
-					}}
-				>
+				{/* NOT OWNED / OWNED バッジ */}
+				{!isPremiumOwned && (
 					<div
 						style={{
+							position: "absolute",
+							backgroundColor: "rgba(24, 24, 27, 0.8)",
+							border: "1px solid #3f3f46",
 							height: "22px",
-							overflow: "hidden",
-							position: "relative",
-							borderRadius: "inherit",
+							left: "229.18px",
+							borderRadius: "8px",
+							top: "14.5px",
 							width: "92.82px",
 						}}
 					>
-						<p
+						<div
 							style={{
-								fontFamily: "'Inter', sans-serif",
-								fontSize: "12px",
-								fontWeight: 500,
-								lineHeight: "16px",
-								color: "#9f9fa9",
-								margin: 0,
-								position: "absolute",
-								left: "9px",
-								top: "4px",
+								height: "22px",
+								overflow: "hidden",
+								position: "relative",
+								borderRadius: "inherit",
+								width: "92.82px",
 							}}
 						>
-							NOT OWNED
-						</p>
+							<p
+								style={{
+									fontFamily: "'Inter', sans-serif",
+									fontSize: "12px",
+									fontWeight: 500,
+									lineHeight: "16px",
+									color: "#9f9fa9",
+									margin: 0,
+									position: "absolute",
+									left: "9px",
+									top: "4px",
+								}}
+							>
+								NOT OWNED
+							</p>
+						</div>
 					</div>
-				</div>
+				)}
+				{isPremiumOwned && (
+					<div
+						style={{
+							position: "absolute",
+							backgroundColor: "rgba(24, 24, 27, 0.8)",
+							border: "1px solid #3f3f46",
+							height: "22px",
+							left: "229.18px",
+							borderRadius: "8px",
+							top: "14.5px",
+							width: "92.82px",
+						}}
+					>
+						<div
+							style={{
+								height: "22px",
+								overflow: "hidden",
+								position: "relative",
+								borderRadius: "inherit",
+								width: "92.82px",
+							}}
+						>
+							<p
+								style={{
+									fontFamily: "'Inter', sans-serif",
+									fontSize: "12px",
+									fontWeight: 500,
+									lineHeight: "16px",
+									color: "#fdc700",
+									margin: 0,
+									position: "absolute",
+									left: "9px",
+									top: "4px",
+								}}
+							>
+								OWNED
+							</p>
+						</div>
+					</div>
+				)}
 			</div>
 
 			{/* コンテンツセクション */}
@@ -749,19 +862,22 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 							width: "302px",
 						}}
 					>
-						{/* BUY PREMIUM TICKET ボタン */}
+						{/* BUY PREMIUM TICKET / OWNED ボタン */}
 						<button
-							disabled={!isAvailable}
+							disabled={isPremiumButtonDisabled}
+							onMouseEnter={() => setIsPremiumButtonHovered(true)}
+							onMouseLeave={() => setIsPremiumButtonHovered(false)}
 							style={{
-								backgroundColor: "#fdc700",
+								backgroundColor: premiumButtonStyle.backgroundColor,
 								height: "36px",
 								borderRadius: "8px",
-								border: "none",
+								border: premiumButtonStyle.border,
 								width: "100%",
 								position: "relative",
-								cursor: buttonCursor,
-								opacity: buttonOpacity,
+								cursor: premiumButtonStyle.cursor,
+								opacity: premiumButtonStyle.opacity,
 								flexShrink: 0,
+								transition: premiumButtonStyle.transition,
 							}}
 						>
 							<p
@@ -770,7 +886,7 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 									fontSize: "14px",
 									fontWeight: 500,
 									lineHeight: "20px",
-									color: "#000000",
+									color: premiumButtonStyle.color,
 									textAlign: "center",
 									letterSpacing: "-0.1504px",
 									margin: 0,
@@ -781,22 +897,25 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 									whiteSpace: "nowrap",
 								}}
 							>
-								BUY PREMIUM TICKET
+								{isPremiumOwned ? "OWNED" : "BUY PREMIUM TICKET"}
 							</p>
 						</button>
 						{/* BUY TICKET ボタン */}
 						<button
-							disabled={!isAvailable}
+							disabled={isRegularButtonDisabled}
+							onMouseEnter={() => setIsRegularButtonHovered(true)}
+							onMouseLeave={() => setIsRegularButtonHovered(false)}
 							style={{
-								backgroundColor: "#ffffff",
-								border: "1px solid #3f3f46",
+								backgroundColor: regularButtonStyle.backgroundColor,
+								border: regularButtonStyle.border,
 								height: "36px",
 								borderRadius: "8px",
 								width: "100%",
 								position: "relative",
-								cursor: buttonCursor,
-								opacity: buttonOpacity,
+								cursor: regularButtonStyle.cursor,
+								opacity: regularButtonStyle.opacity,
 								flexShrink: 0,
+								transition: regularButtonStyle.transition,
 							}}
 						>
 							<p
@@ -805,7 +924,7 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 									fontSize: "14px",
 									fontWeight: 500,
 									lineHeight: "20px",
-									color: "#9f9fa9",
+									color: regularButtonStyle.color,
 									textAlign: "center",
 									letterSpacing: "-0.1504px",
 									margin: 0,
