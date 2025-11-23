@@ -1,7 +1,7 @@
 #[test_only]
 module contracts::contracts_tests;
 
-use contracts::contracts::{Self, PremiumTicketNFT, AdminCap};
+use contracts::contracts::{Self, PremiumTicketNFT, AdminCap, E_NOT_NFT_OWNER};
 use sui::test_scenario::{Self as ts};
 use std::string;
 use std::debug;
@@ -520,9 +520,9 @@ fun test_kiosk_list_and_delist() {
         log_step_bytes(tag, step, b"Placed NFT into kiosk inventory");
         step = step + 1;
 
-        // NFTを出品（0.5 SUI = 500,000,000 MIST）
-        kiosk::list<PremiumTicketNFT>(&mut kiosk, &kiosk_cap, nft_id, 500_000_000);
-        log_step_bytes(tag, step, b"Listed NFT at 0.5 SUI (500_000_000 MIST)");
+        // NFTを出品（0.025 SUI = 25,000,000 MIST）
+        kiosk::list<PremiumTicketNFT>(&mut kiosk, &kiosk_cap, nft_id, 25_000_000);
+        log_step_bytes(tag, step, b"Listed NFT at 0.025 SUI (25_000_000 MIST)");
         step = step + 1;
 
         // 出品後も存在することを確認
@@ -636,8 +636,8 @@ fun test_kiosk_purchase_flow_split_revenue() {
 
         // NFTをKioskに配置して出品
         kiosk::place(&mut seller_kiosk, &seller_cap, nft);
-        kiosk::list<contracts::PremiumTicketNFT>(&mut seller_kiosk, &seller_cap, nft_id, 500_000_000);
-        log_step_bytes(tag, step, b"Listed NFT for 0.5 SUI (500_000_000 MIST)");
+        kiosk::list<contracts::PremiumTicketNFT>(&mut seller_kiosk, &seller_cap, nft_id, 25_000_000);
+        log_step_bytes(tag, step, b"Listed NFT for 0.025 SUI (25_000_000 MIST)");
         step = step + 1;
 
         ts::return_to_sender(&scenario, admin_cap);
@@ -653,8 +653,8 @@ fun test_kiosk_purchase_flow_split_revenue() {
         let mut seller_kiosk = ts::take_shared<Kiosk>(&scenario);
         let policy = ts::take_shared<TransferPolicy<contracts::PremiumTicketNFT>>(&scenario);
 
-        // 購入用のコインを作成（0.5 SUI = 500,000,000 MIST）
-        let payment = coin::mint_for_testing<SUI>(500_000_000, ts::ctx(&mut scenario));
+        // 購入用のコインを作成（0.025 SUI = 25,000,000 MIST）
+        let payment = coin::mint_for_testing<SUI>(25_000_000, ts::ctx(&mut scenario));
 
         // Kioskから購入（Transfer Requestが作成される）
         let (nft, mut request) = kiosk::purchase<contracts::PremiumTicketNFT>(
@@ -666,7 +666,7 @@ fun test_kiosk_purchase_flow_split_revenue() {
         step = step + 1;
 
         // 収益分配を実行（Transfer Requestにレシートを追加）
-        let revenue_payment = coin::mint_for_testing<SUI>(500_000_000, ts::ctx(&mut scenario));
+        let revenue_payment = coin::mint_for_testing<SUI>(25_000_000, ts::ctx(&mut scenario));
         contracts::split_revenue(&policy, &mut request, revenue_payment, ts::ctx(&mut scenario));
         log_step_bytes(
             tag,
@@ -706,7 +706,7 @@ fun test_kiosk_purchase_flow_split_revenue() {
     step = step + 1;
     {
         let coin = ts::take_from_sender<coin::Coin<SUI>>(&scenario);
-        assert!(coin::value(&coin) == 350_000_000, 1); // 70%
+        assert!(coin::value(&coin) == 17_500_000, 1); // 70% of 0.025 SUI
         log_u64(tag, step, b"Athlete coin amount", coin::value(&coin));
         step = step + 1;
         ts::return_to_sender(&scenario, coin);
@@ -717,7 +717,7 @@ fun test_kiosk_purchase_flow_split_revenue() {
     step = step + 1;
     {
         let coin = ts::take_from_sender<coin::Coin<SUI>>(&scenario);
-        assert!(coin::value(&coin) == 125_000_000, 2); // 25%
+        assert!(coin::value(&coin) == 6_250_000, 2); // 25% of 0.025 SUI
         log_u64(tag, step, b"ONE coin amount", coin::value(&coin));
         step = step + 1;
         ts::return_to_sender(&scenario, coin);
@@ -728,7 +728,7 @@ fun test_kiosk_purchase_flow_split_revenue() {
     step = step + 1;
     {
         let coin = ts::take_from_sender<coin::Coin<SUI>>(&scenario);
-        assert!(coin::value(&coin) == 25_000_000, 3); // 5%
+        assert!(coin::value(&coin) == 1_250_000, 3); // 5% of 0.025 SUI
         log_u64(tag, step, b"Platform coin amount", coin::value(&coin));
         ts::return_to_sender(&scenario, coin);
     };
@@ -774,16 +774,16 @@ fun test_transfer_policy_revenue_split() {
         // 合計が10000 basis points (100%)であることを確認
         assert!(total_bp == 10000, 0);
 
-        // 実際の分配額計算のテスト（0.5 SUI = 500,000,000 MIST）
-        let purchase_amount: u64 = 500_000_000;
+        // 実際の分配額計算のテスト（0.025 SUI = 25,000,000 MIST）
+        let purchase_amount: u64 = 25_000_000;
         let athlete_amount = (purchase_amount as u128 * (athlete_bp as u128) / 10000) as u64;
         let one_amount = (purchase_amount as u128 * (one_bp as u128) / 10000) as u64;
         let platform_amount = (purchase_amount as u128 * (platform_bp as u128) / 10000) as u64;
 
         // 分配額の確認
-        assert!(athlete_amount == 350_000_000, 1);     // 70% of 0.5 SUI
-        assert!(one_amount == 125_000_000, 2);         // 25% of 0.5 SUI
-        assert!(platform_amount == 25_000_000, 3);     // 5% of 0.5 SUI
+        assert!(athlete_amount == 17_500_000, 1);     // 70% of 0.025 SUI
+        assert!(one_amount == 6_250_000, 2);         // 25% of 0.025 SUI
+        assert!(platform_amount == 1_250_000, 3);     // 5% of 0.025 SUI
 
         // 合計が元の金額と一致（丸め誤差考慮）
         let total_distributed = athlete_amount + one_amount + platform_amount;
@@ -924,5 +924,151 @@ fun test_transfer_policy_integration() {
     };
 
     log_current_tx_digest_for_sender(tag, step, &mut scenario, admin, b"Tx digest (before end)");
+    ts::end(scenario);
+}
+
+// ====== Phase 1: Seal統合テスト ======
+
+// テスト: seal_approve_nft関数のテスト（NFT所有確認成功）
+#[test]
+fun test_seal_approve_nft_success() {
+    let admin = @0xA;
+    let user = @0xB;
+    let mut scenario = ts::begin(admin);
+    let tag = b"[test_seal_approve_nft_success]";
+    let mut step = 1;
+    log_scenario(b"Scenario: seal_approve_nft succeeds when user owns NFT");
+    log_current_tx_digest_for_sender(tag, step, &mut scenario, admin, b"Tx digest (initial)");
+    step = step + 1;
+
+    // コントラクトを初期化
+    {
+        contracts::init_for_testing(ts::ctx(&mut scenario));
+        log_step_bytes(tag, step, b"Initialized module and issued AdminCap");
+        step = step + 1;
+    };
+
+    // AdminがNFTを発行してユーザーに転送
+    ts::next_tx(&mut scenario, admin);
+    log_current_tx_digest_for_sender(tag, step, &mut scenario, admin, b"Tx digest (next_tx)");
+    step = step + 1;
+    {
+        let admin_cap = ts::take_from_sender<AdminCap>(&scenario);
+        let mut nfts = contracts::mint_batch(
+            &admin_cap,
+            1,
+            string::utf8(b"Seal Test NFT"),
+            string::utf8(b"For seal_approve_nft test"),
+            string::utf8(b"blob-seal-test"),
+            ts::ctx(&mut scenario)
+        );
+
+        let nft = vector::pop_back(&mut nfts);
+        vector::destroy_empty(nfts);
+
+        // NFTをユーザーに転送
+        sui::transfer::public_transfer(nft, user);
+
+        ts::return_to_sender(&scenario, admin_cap);
+        log_step_bytes(tag, step, b"Admin minted NFT and transferred to user");
+        step = step + 1;
+    };
+
+    // ユーザーがseal_approve_nftを呼び出す（成功するはず）
+    ts::next_tx(&mut scenario, user);
+    log_current_tx_digest_for_sender(tag, step, &mut scenario, user, b"Tx digest (next_tx)");
+    step = step + 1;
+    {
+        let ticket = ts::take_from_sender<PremiumTicketNFT>(&scenario);
+        let mut id = vector::empty<u8>();
+        vector::push_back(&mut id, 1);
+
+        // seal_approve_nft_internalを呼び出す（成功するはず）
+        contracts::seal_approve_nft_internal(id, &ticket, user);
+
+        log_step_bytes(tag, step, b"seal_approve_nft succeeded (user owns NFT)");
+        step = step + 1;
+
+        ts::return_to_sender(&scenario, ticket);
+    };
+
+    log_current_tx_digest_for_sender(tag, step, &mut scenario, user, b"Tx digest (before end)");
+    ts::end(scenario);
+}
+
+// テスト: seal_approve_nft関数のテスト（NFT所有確認失敗）
+// 仕様書とタスクリストに従って、E_NOT_NFT_OWNERエラーでabortすることを確認する
+#[test]
+#[expected_failure(abort_code = E_NOT_NFT_OWNER)]
+fun test_seal_approve_nft_failure() {
+    let admin = @0xA;
+    let owner = @0xB;
+    let non_owner = @0xC;
+    let mut scenario = ts::begin(admin);
+    let tag = b"[test_seal_approve_nft_failure]";
+    let mut step = 1;
+    log_scenario(b"Scenario: seal_approve_nft aborts when user does not own NFT");
+    log_current_tx_digest_for_sender(tag, step, &mut scenario, admin, b"Tx digest (initial)");
+    step = step + 1;
+
+    // コントラクトを初期化
+    {
+        contracts::init_for_testing(ts::ctx(&mut scenario));
+        log_step_bytes(tag, step, b"Initialized module and issued AdminCap");
+        step = step + 1;
+    };
+
+    // AdminがNFTを発行して所有者に転送
+    ts::next_tx(&mut scenario, admin);
+    log_current_tx_digest_for_sender(tag, step, &mut scenario, admin, b"Tx digest (next_tx)");
+    step = step + 1;
+    {
+        let admin_cap = ts::take_from_sender<AdminCap>(&scenario);
+        let mut nfts = contracts::mint_batch(
+            &admin_cap,
+            1,
+            string::utf8(b"Seal Test NFT"),
+            string::utf8(b"For seal_approve_nft test"),
+            string::utf8(b"blob-seal-test"),
+            ts::ctx(&mut scenario)
+        );
+
+        let nft = vector::pop_back(&mut nfts);
+        vector::destroy_empty(nfts);
+
+        // NFTを所有者に転送
+        sui::transfer::public_transfer(nft, owner);
+
+        ts::return_to_sender(&scenario, admin_cap);
+        log_step_bytes(tag, step, b"Admin minted NFT and transferred to owner");
+        step = step + 1;
+    };
+
+    log_step_bytes(
+        tag,
+        step,
+        b"Rule: NFT owner only; aborts with contracts::contracts::E_NOT_NFT_OWNER (code=0x2) if violated",
+    );
+    step = step + 1;
+
+    // 非所有者がseal_approve_nftを呼び出す（失敗するはず）
+    ts::next_tx(&mut scenario, non_owner);
+    log_current_tx_digest_for_sender(tag, step, &mut scenario, non_owner, b"Tx digest (next_tx)");
+    step = step + 1;
+    {
+        // 非所有者が所有者のNFTを参照しようとする
+        let ticket = ts::take_from_address<PremiumTicketNFT>(&scenario, owner);
+        let mut id = vector::empty<u8>();
+        vector::push_back(&mut id, 1);
+
+        // この呼び出しはabortするはず（所有確認はテストシナリオで実行される）
+        contracts::seal_approve_nft_internal_with_ownership_check(id, &ticket, non_owner, &mut scenario);
+
+        // ここには到達しない
+        ts::return_to_address(owner, ticket);
+        log_step_bytes(tag, step, b"Unexpected: non-owner passed seal_approve_nft");
+    };
+
+    log_current_tx_digest_for_sender(tag, step, &mut scenario, non_owner, b"Tx digest (before end)");
     ts::end(scenario);
 }
