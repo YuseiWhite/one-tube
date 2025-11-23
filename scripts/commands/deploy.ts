@@ -12,17 +12,17 @@ import { Ed25519Keypair as Ed25519KeypairClass } from "@mysten/sui/keypairs/ed25
 import { Transaction } from "@mysten/sui/transactions";
 import * as dotenv from "dotenv";
 
-import type { SupportedNetwork } from "../shared/utils";
+import type { SupportedNetwork } from "../shared/utils.js";
 import {
 	findObjectChangeWithId,
 	getClient,
 	getErrorMessage,
 	getKeypair,
 	printBox,
-	requestDevnetFaucet,
+	requestFaucet,
 	sleep,
 	updateEnvFile,
-} from "../shared/utils";
+} from "../shared/utils.js";
 
 /**
  * Move契約をビルドしてSui networkにpublish
@@ -167,6 +167,31 @@ async function publishContract(
 	console.log(`✅ AdminCap ID: ${adminCapId}`);
 
 	return { packageId, publisherId, adminCapId };
+}
+
+/**
+ * Transfer PolicyのinitialSharedVersionを取得
+ * @throws Transfer Policyが見つからない場合
+ */
+async function fetchTransferPolicyInitialSharedVersion(
+	client: SuiClient,
+	policyId: string,
+): Promise<string> {
+	const response = await client.getObject({
+		id: policyId,
+		options: { showOwner: true },
+	});
+
+	const version =
+		(response.data?.owner as any)?.Shared?.initial_shared_version || null;
+
+	if (!version) {
+		throw new Error(
+			`Failed to fetch initial shared version for Transfer Policy ${policyId}`,
+		);
+	}
+
+	return version;
 }
 
 /**
@@ -387,7 +412,8 @@ async function addRevenueShareRule(
  * @throws Keypair生成、契約デプロイ、またはPolicy設定に失敗した場合
  */
 export async function deployCommand(network: SupportedNetwork): Promise<void> {
-	printBox("🚀 Deploy Contract to Sui Devnet");
+	const networkDisplayName = network.charAt(0).toUpperCase() + network.slice(1);
+	printBox(`🚀 Deploy Contract to Sui ${networkDisplayName}`);
 
 	console.log(`Network: ${network}`);
 	console.log(`RPC: ${getFullnodeUrl(network)}`);
@@ -433,21 +459,101 @@ export async function deployCommand(network: SupportedNetwork): Promise<void> {
 	const address = keypair.getPublicKey().toSuiAddress();
 	console.log(`📍 Deployer Address: ${address}`);
 
-	// 2. Faucetからガス取得
-	console.log("\n💰 Requesting gas from faucet...");
-	try {
-		await requestDevnetFaucet(address);
-	} catch (error: unknown) {
-		throw new Error(
-			`Faucet request failed.\n` +
-				`Error: ${getErrorMessage(error)}\n` +
-				`Solution: Try again or manually request at https://faucet.devnet.sui.io/`,
+	// 2. Faucetからガス取得（devnet/testnetのみ）
+	let faucetSucceeded = false;
+	if (network === "devnet" || network === "testnet") {
+		console.log("\n💰 Requesting gas from faucet...");
+		try {
+			await requestFaucet(address, network);
+			faucetSucceeded = true;
+			console.log("⏳ Waiting for faucet transaction to complete...");
+			await sleep(5000);
+			console.log("✅ Gas received");
+		} catch (error: unknown) {
+			const errorMessage = getErrorMessage(error);
+			// 429エラー（リクエスト過多）の場合は警告を出して続行
+			if (
+				errorMessage.includes("429") ||
+				errorMessage.includes("Too Many Requests")
+			) {
+				console.warn(
+					`⚠️  Faucet rate limit exceeded (429). Continuing without faucet request.`,
+				);
+				console.warn(
+					`   Please ensure the address ${address} has sufficient gas, or request manually later.`,
+				);
+			} else {
+				// その他のエラーは警告を出して続行（faucetは必須ではないため）
+				const faucetUrl =
+					network === "devnet"
+						? "https://faucet.devnet.sui.io/"
+						: "https://faucet.testnet.sui.io/";
+				console.warn(`⚠️  Faucet request failed: ${errorMessage}`);
+				console.warn(
+					`   Continuing without faucet request. Please ensure the address has sufficient gas, or request manually at ${faucetUrl}`,
+				);
+			}
+		}
+	} else {
+		console.log(
+			`\n⚠️  Faucet not available for ${network}. Please ensure the address has sufficient gas.`,
 		);
 	}
 
-	console.log("⏳ Waiting for faucet transaction to complete...");
-	await sleep(5000);
-	console.log("✅ Gas received");
+	// ガス残高をチェック（faucetが失敗した場合、またはfaucetが利用できない場合）
+	if (!faucetSucceeded) {
+		console.log("\n💳 Checking gas balance...");
+		console.log(`   Checking balance for address: ${address}`);
+		try {
+			const balance = await client.getBalance({
+				owner: address,
+			});
+			const balanceMist = BigInt(balance.totalBalance);
+			const balanceSui = Number(balanceMist) / 1_000_000_000;
+			console.log(`   Current balance: ${balanceSui.toFixed(4)} SUI`);
+
+			// 最低限のガスが必要（0.1 SUI = 100,000,000 MIST）
+			const minRequiredMist = BigInt(100_000_000);
+			if (balanceMist < minRequiredMist) {
+				const faucetUrl =
+					network === "devnet"
+						? "https://faucet.devnet.sui.io/"
+						: network === "testnet"
+							? "https://faucet.testnet.sui.io/"
+							: "";
+				console.error(`\n❌ Insufficient gas balance for address ${address}`);
+				console.error(`   Current balance: ${balanceSui.toFixed(4)} SUI`);
+				console.error(`   Minimum required: 0.1 SUI`);
+				console.error(
+					`\n💡 Tip: If you have gas in a different address, update SPONSOR_PRIVATE_KEY in .env`,
+				);
+				console.error(`   To get the address from your keypair, run:`);
+				console.error(
+					`   node -e "const { Ed25519Keypair } = require('@mysten/sui/keypairs/ed25519'); const { decodeSuiPrivateKey } = require('@mysten/sui/cryptography'); const key = process.env.SPONSOR_PRIVATE_KEY || 'your-key-here'; const { secretKey } = decodeSuiPrivateKey(key); const kp = Ed25519Keypair.fromSecretKey(secretKey); console.log(kp.getPublicKey().toSuiAddress());"`,
+				);
+				throw new Error(
+					`Insufficient gas balance: ${balanceSui.toFixed(4)} SUI\n` +
+						`Minimum required: 0.1 SUI\n` +
+						`Address checked: ${address}\n` +
+						(faucetUrl
+							? `Solution: Request gas from faucet at ${faucetUrl} or update SPONSOR_PRIVATE_KEY in .env`
+							: `Solution: Fund the address ${address} manually or update SPONSOR_PRIVATE_KEY in .env`),
+				);
+			}
+			console.log(`✅ Sufficient gas balance available`);
+		} catch (error: unknown) {
+			// getBalanceが失敗した場合も、エラーメッセージを確認
+			const errorMessage = getErrorMessage(error);
+			if (errorMessage.includes("Insufficient gas")) {
+				throw error; // ガス不足の場合はエラーを再スロー
+			}
+			// その他のエラー（ネットワークエラーなど）は警告を出して続行
+			console.warn(`⚠️  Failed to check gas balance: ${errorMessage}`);
+			console.warn(
+				`   Proceeding anyway. Transaction may fail if gas is insufficient.`,
+			);
+		}
+	}
 
 	// 3. Contractをpublish
 	const publishResult = await publishContract(client, keypair);
@@ -470,6 +576,14 @@ export async function deployCommand(network: SupportedNetwork): Promise<void> {
 	await sleep(8000);
 	console.log("✅ Transfer Policy indexed");
 
+	// Transfer Policyのバージョンを取得
+	console.log("\n📥 Fetching Transfer Policy initial shared version...");
+	const transferPolicyVersion = await fetchTransferPolicyInitialSharedVersion(
+		client,
+		policyResult.policyId,
+	);
+	console.log(`✅ Transfer Policy Version: ${transferPolicyVersion}`);
+
 	// 5. 収益分配ルール追加
 	// デプロイごとに新しいkeypairが生成されるため、現在のアドレスを使用
 	await addRevenueShareRule(
@@ -487,22 +601,32 @@ export async function deployCommand(network: SupportedNetwork): Promise<void> {
 	console.log("\n📝 Updating .env file...");
 
 	// 秘密鍵は最初に保存済み（mnemonic形式）
-	// その他のデプロイIDを更新
+	// その他のデプロイIDを更新（バックエンド用）
 	updateEnvFile({
+		NETWORK: network,
 		PACKAGE_ID: publishResult.packageId,
 		ADMIN_CAP_ID: publishResult.adminCapId,
 		PUBLISHER_ID: publishResult.publisherId,
 		TRANSFER_POLICY_ID: policyResult.policyId,
 		TRANSFER_POLICY_CAP_ID: policyResult.policyCapId,
+		TRANSFER_POLICY_INITIAL_SHARED_VERSION: transferPolicyVersion,
 		ATHLETE_ADDRESS: address,
 		ONE_ADDRESS: address,
 		PLATFORM_ADDRESS: address,
+		// SEAL_PACKAGE_IDはPACKAGE_IDと同じ（seal_approve_nftを定義したMoveパッケージのID）
+		// 既存の値と異なる場合のみ更新される（updateEnvFile内で比較処理あり）
+		SEAL_PACKAGE_ID: publishResult.packageId,
+	});
+
+	// フロントエンド用（VITE_プレフィックス）も同期更新
+	console.log("\n📝 Updating frontend environment variables (VITE_*)...");
+	updateEnvFile({
+		VITE_PACKAGE_ID: publishResult.packageId,
 	});
 
 	printBox(
 		"✅ Deploy Complete!\n\n" +
 			`Package ID: ${publishResult.packageId}\n` +
-			`Transfer Policy: ${policyResult.policyId}\n\n` +
-			"Next step: pnpm run seed:devnet",
+			`Transfer Policy: ${policyResult.policyId}\n\n`,
 	);
 }
