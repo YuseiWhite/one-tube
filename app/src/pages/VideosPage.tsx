@@ -41,12 +41,34 @@ export function VideosPage() {
 		fetchVideos();
 	}, []);
 
+	// サムネイルファイル名からタイトルを生成する関数
+	const generateTitleFromThumbnail = (filename: string): string => {
+		// ファイル名から日付部分を除去 (例: 20251028-KiamrianAbbasov-vs-ChristianLee.png)
+		const withoutDate = filename.replace(/^\d{8}-/, "").replace(/\.png$/, "");
+		// ハイフンを " vs " に変換し、名前を整形
+		const fighters = withoutDate.replace(/-vs-/g, " vs ").replace(/-/g, " ");
+		return `${fighters} - full match`;
+	};
+
+	// サムネイルファイル名から日付を抽出する関数
+	const extractDateFromThumbnail = (filename: string): string => {
+		const dateMatch = filename.match(/^(\d{4})(\d{2})(\d{2})-/);
+		if (dateMatch) {
+			const year = dateMatch[1];
+			const month = dateMatch[2];
+			const day = dateMatch[3];
+			return `${year}.${month}.${day}`;
+		}
+		return "2024.01.01";
+	};
+
 	// モックデータ（APIから取得できない場合のフォールバック）
+	// サムネイルファイル名に基づいてタイトルと日付を生成
 	const mockVideos: Video[] = [
 		{
 			id: "1",
-			title: "Superbon vs Masaaki Noiri - full match",
-			description: "Full match between Superbon and Masaaki Noiri",
+			title: generateTitleFromThumbnail("20251028-KiamrianAbbasov-vs-ChristianLee.png"),
+			description: "Full match between KiamrianAbbasov and ChristianLee",
 			previewBlobId: "",
 			fullBlobId: "",
 			previewUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
@@ -54,8 +76,8 @@ export function VideosPage() {
 		},
 		{
 			id: "2",
-			title: "Superbon vs Masaaki Noiri - KO Scene",
-			description: "KO scene from Superbon vs Masaaki Noiri",
+			title: generateTitleFromThumbnail("20250323-Superlek-vs-Kongthoranee.png"),
+			description: "Full match between Superlek and Kongthoranee",
 			previewBlobId: "",
 			fullBlobId: "",
 			previewUrl: undefined,
@@ -63,17 +85,8 @@ export function VideosPage() {
 		},
 		{
 			id: "3",
-			title: "Rodtang vs Prajanchai - Highlights",
-			description: "Highlights from Rodtang vs Prajanchai",
-			previewBlobId: "",
-			fullBlobId: "",
-			previewUrl: undefined,
-			price: 0,
-		},
-		{
-			id: "4",
-			title: "Tawanchai vs Nattawut - Championship Round",
-			description: "Championship round from Tawanchai vs Nattawut",
+			title: generateTitleFromThumbnail("20240906-Haggerty-vs-Mongkolpetch.png"),
+			description: "Full match between Haggerty and Mongkolpetch",
 			previewBlobId: "",
 			fullBlobId: "",
 			previewUrl: undefined,

@@ -19,32 +19,57 @@ function extractFightersFromTitle(title: string): string {
 	return title;
 }
 
-// 動画タイトルからアップロード日を生成（モック）
-function getUploadDate(video: Video): string {
-	// 実際の実装では、videoオブジェクトにuploadDateフィールドを追加するか、
-	// メタデータから取得する必要があります
-	// ここではモックデータとして使用
-	const mockDates: Record<string, string> = {
-		"Superbon vs Masaaki Noiri - full match": "2024.01.15",
-		"Superbon vs Masaaki Noiri - KO Scene": "2024.01.15",
-		"Rodtang vs Prajanchai - Highlights": "2024.02.20",
-		"Tawanchai vs Nattawut - Championship Round": "2024.03.10",
-	};
-	return mockDates[video.title] || "2024.01.01";
+// サムネイルファイル名から日付を抽出
+function getUploadDateFromThumbnail(video: Video): string {
+	const thumbnailUrl = getThumbnailUrl(video);
+	if (!thumbnailUrl) {
+		return "2024.01.01";
+	}
+
+	// ファイル名から日付を抽出 (例: /assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png)
+	const filename = thumbnailUrl.split("/").pop() || "";
+	const dateMatch = filename.match(/^(\d{4})(\d{2})(\d{2})-/);
+	
+	if (dateMatch) {
+		const year = dateMatch[1];
+		const month = dateMatch[2];
+		const day = dateMatch[3];
+		return `${year}.${month}.${day}`;
+	}
+	
+	return "2024.01.01";
 }
 
-// サムネイル画像URLを取得（モック）
+// 動画タイトルからアップロード日を生成
+function getUploadDate(video: Video): string {
+	return getUploadDateFromThumbnail(video);
+}
+
+// サムネイルファイル名からファイター名を抽出してタイトルを生成
+function generateTitleFromThumbnail(filename: string): string {
+	// ファイル名から日付部分を除去 (例: 20251028-KiamrianAbbasov-vs-ChristianLee.png)
+	const withoutDate = filename.replace(/^\d{8}-/, "").replace(/\.png$/, "");
+	// ハイフンを " vs " に変換し、名前を整形
+	const title = withoutDate.replace(/-vs-/g, " vs ").replace(/-/g, " ");
+	return `${title} - full match`;
+}
+
+// サムネイル画像URLを取得
 function getThumbnailUrl(video: Video): string {
-	// 実際の実装では、videoオブジェクトにthumbnailUrlフィールドを追加するか、
-	// メタデータから取得する必要があります
-	// ここではFigmaから取得した画像URLを使用
-	const mockThumbnails: Record<string, string> = {
-		"Superbon vs Masaaki Noiri - full match": "https://www.figma.com/api/mcp/asset/cefaf591-5956-4f2b-b243-26b39e4ace1f",
-		"Superbon vs Masaaki Noiri - KO Scene": "https://www.figma.com/api/mcp/asset/0155dbd6-2ed7-40ed-9363-927e3099321e",
-		"Rodtang vs Prajanchai - Highlights": "https://www.figma.com/api/mcp/asset/9aa78fe4-5612-44b3-a9da-8c0614e00bd7",
-		"Tawanchai vs Nattawut - Championship Round": "https://www.figma.com/api/mcp/asset/c5974f09-81b5-4e4a-8bbb-1be808c0dcd7",
+	// ローカルのサムネイル画像を使用
+	const thumbnails: Record<string, string> = {
+		"1": "/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png",
+		"2": "/assets/thumbnails/20250323-Superlek-vs-Kongthoranee.png",
+		"3": "/assets/thumbnails/20240906-Haggerty-vs-Mongkolpetch.png",
+		// タイトルベースのフォールバック
+		"Superbon vs Masaaki Noiri - full match": "/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png",
+		"Superbon vs Masaaki Noiri - KO Scene": "/assets/thumbnails/20250323-Superlek-vs-Kongthoranee.png",
+		"Rodtang vs Prajanchai - Highlights": "/assets/thumbnails/20240906-Haggerty-vs-Mongkolpetch.png",
+		"Tawanchai vs Nattawut - Championship Round": "/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png",
 	};
-	return mockThumbnails[video.title] || "";
+	
+	// まずIDで検索、見つからなければタイトルで検索
+	return thumbnails[video.id] || thumbnails[video.title] || "";
 }
 
 export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket = false }: VideoCardProps) {
@@ -150,45 +175,6 @@ export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket
 					<TicketIcon isPremium={hasPremiumTicket} />
 				</div>
 
-				{/* PREVIEW ONLYバッジ（右上） */}
-				<div
-					style={{
-						position: "absolute",
-						backgroundColor: "rgba(0, 0, 0, 0.8)",
-						border: "1px solid #52525c",
-						borderRadius: "8px",
-						height: "22px",
-						right: "8px",
-						top: "10.5px",
-						width: "107.234px",
-					}}
-				>
-					<div
-						style={{
-							height: "22px",
-							overflow: "hidden",
-							position: "relative",
-							borderRadius: "inherit",
-							width: "100%",
-						}}
-					>
-						<p
-							style={{
-								fontFamily: "'Inter', sans-serif",
-								fontSize: "12px",
-								fontWeight: 500,
-								lineHeight: "16px",
-								color: "#9f9fa9",
-								margin: 0,
-								position: "absolute",
-								left: "9px",
-								top: "4px",
-							}}
-						>
-							PREVIEW ONLY
-						</p>
-					</div>
-				</div>
 
 				{/* 動画時間（右下） */}
 				<div
@@ -230,6 +216,7 @@ export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket
 					gap: "4px",
 					padding: "12px",
 					width: "100%",
+					position: "relative",
 				}}
 			>
 				{/* タイトル */}
@@ -310,6 +297,46 @@ export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket
 					>
 						{fighters}
 					</p>
+				</div>
+
+				{/* PREVIEW ONLYバッジ（右下） */}
+				<div
+					style={{
+						position: "absolute",
+						backgroundColor: "rgba(0, 0, 0, 0.8)",
+						border: "1px solid #52525c",
+						borderRadius: "8px",
+						height: "22px",
+						right: "12px",
+						bottom: "12px",
+						width: "107.234px",
+					}}
+				>
+					<div
+						style={{
+							height: "22px",
+							overflow: "hidden",
+							position: "relative",
+							borderRadius: "inherit",
+							width: "100%",
+						}}
+					>
+						<p
+							style={{
+								fontFamily: "'Inter', sans-serif",
+								fontSize: "12px",
+								fontWeight: 500,
+								lineHeight: "16px",
+								color: "#9f9fa9",
+								margin: 0,
+								position: "absolute",
+								left: "9px",
+								top: "4px",
+							}}
+						>
+							PREVIEW ONLY
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>
