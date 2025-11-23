@@ -211,10 +211,16 @@ export function updateEnvFile(data: Partial<Record<string, string>>): void {
 
 	for (const [key, value] of Object.entries(data)) {
 		if (value) {
-			const regex = new RegExp(`^${key}=.*$`, "m");
-			if (envContent.match(regex)) {
-				envContent = envContent.replace(regex, `${key}=${value}`);
-				console.log(`  ✅ Updated: ${key}`);
+			const regex = new RegExp(`^${key}=(.*)$`, "m");
+			const match = envContent.match(regex);
+			if (match) {
+				const existingValue = match[1];
+				if (existingValue === value) {
+					console.log(`  ⏭️  Skipped: ${key} (既存の値と同じ)`);
+				} else {
+					envContent = envContent.replace(regex, `${key}=${value}`);
+					console.log(`  ✅ Updated: ${key}`);
+				}
 			} else {
 				envContent += `\n${key}=${value}`;
 				console.log(`  ➕ Added: ${key}`);
@@ -319,14 +325,32 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Sui devnet faucetからガスを取得
+ * Sui faucetからガスを取得（devnet/testnet対応）
  * @throws Faucetリクエストが失敗した場合
  */
-export async function requestDevnetFaucet(address: string): Promise<void> {
-	console.log(`🚰 Requesting devnet faucet for ${address}...`);
+export async function requestFaucet(
+	address: string,
+	network: SupportedNetwork,
+): Promise<void> {
+	const faucetUrls: Record<SupportedNetwork, string> = {
+		devnet: "https://faucet.devnet.sui.io/v2/gas",
+		testnet: "https://faucet.testnet.sui.io/v2/gas",
+		mainnet: "", // mainnetにはfaucetがない
+		localnet: "http://127.0.0.1:9123/gas", // localnetのデフォルトfaucet
+	};
+
+	const faucetUrl = faucetUrls[network];
+	if (!faucetUrl) {
+		throw new Error(
+			`Faucet not available for ${network}.\n` +
+				`Solution: Manually fund the address ${address}`,
+		);
+	}
+
+	console.log(`🚰 Requesting ${network} faucet for ${address}...`);
 
 	try {
-		const response = await fetch("https://faucet.devnet.sui.io/v2/gas", {
+		const response = await fetch(faucetUrl, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -349,9 +373,17 @@ export async function requestDevnetFaucet(address: string): Promise<void> {
 		console.log(`✅ Faucet request successful: ${JSON.stringify(data)}`);
 	} catch (error: unknown) {
 		throw new Error(
-			`Failed to request devnet faucet.\n` +
+			`Failed to request ${network} faucet.\n` +
 				`Error: ${getErrorMessage(error)}\n` +
-				`Solution: Try manually at https://faucet.devnet.sui.io/`,
+				`Solution: Try manually at ${faucetUrl}`,
 		);
 	}
+}
+
+/**
+ * @deprecated Use requestFaucet(address, network) instead
+ * Sui devnet faucetからガスを取得（後方互換性のため残す）
+ */
+export async function requestDevnetFaucet(address: string): Promise<void> {
+	return requestFaucet(address, "devnet");
 }
