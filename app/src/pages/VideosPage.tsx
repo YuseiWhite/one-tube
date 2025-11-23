@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 import { VideoCard } from "../components/VideoCard";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { VideoTitleSection } from "../components/VideoTitleSection";
@@ -10,6 +11,8 @@ import { MOCK_VIDEOS, type MockVideo } from "../mocks/videos";
 const imgIcon = "https://www.figma.com/api/mcp/asset/09291e07-1e9a-4c3b-b850-ee95b9ca19ea";
 
 export function VideosPage() {
+	const currentAccount = useCurrentAccount();
+	const isLoggedIn = !!currentAccount;
 	const [videos] = useState<MockVideo[]>(MOCK_VIDEOS);
 	const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
@@ -38,11 +41,42 @@ export function VideosPage() {
 				} catch (e) {
 					// ignore
 				}
+			} else {
+				// localStorageが空の場合はstateもクリア
+				setOwnedTickets([]);
 			}
 		}, 1000);
 
 		return () => clearInterval(interval);
 	}, []);
+
+	// ログイン/ログアウト時にチケット所有状態を更新
+	useEffect(() => {
+		const stored = localStorage.getItem("ownedTickets");
+		let tickets: string[] = [];
+
+		if (stored) {
+			try {
+				tickets = JSON.parse(stored);
+			} catch (e) {
+				console.error("Failed to parse owned tickets:", e);
+			}
+		}
+
+		if (isLoggedIn) {
+			// ログイン時: ID: 1を追加
+			if (!tickets.includes("1")) {
+				tickets.push("1");
+				localStorage.setItem("ownedTickets", JSON.stringify(tickets));
+				setOwnedTickets(tickets);
+			}
+		} else {
+			// ログアウト時: ID: 1とID: 2を削除
+			const filteredTickets = tickets.filter((id: string) => id !== "1" && id !== "2");
+			localStorage.setItem("ownedTickets", JSON.stringify(filteredTickets));
+			setOwnedTickets(filteredTickets);
+		}
+	}, [isLoggedIn]);
 
 	const selectedVideo = videos.find((v) => v.id === selectedVideoId) || videos[0] || null;
 
