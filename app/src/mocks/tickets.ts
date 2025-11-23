@@ -51,10 +51,12 @@ function getFighterImageUrl(fighterName: string): string {
 }
 
 // 12個のモックチケットデータ
+// id: 1 - 所有済み、id: 2 - 購入体験用、id: 3 - 売り切れ
 export const MOCK_TICKETS: MockTicket[] = [
+	// A. ログイン時に所有済みとして表示されるチケット
 	{
 		id: "1",
-		eventTitle: "ONE Fight Night 38: Andrade vs. Baat",
+		eventTitle: "ONE Fight Night 38: Andrade vs. Baatarkhuu",
 		fighter1: "Fabricio Andrade",
 		fighter2: "Enkh-Orgil Baatarkhuu",
 		location: "Lumpinee Stadium, Bangkok",
@@ -63,12 +65,13 @@ export const MOCK_TICKETS: MockTicket[] = [
 		premiumFee: "手数料無料",
 		remainingTickets: "残り10/10 チケット",
 		isAvailable: true,
-		isPremiumOwned: false,
+		isPremiumOwned: false, // ログイン状態に応じてTicketsPageで動的に変更
 		leftImageUrl: getFighterImageUrl("Fabricio Andrade"),
 		rightImageUrl: getFighterImageUrl("Enkh-Orgil Baatarkhuu"),
 		previewUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
 		fullVideoUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
 	},
+	// B. 購入体験用
 	{
 		id: "2",
 		eventTitle: "ONE 173: Superbon vs. Noiri",
@@ -80,15 +83,16 @@ export const MOCK_TICKETS: MockTicket[] = [
 		premiumFee: "手数料無料",
 		remainingTickets: "残り8/15 チケット",
 		isAvailable: true,
-		isPremiumOwned: false,
+		isPremiumOwned: false, // 購入ボタンで所有済みに変更可能
 		leftImageUrl: getFighterImageUrl("Superbon"),
 		rightImageUrl: getFighterImageUrl("Masaaki Noiri"),
 		previewUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
 		fullVideoUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
 	},
+	// C. 売り切れ
 	{
 		id: "3",
-		eventTitle: "ONE Friday Fights 137: Tawanchai vs.",
+		eventTitle: "ONE Friday Fights 137: Tawanchai vs. Liu",
 		fighter1: "Tawanchai PK Saenchai",
 		fighter2: "Liu Mengyang",
 		location: "Lumpinee Stadium, Bangkok",
@@ -96,7 +100,7 @@ export const MOCK_TICKETS: MockTicket[] = [
 		premiumPrice: "+¥5,000",
 		premiumFee: "手数料無料",
 		remainingTickets: "TICKETS NOT AVAILABLE",
-		isAvailable: false,
+		isAvailable: false, // 売り切れ
 		isPremiumOwned: false,
 		leftImageUrl: getFighterImageUrl("Tawanchai PK Saenchai"),
 		rightImageUrl: getFighterImageUrl("Liu Mengyang"),

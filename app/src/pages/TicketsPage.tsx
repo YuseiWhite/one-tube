@@ -1,20 +1,69 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 import { TicketCard } from "../components/TicketCard";
 import { MOCK_TICKETS, type MockTicket } from "../mocks/tickets";
+import { toast } from "../lib/toast";
 
 const REFRESH_ICON_URL = "https://www.figma.com/api/mcp/asset/3c0bd1f0-ca2b-4059-b9ed-c0b49ef0e814";
 
 export function TicketsPage() {
+	const currentAccount = useCurrentAccount();
+	const isLoggedIn = !!currentAccount;
 	const [tickets, setTickets] = useState<MockTicket[]>(MOCK_TICKETS);
 	const [purchasing, setPurchasing] = useState<string | null>(null);
 
+	// ログイン状態に応じてチケットの所有状態を更新
+	useEffect(() => {
+		setTickets((prevTickets) =>
+			prevTickets.map((ticket) => {
+				// ID: 1 - ログイン時に所有済みになる
+				if (ticket.id === "1") {
+					return { ...ticket, isPremiumOwned: isLoggedIn };
+				}
+				// ID: 2 - ログアウト時に未所有に戻る
+				if (ticket.id === "2" && !isLoggedIn) {
+					// localStorageからも削除
+					const ownedTickets = JSON.parse(localStorage.getItem("ownedTickets") || "[]");
+					const filteredTickets = ownedTickets.filter((id: string) => id !== "2");
+					localStorage.setItem("ownedTickets", JSON.stringify(filteredTickets));
+					return { ...ticket, isPremiumOwned: false };
+				}
+				return ticket;
+			})
+		);
+	}, [isLoggedIn]);
+
 	// リフレッシュボタン（モック: 初期状態に戻す）
 	const handleRefresh = () => {
-		setTickets(MOCK_TICKETS);
+		setTickets(
+			MOCK_TICKETS.map((ticket) => {
+				// ID: 1 - ログイン状態を反映
+				if (ticket.id === "1") {
+					return { ...ticket, isPremiumOwned: isLoggedIn };
+				}
+				// ID: 2 - ログアウト時は未所有に戻す
+				if (ticket.id === "2" && !isLoggedIn) {
+					return { ...ticket, isPremiumOwned: false };
+				}
+				return ticket;
+			})
+		);
+		// localStorageもクリア
+		if (!isLoggedIn) {
+			const ownedTickets = JSON.parse(localStorage.getItem("ownedTickets") || "[]");
+			const filteredTickets = ownedTickets.filter((id: string) => id !== "2");
+			localStorage.setItem("ownedTickets", JSON.stringify(filteredTickets));
+		}
 	};
 
 	// 購入処理（完全にローカル状態のみ）
 	const handlePurchase = async (ticketId: string) => {
+		// ログインチェック
+		if (!isLoggedIn) {
+			toast.info("チケットを購入するにはログインが必要です");
+			return;
+		}
+
 		setPurchasing(ticketId);
 
 		// 購入処理をシミュレート（500msの遅延）
@@ -37,7 +86,7 @@ export function TicketsPage() {
 		}
 
 		setPurchasing(null);
-		alert("購入が完了しました！");
+		toast.success("購入が完了しました！");
 	};
 
 	return (

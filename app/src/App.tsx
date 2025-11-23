@@ -13,7 +13,7 @@ import { VideoDetailPage } from "./pages/VideoDetailPage";
 
 function App() {
 	// OAuthコールバック処理でzkLoginアドレスを設定（将来の使用のために保持）
-	const [zkLoginAddress, setZkLoginAddress] = useState<string | null>(null);
+	const [, setZkLoginAddress] = useState<string | null>(null);
 	const location = useLocation();
 	
 	// URLパスから現在のページを判定
