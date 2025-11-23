@@ -35,9 +35,9 @@ function showToast(message: string, type: ToastType = "info", options: ToastOpti
 	toast.style.fontFamily =
 		"'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif";
 	toast.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-	toast.style.minWidth = "200px";
-	toast.style.maxWidth = "400px";
-	toast.style.wordWrap = "break-word";
+	toast.style.width = "360px"; // 固定幅でスムーズなアニメーション
+	toast.style.overflowWrap = "break-word";
+	toast.style.boxSizing = "border-box";
 
 	// タイプに応じた背景色
 	switch (type) {
@@ -58,15 +58,19 @@ function showToast(message: string, type: ToastType = "info", options: ToastOpti
 	toast.textContent = message;
 	container.appendChild(toast);
 
-	// アニメーション
+	// アニメーション（スムーズな動きのため最適化）
 	toast.style.opacity = "0";
 	toast.style.transform = "translateX(100%)";
-	toast.style.transition = "opacity 0.3s, transform 0.3s";
+	toast.style.transition = "opacity 0.4s ease-out, transform 0.4s ease-out";
+	toast.style.willChange = "opacity, transform";
 
-	setTimeout(() => {
-		toast.style.opacity = "1";
-		toast.style.transform = "translateX(0)";
-	}, 10);
+	// requestAnimationFrameを使用してスムーズなアニメーション開始
+	requestAnimationFrame(() => {
+		requestAnimationFrame(() => {
+			toast.style.opacity = "1";
+			toast.style.transform = "translateX(0)";
+		});
+	});
 
 	// 自動削除
 	setTimeout(() => {
@@ -76,7 +80,9 @@ function showToast(message: string, type: ToastType = "info", options: ToastOpti
 			if (toast.parentNode) {
 				toast.parentNode.removeChild(toast);
 			}
-		}, 300);
+			// アニメーション完了後にwill-changeをリセット
+			toast.style.willChange = "auto";
+		}, 400); // transitionの時間に合わせて0.4秒に変更
 	}, duration);
 }
 

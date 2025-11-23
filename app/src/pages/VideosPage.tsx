@@ -7,6 +7,7 @@ import { VideoInfo } from "../components/VideoInfo";
 import { CommentForm } from "../components/CommentForm";
 import { PremiumTicketPrompt } from "../components/PremiumTicketPrompt";
 import { MOCK_VIDEOS, type MockVideo } from "../mocks/videos";
+import { toast } from "../lib/toast";
 
 const imgIcon = "https://www.figma.com/api/mcp/asset/09291e07-1e9a-4c3b-b850-ee95b9ca19ea";
 
@@ -96,8 +97,21 @@ export function VideosPage() {
 		setIsPlaying(true);
 	};
 
-	const handleFullVersionPlay = () => {
+	const handleFullVersionPlay = async () => {
 		if (hasPremiumTicket) {
+			// セッションキー取得開始
+			toast.info("セッションキーを取得中");
+
+			// セッションキー取得をシミュレート（1秒の遅延）
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			// セッション有効通知
+			toast.success("セッション有効 - 完全版の視聴ができます！");
+
+			// 通知表示後に少し待ってから再生開始
+			await new Promise((resolve) => setTimeout(resolve, 500));
+
+			// 完全版動画を再生
 			setIsFullVersion(true);
 			setIsPlaying(true);
 		}
