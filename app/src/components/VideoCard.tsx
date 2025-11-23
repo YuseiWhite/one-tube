@@ -56,20 +56,31 @@ function generateTitleFromThumbnail(filename: string): string {
 
 // サムネイル画像URLを取得
 function getThumbnailUrl(video: Video): string {
-	// ローカルのサムネイル画像を使用
+	// ローカルのサムネイル画像を使用（Viteではpublicフォルダ内のファイルは/から始まるパスでアクセス可能）
 	const thumbnails: Record<string, string> = {
 		"1": "/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png",
 		"2": "/assets/thumbnails/20250323-Superlek-vs-Kongthoranee.png",
 		"3": "/assets/thumbnails/20240906-Haggerty-vs-Mongkolpetch.png",
-		// タイトルベースのフォールバック
-		"Superbon vs Masaaki Noiri - full match": "/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png",
-		"Superbon vs Masaaki Noiri - KO Scene": "/assets/thumbnails/20250323-Superlek-vs-Kongthoranee.png",
-		"Rodtang vs Prajanchai - Highlights": "/assets/thumbnails/20240906-Haggerty-vs-Mongkolpetch.png",
-		"Tawanchai vs Nattawut - Championship Round": "/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png",
 	};
 	
-	// まずIDで検索、見つからなければタイトルで検索
-	return thumbnails[video.id] || thumbnails[video.title] || "";
+	// IDで検索
+	const url = thumbnails[video.id];
+	if (url) {
+		return url;
+	}
+	
+	// タイトルからIDを推測（フォールバック）
+	if (video.title.includes("KiamrianAbbasov") || video.title.includes("ChristianLee")) {
+		return thumbnails["1"];
+	}
+	if (video.title.includes("Superlek") || video.title.includes("Kongthoranee")) {
+		return thumbnails["2"];
+	}
+	if (video.title.includes("Haggerty") || video.title.includes("Mongkolpetch")) {
+		return thumbnails["3"];
+	}
+	
+	return "";
 }
 
 export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket = false }: VideoCardProps) {
@@ -280,6 +291,7 @@ export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket
 						height: "16px",
 						position: "relative",
 						width: "100%",
+						paddingRight: "120px",
 					}}
 				>
 					<p
@@ -293,6 +305,10 @@ export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket
 							position: "absolute",
 							left: 0,
 							top: "1px",
+							width: "calc(100% - 120px)",
+							overflow: "hidden",
+							textOverflow: "ellipsis",
+							whiteSpace: "nowrap",
 						}}
 					>
 						{fighters}
@@ -310,6 +326,7 @@ export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket
 						right: "12px",
 						bottom: "12px",
 						width: "107.234px",
+						zIndex: 1,
 					}}
 				>
 					<div

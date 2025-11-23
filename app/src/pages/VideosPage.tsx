@@ -94,7 +94,8 @@ export function VideosPage() {
 		},
 	];
 
-	const displayVideos = videos.length > 0 ? videos : mockVideos;
+	// モックデータのみを使用（APIから取得したデータは使用しない）
+	const displayVideos = mockVideos;
 	const selectedVideo = displayVideos.find((v) => v.id === selectedVideoId) || displayVideos[0] || null;
 
 	// ユーザーのNFT所有状態を取得
