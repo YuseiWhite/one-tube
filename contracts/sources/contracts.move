@@ -5,11 +5,14 @@ use sui::transfer_policy::{TransferPolicy, TransferPolicyCap, TransferRequest};
 use sui::package::Publisher;
 use sui::coin::Coin;
 use sui::sui::SUI;
+#[test_only] use sui::test_scenario;
 
 // ====== エラーコード ======
 
 const EInvalidCount: u64 = 0;
 const EInvalidBasisPoints: u64 = 1;
+#[allow(unused_const)]  // テスト専用関数で使用されるため警告を抑制
+const E_NOT_NFT_OWNER: u64 = 2;
 
 // ====== 構造体 ======
 
@@ -229,6 +232,85 @@ public fun one_bp(config: &RevenueShareConfig): u16 {
 /// Platform分配比率を取得
 public fun platform_bp(config: &RevenueShareConfig): u16 {
     config.platform_bp
+}
+
+// ====== Phase 1: Seal統合関数 ======
+
+/// Sealアクセス制御関数: PremiumTicketNFT所有を確認（内部実装）
+/// id: Seal identity ID（package IDのprefixなし）
+/// ticket: 所有確認するPremiumTicketNFTオブジェクト
+/// sender: トランザクションのsender
+///
+/// セキュリティ: user引数は使用せず、tx_context::sender()でトランザクションのsenderを取得する
+/// ポリシーの制約: この関数は読み取り専用で実装する（storageを書き換えない）
+///
+/// 注意: 実際の所有確認は、Seal key serverが`dry_run_transaction_block`で評価する際に
+/// 自動的に実行される。この関数は、テストシナリオで所有確認ができるように簡易的な実装を行う。
+///
+/// テストシナリオでの所有確認:
+/// - テストシナリオでは、`test_scenario::has_most_recent_for_sender`を使用して所有確認を行う
+/// - 実際の実装では、Seal key serverが`dry_run_transaction_block`で評価する際に、
+///   トランザクションのsenderがNFTを所有しているかが自動的に確認される
+public fun seal_approve_nft_internal(
+    _id: vector<u8>,
+    ticket: &PremiumTicketNFT,
+    sender: address
+) {
+    // NFT所有確認ロジック
+    // 注意: Suiオブジェクトには`owner`フィールドが存在しない
+    // 実際の実装では、Seal key serverが`dry_run_transaction_block`で評価する際に、
+    // トランザクションのsenderがNFTを所有しているかが自動的に確認される
+
+    // テストシナリオでの所有確認（簡易的な実装）
+    // テストシナリオでは、`test_scenario::has_most_recent_for_sender`を使用して所有確認を行う
+    // 実際の実装では、Seal key serverが`dry_run_transaction_block`で評価する際に行われる
+
+    // 注意: この関数は読み取り専用で実装する（storageを書き換えない）
+    // 実際の所有確認は、Seal key serverが`dry_run_transaction_block`で評価する際に行われる
+
+    // ticketを参照することで、NFTが存在することを確認
+    let _ticket_id = sui::object::id(ticket);
+    let _sender = sender;
+
+    // テストシナリオでの所有確認は、テストコード側で`test_scenario::has_most_recent_for_sender`を使用して行う
+    // 実際の実装では、Seal key serverが`dry_run_transaction_block`で評価する際に行われる
+}
+
+/// テスト専用: NFT所有確認（テストシナリオ用）
+/// テストシナリオで、senderがNFTを所有しているかどうかを確認する
+#[test_only]
+public fun seal_approve_nft_internal_with_ownership_check(
+    id: vector<u8>,
+    ticket: &PremiumTicketNFT,
+    sender: address,
+    scenario: &mut test_scenario::Scenario
+) {
+    // テストシナリオでの所有確認
+    // senderがPremiumTicketNFT型のオブジェクトを所有しているかどうかを確認
+    // 注意: 特定のオブジェクトIDを指定することはできないため、
+    // senderがPremiumTicketNFT型のオブジェクトを所有しているかどうかのみを確認する
+    if (!test_scenario::has_most_recent_for_sender<PremiumTicketNFT>(scenario)) {
+        abort E_NOT_NFT_OWNER
+    };
+
+    // 所有確認が成功した場合、通常の処理を実行
+    seal_approve_nft_internal(id, ticket, sender);
+}
+
+/// Sealアクセス制御関数: PremiumTicketNFT所有を確認（エントリーポイント）
+/// id: Seal identity ID（package IDのprefixなし）
+/// ticket: 所有確認するPremiumTicketNFTオブジェクト
+/// ctx: トランザクションコンテキスト（senderを取得するため）
+///
+/// セキュリティ: user引数は使用せず、tx_context::sender()でトランザクションのsenderを取得する
+/// ポリシーの制約: この関数は読み取り専用で実装する（storageを書き換えない）
+entry fun seal_approve_nft(
+    id: vector<u8>,
+    ticket: &PremiumTicketNFT,
+    ctx: &sui::tx_context::TxContext
+) {
+    let sender = sui::tx_context::sender(ctx);
+    seal_approve_nft_internal(id, ticket, sender);
 }
 
 // ====== テスト専用関数 ======
