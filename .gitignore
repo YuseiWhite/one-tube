@@ -2,16 +2,39 @@ node_modules
 .DS_Store
 app/dist
 app/dist-server
-contracts/build
 .env
 .vscode
+
+# contracts
+contracts/.move_home
+contracts/build
 
 # Private keys
 .keys/
 *.key
 
+# Session data
+app/data/
+
 # movies (.mp4) and thumbnailsfor depoly to walrus
 app/public/assets
 
+# Videos directory (for encryption before uploading to Walrus)
+# 動画ファイルは除外するが、ディレクトリ構造とメタデータは含める
+videos/**/*.mp4
+videos/**/*.mov
+videos/**/*.avi
+videos/**/*.mkv
+videos/**/*.png
+videos/**/*.jpg
+videos/**/*.jpeg
+videos/encrypted/*.json
+# ただし、metadata.jsonとREADME.mdは含める
+!videos/**/metadata.json
+!videos/README.md
+!videos/.gitkeep
+
 # Configuration files with sensitive data
 app/src/config.json
+
+
