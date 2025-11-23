@@ -1,5 +1,6 @@
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import type { PremiumTicketNFT } from "../shared/types";
+import { logErrorInfo } from "./logger";
 
 const NETWORK = "devnet";
 const PACKAGE_ID = (import.meta as any).env?.VITE_PACKAGE_ID || "";
@@ -45,7 +46,10 @@ export async function getNFT(nftId: string): Promise<PremiumTicketNFT | null> {
 			blobId: fields.blob_id,
 		};
 	} catch (error) {
-		console.error("Failed to fetch NFT:", error);
+		logErrorInfo(error instanceof Error ? error : new Error(String(error)), {
+			endpoint: "getNFT",
+			nftId,
+		});
 		return null;
 	}
 }
