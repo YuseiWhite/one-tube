@@ -43,6 +43,15 @@ export interface SessionMetadata {
 export interface PurchaseRequest {
 	userAddress: string;
 	nftId: string;
+	transactionBytes?: string; // Base64エンコードされたトランザクションデータ（署名前）
+	transactionBlockBytes?: string; // Base64エンコードされた署名済みトランザクションデータ
+	userSignature?: string; // ユーザーの署名
+}
+
+export interface PurchasePrepareResponse {
+	success: boolean;
+	transactionBytes?: string; // Base64エンコードされたトランザクションデータ
+	error?: string;
 }
 
 export interface WatchRequest {
