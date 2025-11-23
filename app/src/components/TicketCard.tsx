@@ -1,21 +1,29 @@
 import { useState } from "react";
-import type { TicketData } from "../types/ticket";
+import type { MockTicket } from "../mocks/tickets";
 
 // チケットカードコンポーネント
-export function TicketCard({ ticket }: { ticket: TicketData }) {
+export function TicketCard({
+	ticket,
+	onPurchase,
+	isPurchasing = false,
+}: {
+	ticket: MockTicket;
+	onPurchase?: () => void;
+	isPurchasing?: boolean;
+}) {
 	const [isHovered, setIsHovered] = useState(false);
 	const [isPremiumButtonHovered, setIsPremiumButtonHovered] = useState(false);
 	const [isRegularButtonHovered, setIsRegularButtonHovered] = useState(false);
 	const [leftImageError, setLeftImageError] = useState(false);
 	const [rightImageError, setRightImageError] = useState(false);
-	
+
 	const isAvailable = ticket.isAvailable;
 	const isPremiumOwned = ticket.isPremiumOwned || false;
-	
+
 	// ボタンの有効/無効状態
 	const isPremiumButtonDisabled = !isAvailable || isPremiumOwned;
 	const isRegularButtonDisabled = !isAvailable || isPremiumOwned;
-	
+
 	// ボタンのスタイル
 	const premiumButtonStyle = isPremiumOwned
 		? {
@@ -43,7 +51,7 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 					opacity: 0.5,
 					transition: "all 0.2s ease",
 				};
-	
+
 	const regularButtonStyle = isPremiumOwned
 		? {
 				backgroundColor: "#3f3f46",
@@ -279,86 +287,36 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 					</div>
 				</div>
 				{/* NOT OWNED / OWNED バッジ */}
-				{!isPremiumOwned && (
-					<div
+				<div
+					style={{
+						position: "absolute",
+						backgroundColor: "rgba(24, 24, 27, 0.8)",
+						border: "1px solid #3f3f46",
+						height: "22px",
+						right: "16px",
+						borderRadius: "8px",
+						top: "16px",
+						paddingLeft: "9px",
+						paddingRight: "9px",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+					}}
+				>
+					<p
 						style={{
-							position: "absolute",
-							backgroundColor: "rgba(24, 24, 27, 0.8)",
-							border: "1px solid #3f3f46",
-							height: "22px",
-							left: "229.18px",
-							borderRadius: "8px",
-							top: "14.5px",
-							width: "92.82px",
+							fontFamily: "'Inter', sans-serif",
+							fontSize: "12px",
+							fontWeight: 500,
+							lineHeight: "16px",
+							color: isPremiumOwned ? "#fdc700" : "#9f9fa9",
+							margin: 0,
+							whiteSpace: "nowrap",
 						}}
 					>
-						<div
-							style={{
-								height: "22px",
-								overflow: "hidden",
-								position: "relative",
-								borderRadius: "inherit",
-								width: "92.82px",
-							}}
-						>
-							<p
-								style={{
-									fontFamily: "'Inter', sans-serif",
-									fontSize: "12px",
-									fontWeight: 500,
-									lineHeight: "16px",
-									color: "#9f9fa9",
-									margin: 0,
-									position: "absolute",
-									left: "9px",
-									top: "4px",
-								}}
-							>
-								NOT OWNED
-							</p>
-						</div>
-					</div>
-				)}
-				{isPremiumOwned && (
-					<div
-						style={{
-							position: "absolute",
-							backgroundColor: "rgba(24, 24, 27, 0.8)",
-							border: "1px solid #3f3f46",
-							height: "22px",
-							left: "229.18px",
-							borderRadius: "8px",
-							top: "14.5px",
-							width: "92.82px",
-						}}
-					>
-						<div
-							style={{
-								height: "22px",
-								overflow: "hidden",
-								position: "relative",
-								borderRadius: "inherit",
-								width: "92.82px",
-							}}
-						>
-							<p
-								style={{
-									fontFamily: "'Inter', sans-serif",
-									fontSize: "12px",
-									fontWeight: 500,
-									lineHeight: "16px",
-									color: "#fdc700",
-									margin: 0,
-									position: "absolute",
-									left: "9px",
-									top: "4px",
-								}}
-							>
-								OWNED
-							</p>
-						</div>
-					</div>
-				)}
+						{isPremiumOwned ? "OWNED" : "NOT OWNED"}
+					</p>
+				</div>
 			</div>
 
 			{/* コンテンツセクション */}
@@ -674,7 +632,8 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 					>
 						{/* BUY PREMIUM TICKET / OWNED ボタン */}
 						<button
-							disabled={isPremiumButtonDisabled}
+							onClick={() => onPurchase && onPurchase()}
+							disabled={isPremiumButtonDisabled || isPurchasing}
 							onMouseEnter={() => setIsPremiumButtonHovered(true)}
 							onMouseLeave={() => setIsPremiumButtonHovered(false)}
 							style={{
@@ -684,8 +643,8 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 								border: premiumButtonStyle.border,
 								width: "100%",
 								position: "relative",
-								cursor: premiumButtonStyle.cursor,
-								opacity: premiumButtonStyle.opacity,
+								cursor: isPurchasing ? "wait" : premiumButtonStyle.cursor,
+								opacity: isPurchasing ? 0.6 : premiumButtonStyle.opacity,
 								flexShrink: 0,
 								transition: premiumButtonStyle.transition,
 							}}
@@ -707,7 +666,7 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 									whiteSpace: "nowrap",
 								}}
 							>
-								{isPremiumOwned ? "OWNED" : "BUY PREMIUM TICKET"}
+								{isPurchasing ? "購入中..." : isPremiumOwned ? "OWNED" : "BUY PREMIUM TICKET"}
 							</p>
 						</button>
 						{/* BUY TICKET ボタン */}
@@ -754,4 +713,3 @@ export function TicketCard({ ticket }: { ticket: TicketData }) {
 		</div>
 	);
 }
-

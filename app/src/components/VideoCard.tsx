@@ -1,9 +1,9 @@
 import { useState } from "react";
-import type { Video } from "../shared/types";
+import type { MockVideo } from "../mocks/videos";
 import { TicketIcon } from "./TicketIcon";
 
 interface VideoCardProps {
-	video: Video;
+	video: MockVideo;
 	isSelected?: boolean;
 	onClick?: () => void;
 	hasPremiumTicket?: boolean;
@@ -20,8 +20,7 @@ function extractFightersFromTitle(title: string): string {
 }
 
 // サムネイルファイル名から日付を抽出
-function getUploadDateFromThumbnail(video: Video): string {
-	const thumbnailUrl = getThumbnailUrl(video);
+function getUploadDateFromThumbnail(thumbnailUrl: string): string {
 	if (!thumbnailUrl) {
 		return "2024.01.01";
 	}
@@ -29,66 +28,23 @@ function getUploadDateFromThumbnail(video: Video): string {
 	// ファイル名から日付を抽出 (例: /assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png)
 	const filename = thumbnailUrl.split("/").pop() || "";
 	const dateMatch = filename.match(/^(\d{4})(\d{2})(\d{2})-/);
-	
+
 	if (dateMatch) {
 		const year = dateMatch[1];
 		const month = dateMatch[2];
 		const day = dateMatch[3];
 		return `${year}.${month}.${day}`;
 	}
-	
+
 	return "2024.01.01";
-}
-
-// 動画タイトルからアップロード日を生成
-function getUploadDate(video: Video): string {
-	return getUploadDateFromThumbnail(video);
-}
-
-// サムネイルファイル名からファイター名を抽出してタイトルを生成
-function generateTitleFromThumbnail(filename: string): string {
-	// ファイル名から日付部分を除去 (例: 20251028-KiamrianAbbasov-vs-ChristianLee.png)
-	const withoutDate = filename.replace(/^\d{8}-/, "").replace(/\.png$/, "");
-	// ハイフンを " vs " に変換し、名前を整形
-	const title = withoutDate.replace(/-vs-/g, " vs ").replace(/-/g, " ");
-	return `${title} - full match`;
-}
-
-// サムネイル画像URLを取得
-function getThumbnailUrl(video: Video): string {
-	// ローカルのサムネイル画像を使用（Viteではpublicフォルダ内のファイルは/から始まるパスでアクセス可能）
-	const thumbnails: Record<string, string> = {
-		"1": "/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png",
-		"2": "/assets/thumbnails/20250323-Superlek-vs-Kongthoranee.png",
-		"3": "/assets/thumbnails/20240906-Haggerty-vs-Mongkolpetch.png",
-	};
-	
-	// IDで検索
-	const url = thumbnails[video.id];
-	if (url) {
-		return url;
-	}
-	
-	// タイトルからIDを推測（フォールバック）
-	if (video.title.includes("KiamrianAbbasov") || video.title.includes("ChristianLee")) {
-		return thumbnails["1"];
-	}
-	if (video.title.includes("Superlek") || video.title.includes("Kongthoranee")) {
-		return thumbnails["2"];
-	}
-	if (video.title.includes("Haggerty") || video.title.includes("Mongkolpetch")) {
-		return thumbnails["3"];
-	}
-	
-	return "";
 }
 
 export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket = false }: VideoCardProps) {
 	const [imageError, setImageError] = useState(false);
 	const [isHovered, setIsHovered] = useState(false);
-	const thumbnailUrl = getThumbnailUrl(video);
+	const thumbnailUrl = video.thumbnailUrl;
 	const fighters = extractFightersFromTitle(video.title);
-	const uploadDate = getUploadDate(video);
+	const uploadDate = getUploadDateFromThumbnail(thumbnailUrl);
 
 	const handleClick = () => {
 		if (onClick) {
@@ -185,7 +141,6 @@ export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket
 				>
 					<TicketIcon isPremium={hasPremiumTicket} />
 				</div>
-
 
 				{/* 動画時間（右下） */}
 				<div
@@ -325,35 +280,27 @@ export function VideoCard({ video, isSelected = false, onClick, hasPremiumTicket
 						height: "22px",
 						right: "12px",
 						bottom: "12px",
-						width: "107.234px",
+						paddingLeft: "9px",
+						paddingRight: "9px",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
 						zIndex: 1,
 					}}
 				>
-					<div
+					<p
 						style={{
-							height: "22px",
-							overflow: "hidden",
-							position: "relative",
-							borderRadius: "inherit",
-							width: "100%",
+							fontFamily: "'Inter', sans-serif",
+							fontSize: "12px",
+							fontWeight: 500,
+							lineHeight: "16px",
+							color: "#9f9fa9",
+							margin: 0,
+							whiteSpace: "nowrap",
 						}}
 					>
-						<p
-							style={{
-								fontFamily: "'Inter', sans-serif",
-								fontSize: "12px",
-								fontWeight: 500,
-								lineHeight: "16px",
-								color: "#9f9fa9",
-								margin: 0,
-								position: "absolute",
-								left: "9px",
-								top: "4px",
-							}}
-						>
-							PREVIEW ONLY
-						</p>
-					</div>
+						PREVIEW ONLY
+					</p>
 				</div>
 			</div>
 		</div>

@@ -11,6 +11,7 @@ export interface TicketData {
 	remainingTickets: string; // "残りX/Y チケット" or "TICKETS NOT AVAILABLE"
 	isAvailable: boolean;
 	isPremiumOwned?: boolean; // プレミアムチケット購入済みかどうか
+	listingId?: string; // Kiosk listing ID (購入処理に使用)
 	leftImageUrl: string;
 	rightImageUrl: string;
 }
