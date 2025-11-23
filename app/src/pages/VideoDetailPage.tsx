@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { VideoPlayer } from "../components/VideoPlayer";
 import { VideoTitleSection } from "../components/VideoTitleSection";
 import { VideoInfo } from "../components/VideoInfo";
 import { CommentForm } from "../components/CommentForm";
 import { PremiumTicketPrompt } from "../components/PremiumTicketPrompt";
-import { getListings } from "../lib/api";
 import { useEffect } from "react";
 import type { Video } from "../shared/types";
 
@@ -13,39 +12,23 @@ const imgIcon = "https://www.figma.com/api/mcp/asset/33c46e35-6d17-49ff-9d29-3f9
 
 export function VideoDetailPage() {
 	const { videoId } = useParams<{ videoId: string }>();
-	const navigate = useNavigate();
 	const [video, setVideo] = useState<Video | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
-	const [hasPremiumTicket, setHasPremiumTicket] = useState(false);
+	const [hasPremiumTicket] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		async function fetchVideo() {
-			try {
-				const listings = await getListings();
-				const foundVideo = listings.find((v) => v.id === videoId);
-				if (foundVideo) {
-					setVideo(foundVideo);
-				} else {
-					// モックデータ（フォールバック）
-					setVideo({
-						id: videoId || "1",
-						title: "Superbon vs Masaaki Noiri - full match",
-						description: "Full match between Superbon and Masaaki Noiri",
-						previewBlobId: "",
-						fullBlobId: "",
-						previewUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
-						price: 0,
-					});
-				}
-			} catch (error) {
-				console.error("Failed to fetch video:", error);
-			} finally {
-				setIsLoading(false);
-			}
-		}
-
-		fetchVideo();
+		// モックデータのみを使用（バックエンドAPI呼び出しを無効化）
+		setVideo({
+			id: videoId || "1",
+			title: "Superbon vs Masaaki Noiri - full match",
+			description: "Full match between Superbon and Masaaki Noiri",
+			previewBlobId: "",
+			fullBlobId: "",
+			previewUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+			price: 0,
+		});
+		setIsLoading(false);
 	}, [videoId]);
 
 	if (isLoading) {
