@@ -1,6 +1,6 @@
 import { EnokiFlow } from "@mysten/enoki";
 import config from "../config.json";
-import { debugLog, infoLog, warnLog, errorLog } from "./logger";
+import { logDebug, logInfo, logError } from "./logger";
 
 // Enoki SDKの初期化
 const enokiFlow = new EnokiFlow({
@@ -16,11 +16,13 @@ const ENOKI_ACCOUNT_KEY = "enoki.account";
  * 注意: この関数はGoogle OAuthページにリダイレクトするため、戻り値はありません
  */
 export async function loginWithGoogle(): Promise<void> {
-	debugLog("[Enoki] 認証開始: Google");
+	logDebug("[Enoki] 認証開始", { provider: "Google" });
 
 	try {
 		// EnokiFlowを使用してGoogle OAuthのURLを生成
-		const network = ((import.meta as any).env?.VITE_ENOKI_NETWORK as "devnet" | "testnet") || "devnet";
+		const network =
+			((import.meta as any).env?.VITE_ENOKI_NETWORK as "devnet" | "testnet") ||
+			"devnet";
 		const authUrl = await enokiFlow.createAuthorizationURL({
 			provider: "google",
 			clientId: config.CLIENT_ID_GOOGLE,
@@ -32,13 +34,16 @@ export async function loginWithGoogle(): Promise<void> {
 			},
 		});
 
-		debugLog("[Enoki] Google OAuth URL生成完了:", authUrl);
+		logDebug("[Enoki] Google OAuth URL生成完了", { authUrl });
 
 		// Google accountchooserページにリダイレクト
 		// 注意: Googleは内部的に /o/oauth2/v2/auth から /v3/signin/accountchooser にリダイレクトします
 		window.location.href = authUrl;
 	} catch (error) {
-		errorLog("[Enoki] ログインエラー:", error);
+		logError(
+			"[Enoki] ログインエラー",
+			error instanceof Error ? error : new Error(String(error)),
+		);
 		throw error;
 	}
 }
@@ -48,14 +53,14 @@ export async function loginWithGoogle(): Promise<void> {
  * Google OAuth認証後のコールバックを処理
  */
 export async function handleAuthCallback(): Promise<string | null> {
-	debugLog("[Enoki] OAuthコールバックを処理します");
+	logDebug("[Enoki] OAuthコールバックを処理します");
 
 	try {
 		// EnokiFlow.handleAuthCallback()はhashを#で始まる形式で期待している
 		const hash = window.location.hash || "";
 
 		if (!hash) {
-			warnLog("[Enoki] URL hashが見つかりません");
+			logInfo("[Enoki] URL hashが見つかりません");
 			return null;
 		}
 
@@ -65,7 +70,7 @@ export async function handleAuthCallback(): Promise<string | null> {
 		const idToken = params.get("id_token");
 
 		if (!idToken) {
-			warnLog("[Enoki] id_tokenが見つかりません");
+			logInfo("[Enoki] id_tokenが見つかりません");
 			return null;
 		}
 
@@ -75,13 +80,15 @@ export async function handleAuthCallback(): Promise<string | null> {
 
 		// EnokiFlow.handleAuthCallback()を呼び出し
 		const state = await enokiFlow.handleAuthCallback(hash);
-		debugLog("[Enoki] OAuthコールバック処理完了 (state):", state);
+		logDebug("[Enoki] OAuthコールバック処理完了", { hasState: !!state });
 
 		// addressは$zkLoginStateから取得する必要がある
 		const address = await getZkLoginAddress();
 
 		if (!address) {
-			warnLog("[Enoki] アドレスが取得できませんでした。Enoki APIの応答を確認してください。");
+			logInfo(
+				"[Enoki] アドレスが取得できませんでした。Enoki APIの応答を確認してください。",
+			);
 		}
 
 		// URLからhashを削除（リロードを防ぐため）
@@ -89,11 +96,10 @@ export async function handleAuthCallback(): Promise<string | null> {
 
 		return address;
 	} catch (error) {
-		errorLog("[Enoki] OAuthコールバック処理エラー:", error);
-		errorLog("[Enoki] エラー詳細:", {
-			message: error instanceof Error ? error.message : String(error),
-			stack: error instanceof Error ? error.stack : undefined,
-		});
+		logError(
+			"[Enoki] OAuthコールバック処理エラー",
+			error instanceof Error ? error : new Error(String(error)),
+		);
 
 		return null;
 	}
@@ -108,20 +114,28 @@ export async function getZkLoginAddress(): Promise<string | null> {
 		const state = enokiFlow.$zkLoginState.get();
 
 		if (state && state.address) {
-			debugLog("[Enoki] セッションからアドレス取得:", state.address);
+			logDebug("[Enoki] セッションからアドレス取得", {
+				address: state.address,
+			});
 			return state.address;
 		}
 
-		if (!state || !state.address) {
-			warnLog("[Enoki] アドレスが$zkLoginStateに設定されていません");
-			// セッションも確認（デバッグ用）
-			const session = await enokiFlow.getSession();
-			debugLog("[Enoki] セッション:", session ? "存在" : "なし");
+		// zkLoginを使用していない場合（ウォレット接続時）はログを出力しない
+		// セッションが存在しない場合のみ警告を出力
+		const session = await enokiFlow.getSession();
+		if (!session) {
+			// セッションが存在しない場合のみデバッグログを出力（警告は出さない）
+			logDebug(
+				"[Enoki] zkLoginセッションが存在しません（ウォレット接続時は正常）",
+			);
 		}
 
 		return state?.address || null;
 	} catch (error) {
-		errorLog("[Enoki] アドレス取得エラー:", error);
+		logError(
+			"[Enoki] アドレス取得エラー",
+			error instanceof Error ? error : new Error(String(error)),
+		);
 		return null;
 	}
 }
@@ -129,29 +143,34 @@ export async function getZkLoginAddress(): Promise<string | null> {
 /**
  * zk proofの検証
  * Enoki SDKを使用してzk proofを取得し、検証する
- * 
+ *
  * セキュリティ注意: zk proofの詳細情報はデバッグモードでのみ出力します。
  * proofオブジェクトには検証に必要な情報が含まれますが、本番環境では
  * 詳細な情報をログ出力しないようにしています。
  */
 export async function verifyZkProof(): Promise<void> {
 	try {
-		const network = ((import.meta as any).env?.VITE_ENOKI_NETWORK as "devnet" | "testnet") || "devnet";
-		
-		debugLog("[Enoki] zk proof検証開始");
-		
+		const network =
+			((import.meta as any).env?.VITE_ENOKI_NETWORK as "devnet" | "testnet") ||
+			"devnet";
+
+		logDebug("[Enoki] zk proof検証開始", { network });
+
 		const proof = await enokiFlow.getProof({ network });
-		
+
 		if (!proof) {
-			warnLog("[Enoki] zk proofが取得できませんでした");
+			logInfo("[Enoki] zk proofが取得できませんでした");
 			return;
 		}
-		
+
 		// 検証成功のみをログ出力（詳細情報はデバッグモードでのみ）
-		infoLog("[Enoki] zk proof検証完了");
-		debugLog("[Enoki] zk proof詳細:", proof);
+		logInfo("[Enoki] zk proof検証完了");
+		logDebug("[Enoki] zk proof詳細", { hasProof: !!proof });
 	} catch (error) {
-		errorLog("[Enoki] zk proof検証エラー:", error);
+		logError(
+			"[Enoki] zk proof検証エラー",
+			error instanceof Error ? error : new Error(String(error)),
+		);
 		throw error;
 	}
 }
@@ -159,7 +178,7 @@ export async function verifyZkProof(): Promise<void> {
 /**
  * Enokiを使用したトランザクション署名
  * Enoki SDKを使用してトランザクションに署名
- * 
+ *
  * 注意: 現在のスコープ（zkLoginログイン機能）では使用されていません。
  * 将来的にzkLoginアカウントでトランザクションを実行する際に必要になります。
  */
@@ -196,7 +215,6 @@ export async function verifyZkProof(): Promise<void> {
 // 		throw error;
 // 	}
 // }
-
 
 /**
  * SessionStorageからEnokiアカウント情報をクリア

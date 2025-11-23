@@ -59,9 +59,9 @@ export function getPreviewUrl(blobId: string): string | null {
  * @returns 動画メタデータ、見つからない場合はnull
  */
 export function getVideoByBlobId(blobId: string): VideoMetadata | null {
-	return videosData.videos.find(
-		(v: VideoMetadata) => v.blobId === blobId,
-	) || null;
+	return (
+		videosData.videos.find((v: VideoMetadata) => v.blobId === blobId) || null
+	);
 }
 
 /**

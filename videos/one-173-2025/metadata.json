@@ -1,0 +1,23 @@
+{
+	"videoId": "one-173-premium-ticket",
+	"title": "ONE 173 Premium Ticket: Superbon vs. Noiri",
+	"description": "プレミアムチケット購入特典:\n\nこのチケットを購入することで One Tubeでこの試合の完全版を視聴できるだけでなく、一ヶ月間過去の全ての試合動画が見放題になります。\n\nあなたが好きな選手を選択することによって、購入されたプレミアムチケットの70%相当額はプラットフォームを通してその選手に支払われます。\n\nVIPチケット購入特典:\n\n- VIPパスと専用入場口のご利用\n\n- 「ONE 173」大会記念品\n\n- ファイトウィーク限定イベントへのご招待\n\n- ONEホスピタリティラウンジへのアクセス権",
+	"price": 15000000,
+	"files": {
+		"thumbnail": "thumbnail.png",
+		"preview": "preview.mp4",
+		"full": "full.mp4"
+	},
+	"walrus": {
+		"thumbnailBlobId": null,
+		"previewBlobId": null,
+		"fullBlobId": null
+	},
+	"nft": {
+		"blobId": null
+	},
+	"seal": {
+		"identityId": null,
+		"encryptedAt": null
+	}
+}

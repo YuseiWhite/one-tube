@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import type { Video } from "../shared/types.js";
 import { getVideoByBlobId } from "./videos.js";
+import { logInfo, logErrorInfo } from "../lib/logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +32,7 @@ type KioskClientItem = Awaited<
 
 export async function getKioskListings(): Promise<Video[]> {
 	try {
-		console.log("🔄 Fetching Kiosk listings...");
+		logInfo("Fetching Kiosk listings", { kioskId: KIOSK_ID });
 
 		const kioskData = await kioskClient.getKiosk({
 			id: KIOSK_ID!,
@@ -49,7 +50,10 @@ export async function getKioskListings(): Promise<Video[]> {
 			(item) => item.listing && item.data?.content?.dataType === "moveObject",
 		);
 
-		console.log(`✅ Found ${listedItems.length} listings`);
+		logInfo("Kiosk listings fetched", {
+			listingCount: listedItems.length,
+			kioskId: KIOSK_ID,
+		});
 
 		const videos: Video[] = listedItems
 			.map((item, index) => convertItemToVideo(item, index))
@@ -57,7 +61,10 @@ export async function getKioskListings(): Promise<Video[]> {
 
 		return videos;
 	} catch (error) {
-		console.error("❌ Failed to fetch Kiosk listings:", error);
+		logErrorInfo(error instanceof Error ? error : new Error(String(error)), {
+			endpoint: "getKioskListings",
+			kioskId: KIOSK_ID,
+		});
 		return [];
 	}
 }
@@ -89,8 +96,10 @@ function convertItemToVideo(
 
 	return {
 		id: item.objectId,
-		title: fields.name || videoMetadata?.title || `OneTube Listing #${index + 1}`,
-		description: fields.description || videoMetadata?.description || "Premium ticket NFT",
+		title:
+			fields.name || videoMetadata?.title || `OneTube Listing #${index + 1}`,
+		description:
+			fields.description || videoMetadata?.description || "Premium ticket NFT",
 		previewBlobId: videoMetadata?.previewBlobId || "",
 		fullBlobId: blobId,
 		previewUrl: videoMetadata?.previewUrl || undefined, // プレビュー動画URL（誰でも見れる）
