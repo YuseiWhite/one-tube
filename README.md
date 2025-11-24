@@ -208,7 +208,22 @@ pnpm run encrypt:video          # Encrypt video and upload to Walrus
 
 ## 📚 Documentation
 
-Comprehensive documentation is available in the `docs/` directory:
+### 🌐 Full Technical Documentation on DeepWiki
+
+**👉 [Complete Technical Documentation](https://deepwiki.com/YuseiWhite/one-tube)**
+
+The DeepWiki documentation provides comprehensive technical details including:
+- Complete system architecture and component design
+- API endpoint reference
+- Smart contract implementation details
+- Integration guides (Seal, Walrus, Kiosk)
+- Data flow diagrams
+- Deployment procedures
+- Technology stack details
+
+### 📁 Local Documentation
+
+Additional documentation is available in the `docs/` directory:
 
 - [Project Specification](docs/project-spec.md) - Complete technical specification
 - [Development Workflow](docs/development-workflow.md) - Development guidelines
@@ -216,6 +231,7 @@ Comprehensive documentation is available in the `docs/` directory:
 - [Seal Key Management](docs/seal-key-management.md) - Seal key management best practices
 - [Walrus Integration](docs/walrus-haulout-hackathon.md) - Walrus implementation experience
 - [zkLogin Integration](docs/issues/028-zk-login-wallet/plan.md) - zkLogin setup guide
+- [DeepWiki Strategy](docs/haulout-hackathon/deepwiki-strategy.md) - How to leverage DeepWiki documentation for hackathon
 
 ## 🏆 Highlights
 
@@ -227,6 +243,7 @@ Comprehensive documentation is available in the `docs/` directory:
 4. **Real-World Application**: Solves actual problem for content creators and sports organizations
 5. **Developer Experience**: Clean codebase, comprehensive docs, easy setup
 6. **Scalable Design**: Built for production with error handling, logging, and session management
+7. **Comprehensive Documentation**: Full technical documentation available on [DeepWiki](https://deepwiki.com/YuseiWhite/one-tube)
 
 ### Technical Innovation
 
