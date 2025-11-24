@@ -47,7 +47,7 @@ function getFighterImageUrl(fighterName: string): string {
 	};
 
 	const imageFileName = nameMapping[fighterName] || "generic_male.png";
-	return `/assets/${imageFileName}`;
+	return `/assets/avatars/${imageFileName}`;
 }
 
 // 12個のモックチケットデータ
@@ -68,8 +68,8 @@ export const MOCK_TICKETS: MockTicket[] = [
 		isPremiumOwned: false, // ログイン状態に応じてTicketsPageで動的に変更
 		leftImageUrl: getFighterImageUrl("Fabricio Andrade"),
 		rightImageUrl: getFighterImageUrl("Enkh-Orgil Baatarkhuu"),
-		previewUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
-		fullVideoUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		previewUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/videos/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		fullVideoUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/videos/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
 	},
 	// B. 購入体験用
 	{
@@ -86,8 +86,8 @@ export const MOCK_TICKETS: MockTicket[] = [
 		isPremiumOwned: false, // 購入ボタンで所有済みに変更可能
 		leftImageUrl: getFighterImageUrl("Superbon"),
 		rightImageUrl: getFighterImageUrl("Masaaki Noiri"),
-		previewUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
-		fullVideoUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		previewUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/videos/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		fullVideoUrl: "http://u173q1plq84gwkc806u2xdenwavej9uxxzdr9ut1mu0bfbc2h.localhost:3000/assets/videos/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
 	},
 	// C. 売り切れ
 	{
