@@ -82,8 +82,9 @@ export function VideosPage() {
 	const selectedVideo = videos.find((v) => v.id === selectedVideoId) || videos[0] || null;
 
 	// プレミアムチケット所有状態を判定
-	// TicketsPageで購入したチケットがあれば、プレミアムコンテンツが視聴可能
-	const hasPremiumTicket = ownedTickets.length > 0;
+	// ログイン状態 AND チケット所有の両方が必要
+	// ログアウト状態では、localStorageにチケットが残っていても無効
+	const hasPremiumTicket = isLoggedIn && ownedTickets.length > 0;
 
 	// 最初のビデオを選択状態にする
 	useEffect(() => {

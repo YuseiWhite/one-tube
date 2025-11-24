@@ -1,7 +1,19 @@
 import { useState } from "react";
 import type { MockTicket } from "../mocks/tickets";
 
-// チケットカードコンポーネント
+/**
+ * チケットカードコンポーネント（レスポンシブ対応版）
+ *
+ * レイアウト方針:
+ * - position: absolute を極力削除し、flexbox ベースに変更
+ * - 固定幅 (334px) を削除し、親コンテナに合わせて width: 100%
+ * - 画面幅に応じて自然に縮小・拡大
+ *
+ * ブレークポイント対応:
+ * - モバイル（〜767px）: 1カラム
+ * - タブレット（768〜1199px）: 2カラム
+ * - PC（1200px〜）: 3カラム
+ */
 export function TicketCard({
 	ticket,
 	onPurchase,
@@ -85,12 +97,12 @@ export function TicketCard({
 			onMouseLeave={() => setIsHovered(false)}
 			style={{
 				backgroundColor: "#09090b", // zinc-950
-				border: isHovered ? "1px solid #fdc700" : "1px solid #27272a", // ホバー時に黄色の縁
+				border: isHovered ? "1px solid #fdc700" : "1px solid #27272a",
 				borderRadius: "10px",
-				position: "relative",
-				height: "612px",
 				overflow: "hidden",
-				width: "100%",
+				width: "100%", // 親コンテナの幅に合わせる
+				display: "flex",
+				flexDirection: "column",
 				transform: isHovered ? "translateY(-2px)" : "translateY(0)",
 				boxShadow: isHovered ? "0 10px 25px rgba(0, 0, 0, 0.3)" : "none",
 				transition: "all 0.2s ease",
@@ -100,204 +112,158 @@ export function TicketCard({
 			<div
 				style={{
 					backgroundColor: "#fdc700",
-					boxSizing: "border-box",
+					padding: "8px 16px",
+					minHeight: "40px",
 					display: "flex",
-					flexDirection: "column",
-					height: "40px",
-					alignItems: "flex-start",
-					left: "1px",
-					paddingTop: "8px",
-					paddingLeft: "16px",
-					paddingRight: "16px",
-					paddingBottom: 0,
-					top: "1px",
-					width: "334px",
-					position: "absolute",
+					alignItems: "center",
 				}}
 			>
-				<div
+				<p
 					style={{
-						height: "24px",
-						overflow: "hidden",
-						position: "relative",
-						flexShrink: 0,
+						fontFamily: "'Inter', sans-serif",
+						fontSize: "16px",
+						fontWeight: 400,
+						lineHeight: "24px",
+						color: "#000000",
+						letterSpacing: "0.4875px",
+						margin: 0,
 						width: "100%",
+						wordBreak: "break-word", // 長いテキストを折り返す
 					}}
 				>
-					<p
-						style={{
-							fontFamily: "'Inter', sans-serif",
-							fontSize: "16px",
-							fontWeight: 400,
-							lineHeight: "24px",
-							color: "#000000",
-							letterSpacing: "0.4875px",
-							margin: 0,
-							position: "absolute",
-							left: 0,
-							top: "-0.5px",
-							whiteSpace: "pre-wrap",
-							width: "357px",
-						}}
-					>
-						{ticket.eventTitle}
-					</p>
-				</div>
+					{ticket.eventTitle}
+				</p>
 			</div>
 
 			{/* 画像セクション */}
 			<div
 				style={{
-					position: "absolute",
-					height: "228px",
-					left: "1px",
-					top: "41px",
-					width: "334px",
+					position: "relative",
+					padding: "16px",
 				}}
 			>
 				<div
 					style={{
-						position: "absolute",
-						boxSizing: "border-box",
 						display: "grid",
 						gridTemplateColumns: "repeat(2, 1fr)",
 						gap: "8px",
-						height: "228px",
-						left: 0,
-						padding: "16px",
-						top: 0,
-						width: "334px",
 					}}
 				>
 					{/* 左側の画像 */}
 					<div
 						style={{
-							display: "flex",
-							flexDirection: "column",
-							alignItems: "flex-start",
-							overflow: "hidden",
 							position: "relative",
+							width: "100%",
+							paddingTop: "130%", // アスペクト比を維持（約 1:1.3）
 							borderRadius: "10px",
-							flexShrink: 0,
+							overflow: "hidden",
+							backgroundColor: "#18181b",
 						}}
 					>
-						<div
-							style={{
-								height: "196px",
-								position: "relative",
-								flexShrink: 0,
-								width: "100%",
-								backgroundColor: "#18181b",
-							}}
-						>
-							{!leftImageError ? (
-								<img
-									alt={ticket.fighter1}
-									src={ticket.leftImageUrl}
-									onError={() => setLeftImageError(true)}
-									style={{
-										position: "absolute",
-										inset: 0,
-										maxWidth: "none",
-										objectFit: "cover",
-										objectPosition: "50% 20%", // 顔写真がより見やすくなるように調整
-										pointerEvents: "none",
-										width: "100%",
-										height: "100%",
-										filter: isPremiumOwned ? "none" : "grayscale(100%)", // 未所有の場合は白黒表示
-										opacity: isPremiumOwned ? 1 : 0.7, // 未所有の場合は少し暗く
-										transition: "filter 0.3s ease, opacity 0.3s ease",
-									}}
-								/>
-							) : (
-								<div
-									style={{
-										position: "absolute",
-										inset: 0,
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										color: "#71717b",
-										fontSize: "12px",
-										fontFamily: "'Inter', sans-serif",
-									}}
-								>
-									{ticket.fighter1}
-								</div>
-							)}
-						</div>
+						{!leftImageError ? (
+							<img
+								alt={ticket.fighter1}
+								src={ticket.leftImageUrl}
+								onError={() => setLeftImageError(true)}
+								style={{
+									position: "absolute",
+									top: 0,
+									left: 0,
+									width: "100%",
+									height: "100%",
+									objectFit: "cover",
+									objectPosition: "50% 20%",
+									filter: isPremiumOwned ? "none" : "grayscale(100%)",
+									opacity: isPremiumOwned ? 1 : 0.7,
+									transition: "filter 0.3s ease, opacity 0.3s ease",
+								}}
+							/>
+						) : (
+							<div
+								style={{
+									position: "absolute",
+									top: 0,
+									left: 0,
+									width: "100%",
+									height: "100%",
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									color: "#71717b",
+									fontSize: "12px",
+									fontFamily: "'Inter', sans-serif",
+									textAlign: "center",
+									padding: "8px",
+								}}
+							>
+								{ticket.fighter1}
+							</div>
+						)}
 					</div>
+
 					{/* 右側の画像 */}
 					<div
 						style={{
-							display: "flex",
-							flexDirection: "column",
-							alignItems: "flex-start",
-							overflow: "hidden",
 							position: "relative",
+							width: "100%",
+							paddingTop: "130%", // アスペクト比を維持
 							borderRadius: "10px",
-							flexShrink: 0,
+							overflow: "hidden",
+							backgroundColor: "#18181b",
 						}}
 					>
-						<div
-							style={{
-								height: "196px",
-								position: "relative",
-								flexShrink: 0,
-								width: "100%",
-								backgroundColor: "#18181b",
-							}}
-						>
-							{!rightImageError ? (
-								<img
-									alt={ticket.fighter2}
-									src={ticket.rightImageUrl}
-									onError={() => setRightImageError(true)}
-									style={{
-										position: "absolute",
-										inset: 0,
-										maxWidth: "none",
-										objectFit: "cover",
-										objectPosition: "50% 20%", // 顔写真がより見やすくなるように調整
-										pointerEvents: "none",
-										width: "100%",
-										height: "100%",
-										filter: isPremiumOwned ? "none" : "grayscale(100%)", // 未所有の場合は白黒表示
-										opacity: isPremiumOwned ? 1 : 0.7, // 未所有の場合は少し暗く
-										transition: "filter 0.3s ease, opacity 0.3s ease",
-									}}
-								/>
-							) : (
-								<div
-									style={{
-										position: "absolute",
-										inset: 0,
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										color: "#71717b",
-										fontSize: "12px",
-										fontFamily: "'Inter', sans-serif",
-									}}
-								>
-									{ticket.fighter2}
-								</div>
-							)}
-						</div>
+						{!rightImageError ? (
+							<img
+								alt={ticket.fighter2}
+								src={ticket.rightImageUrl}
+								onError={() => setRightImageError(true)}
+								style={{
+									position: "absolute",
+									top: 0,
+									left: 0,
+									width: "100%",
+									height: "100%",
+									objectFit: "cover",
+									objectPosition: "50% 20%",
+									filter: isPremiumOwned ? "none" : "grayscale(100%)",
+									opacity: isPremiumOwned ? 1 : 0.7,
+									transition: "filter 0.3s ease, opacity 0.3s ease",
+								}}
+							/>
+						) : (
+							<div
+								style={{
+									position: "absolute",
+									top: 0,
+									left: 0,
+									width: "100%",
+									height: "100%",
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									color: "#71717b",
+									fontSize: "12px",
+									fontFamily: "'Inter', sans-serif",
+									textAlign: "center",
+									padding: "8px",
+								}}
+							>
+								{ticket.fighter2}
+							</div>
+						)}
 					</div>
 				</div>
+
 				{/* NOT OWNED / OWNED バッジ */}
 				<div
 					style={{
 						position: "absolute",
+						top: "16px",
+						right: "16px",
 						backgroundColor: "rgba(24, 24, 27, 0.8)",
 						border: "1px solid #3f3f46",
-						height: "22px",
-						right: "16px",
 						borderRadius: "8px",
-						top: "16px",
-						paddingLeft: "9px",
-						paddingRight: "9px",
+						padding: "3px 9px",
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "center",
@@ -322,261 +288,133 @@ export function TicketCard({
 			{/* コンテンツセクション */}
 			<div
 				style={{
-					position: "absolute",
-					boxSizing: "border-box",
+					padding: "0 16px 16px 16px",
 					display: "flex",
 					flexDirection: "column",
 					gap: "16px",
-					height: "342px",
-					alignItems: "flex-start",
-					left: "1px",
-					paddingLeft: "16px",
-					paddingRight: 0,
-					paddingTop: "16px",
-					paddingBottom: "16px",
-					top: "269px",
-					width: "334px",
+					flex: 1, // 残りのスペースを埋める
 				}}
 			>
 				{/* ファイター情報 */}
-				<div
-					style={{
-						height: "78px",
-						position: "relative",
-						flexShrink: 0,
-						width: "302px",
-					}}
-				>
-					<div
+				<div>
+					<p
 						style={{
-							boxSizing: "border-box",
-							display: "flex",
-							flexDirection: "column",
-							height: "78px",
-							alignItems: "flex-start",
-							position: "relative",
-							width: "302px",
+							fontFamily: "'Inter', sans-serif",
+							fontSize: "18px",
+							fontWeight: 500,
+							lineHeight: "27px",
+							color: "#fdc700",
+							letterSpacing: "0.0105px",
+							margin: "0 0 4px 0",
+							wordBreak: "break-word", // 長い名前を折り返す
 						}}
 					>
-						<div
-							style={{
-								height: "54px",
-								position: "relative",
-								flexShrink: 0,
-								width: "100%",
-							}}
-						>
-							<p
-								style={{
-									fontFamily: "'Inter', sans-serif",
-									fontSize: "18px",
-									fontWeight: 500,
-									lineHeight: "27px",
-									color: "#fdc700",
-									letterSpacing: "0.0105px",
-									margin: 0,
-									position: "absolute",
-									left: 0,
-									top: "0.5px",
-									whiteSpace: "pre-wrap",
-									width: "269px",
-								}}
-							>
-								{ticket.fighter1} vs {ticket.fighter2}
-							</p>
-						</div>
-						<div
-							style={{
-								height: "24px",
-								position: "relative",
-								flexShrink: 0,
-								width: "100%",
-							}}
-						>
-							<p
-								style={{
-									fontFamily: "'Inter', sans-serif",
-									fontSize: "16px",
-									fontWeight: 400,
-									lineHeight: "24px",
-									color: "#9f9fa9",
-									letterSpacing: "-0.3125px",
-									margin: 0,
-									position: "absolute",
-									left: 0,
-									top: "-0.5px",
-								}}
-							>
-								{ticket.location}
-							</p>
-						</div>
-					</div>
+						{ticket.fighter1} vs {ticket.fighter2}
+					</p>
+					<p
+						style={{
+							fontFamily: "'Inter', sans-serif",
+							fontSize: "16px",
+							fontWeight: 400,
+							lineHeight: "24px",
+							color: "#9f9fa9",
+							letterSpacing: "-0.3125px",
+							margin: 0,
+						}}
+					>
+						{ticket.location}
+					</p>
 				</div>
 
 				{/* チケット価格情報 */}
 				<div
 					style={{
-						height: "56px",
-						position: "relative",
-						flexShrink: 0,
-						width: "302px",
+						display: "flex",
+						flexDirection: "column",
+						gap: "8px",
+						padding: "0 8px",
 					}}
 				>
+					{/* 物理チケット */}
 					<div
 						style={{
-							boxSizing: "border-box",
 							display: "flex",
-							flexDirection: "column",
-							gap: "8px",
-							height: "56px",
-							alignItems: "flex-start",
-							paddingLeft: "8px",
-							paddingRight: "8px",
-							paddingTop: 0,
-							paddingBottom: 0,
-							position: "relative",
-							width: "302px",
+							justifyContent: "space-between",
+							alignItems: "center",
 						}}
 					>
-						{/* 物理チケット */}
-						<div
+						<p
 							style={{
-								display: "flex",
-								height: "24px",
-								alignItems: "flex-start",
-								justifyContent: "space-between",
-								position: "relative",
-								flexShrink: 0,
-								width: "100%",
+								fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
+								fontSize: "16px",
+								fontWeight: 400,
+								lineHeight: "24px",
+								color: "#71717b",
+								letterSpacing: "-0.3125px",
+								margin: 0,
 							}}
 						>
-							<div
-								style={{
-									height: "24px",
-									position: "relative",
-									flexShrink: 0,
-									width: "100.438px",
-								}}
-							>
-								<p
-									style={{
-										fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
-										fontSize: "16px",
-										fontWeight: 400,
-										lineHeight: "24px",
-										color: "#71717b",
-										letterSpacing: "-0.3125px",
-										margin: 0,
-										position: "absolute",
-										left: 0,
-										top: "-0.5px",
-									}}
-								>
-									物理チケット:
-								</p>
-							</div>
-							<div
-								style={{
-									height: "24px",
-									position: "relative",
-									flexShrink: 0,
-									width: "69.219px",
-								}}
-							>
-								<p
-									style={{
-										fontFamily: "'Inter', sans-serif",
-										fontSize: "16px",
-										fontWeight: 400,
-										lineHeight: "24px",
-										color: "#d4d4d8",
-										letterSpacing: "-0.3125px",
-										margin: 0,
-										position: "absolute",
-										left: 0,
-										top: "-0.5px",
-									}}
-								>
-									{ticket.physicalTicketPrice}
-								</p>
-							</div>
-						</div>
-						{/* プレミアム */}
-						<div
+							物理チケット:
+						</p>
+						<p
 							style={{
-								display: "flex",
-								height: "24px",
-								alignItems: "flex-start",
-								justifyContent: "space-between",
-								position: "relative",
-								flexShrink: 0,
-								width: "100%",
+								fontFamily: "'Inter', sans-serif",
+								fontSize: "16px",
+								fontWeight: 400,
+								lineHeight: "24px",
+								color: "#d4d4d8",
+								letterSpacing: "-0.3125px",
+								margin: 0,
+								whiteSpace: "nowrap",
 							}}
 						>
-							<div
-								style={{
-									height: "24px",
-									position: "relative",
-									flexShrink: 0,
-									width: "82.68px",
-								}}
-							>
-								<p
-									style={{
-										fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
-										fontSize: "16px",
-										fontWeight: 400,
-										lineHeight: "24px",
-										color: "#71717b",
-										letterSpacing: "-0.3125px",
-										margin: 0,
-										position: "absolute",
-										left: 0,
-										top: "-0.5px",
-									}}
-								>
-									プレミアム:
-								</p>
-							</div>
-							<div
-								style={{
-									height: "24px",
-									position: "relative",
-									flexShrink: 0,
-									width: "173.672px",
-								}}
-							>
-								<p
-									style={{
-										fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
-										fontSize: "16px",
-										fontWeight: 400,
-										lineHeight: "24px",
-										color: "#d4d4d8",
-										letterSpacing: "-0.3125px",
-										margin: 0,
-										position: "absolute",
-										left: 0,
-										top: "-0.5px",
-										whiteSpace: "nowrap",
-									}}
-								>
-									{ticket.premiumPrice}（{ticket.premiumFee}）
-								</p>
-							</div>
-						</div>
+							{ticket.physicalTicketPrice}
+						</p>
+					</div>
+					{/* プレミアム */}
+					<div
+						style={{
+							display: "flex",
+							justifyContent: "space-between",
+							alignItems: "center",
+							flexWrap: "wrap", // 長いテキストの場合は折り返す
+							gap: "4px",
+						}}
+					>
+						<p
+							style={{
+								fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
+								fontSize: "16px",
+								fontWeight: 400,
+								lineHeight: "24px",
+								color: "#71717b",
+								letterSpacing: "-0.3125px",
+								margin: 0,
+							}}
+						>
+							プレミアム:
+						</p>
+						<p
+							style={{
+								fontFamily: "'Inter', 'Noto Sans JP', sans-serif",
+								fontSize: "16px",
+								fontWeight: 400,
+								lineHeight: "24px",
+								color: "#d4d4d8",
+								letterSpacing: "-0.3125px",
+								margin: 0,
+								whiteSpace: "nowrap",
+							}}
+						>
+							{ticket.premiumPrice}（{ticket.premiumFee}）
+						</p>
 					</div>
 				</div>
 
 				{/* 残りチケット数 */}
 				<div
 					style={{
-						height: "24px",
-						position: "relative",
-						flexShrink: 0,
-						width: "302px",
 						display: "flex",
-						alignItems: "center",
 						justifyContent: "center",
 					}}
 				>
@@ -597,117 +435,89 @@ export function TicketCard({
 					</p>
 				</div>
 
-				{/* スペーサー */}
-				<div
-					style={{
-						flex: "1 0 0",
-						minHeight: "1px",
-						minWidth: "1px",
-						position: "relative",
-						flexShrink: 0,
-						width: "302px",
-					}}
-				/>
+				{/* スペーサー（ボタンを下に押し下げる） */}
+				<div style={{ flex: 1, minHeight: "8px" }} />
 
 				{/* ボタンセクション */}
 				<div
 					style={{
-						height: "80px",
-						position: "relative",
-						flexShrink: 0,
-						width: "302px",
+						display: "flex",
+						flexDirection: "column",
+						gap: "8px",
 					}}
 				>
-					<div
+					{/* BUY PREMIUM TICKET / OWNED ボタン */}
+					<button
+						onClick={() => onPurchase && onPurchase()}
+						disabled={isPremiumButtonDisabled || isPurchasing}
+						onMouseEnter={() => setIsPremiumButtonHovered(true)}
+						onMouseLeave={() => setIsPremiumButtonHovered(false)}
 						style={{
-							boxSizing: "border-box",
+							backgroundColor: premiumButtonStyle.backgroundColor,
+							height: "36px",
+							borderRadius: "8px",
+							border: premiumButtonStyle.border,
+							width: "100%",
+							cursor: isPurchasing ? "wait" : premiumButtonStyle.cursor,
+							opacity: isPurchasing ? 0.6 : premiumButtonStyle.opacity,
+							transition: premiumButtonStyle.transition,
 							display: "flex",
-							flexDirection: "column",
-							gap: "8px",
-							height: "80px",
-							alignItems: "flex-start",
-							position: "relative",
-							width: "302px",
+							alignItems: "center",
+							justifyContent: "center",
 						}}
 					>
-						{/* BUY PREMIUM TICKET / OWNED ボタン */}
-						<button
-							onClick={() => onPurchase && onPurchase()}
-							disabled={isPremiumButtonDisabled || isPurchasing}
-							onMouseEnter={() => setIsPremiumButtonHovered(true)}
-							onMouseLeave={() => setIsPremiumButtonHovered(false)}
+						<p
 							style={{
-								backgroundColor: premiumButtonStyle.backgroundColor,
-								height: "36px",
-								borderRadius: "8px",
-								border: premiumButtonStyle.border,
-								width: "100%",
-								position: "relative",
-								cursor: isPurchasing ? "wait" : premiumButtonStyle.cursor,
-								opacity: isPurchasing ? 0.6 : premiumButtonStyle.opacity,
-								flexShrink: 0,
-								transition: premiumButtonStyle.transition,
+								fontFamily: "'Inter', sans-serif",
+								fontSize: "14px",
+								fontWeight: 500,
+								lineHeight: "20px",
+								color: premiumButtonStyle.color,
+								textAlign: "center",
+								letterSpacing: "-0.1504px",
+								margin: 0,
+								whiteSpace: "nowrap",
 							}}
 						>
-							<p
-								style={{
-									fontFamily: "'Inter', sans-serif",
-									fontSize: "14px",
-									fontWeight: 500,
-									lineHeight: "20px",
-									color: premiumButtonStyle.color,
-									textAlign: "center",
-									letterSpacing: "-0.1504px",
-									margin: 0,
-									position: "absolute",
-									left: "50%",
-									top: "8.5px",
-									transform: "translateX(-50%)",
-									whiteSpace: "nowrap",
-								}}
-							>
-								{isPurchasing ? "購入中..." : isPremiumOwned ? "OWNED" : "BUY PREMIUM TICKET"}
-							</p>
-						</button>
-						{/* BUY TICKET ボタン */}
-						<button
-							disabled={isRegularButtonDisabled}
-							onMouseEnter={() => setIsRegularButtonHovered(true)}
-							onMouseLeave={() => setIsRegularButtonHovered(false)}
+							{isPurchasing ? "購入中..." : isPremiumOwned ? "OWNED" : "BUY PREMIUM TICKET"}
+						</p>
+					</button>
+
+					{/* BUY TICKET ボタン */}
+					<button
+						disabled={isRegularButtonDisabled}
+						onMouseEnter={() => setIsRegularButtonHovered(true)}
+						onMouseLeave={() => setIsRegularButtonHovered(false)}
+						style={{
+							backgroundColor: regularButtonStyle.backgroundColor,
+							border: regularButtonStyle.border,
+							height: "36px",
+							borderRadius: "8px",
+							width: "100%",
+							cursor: regularButtonStyle.cursor,
+							opacity: regularButtonStyle.opacity,
+							transition: regularButtonStyle.transition,
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+						}}
+					>
+						<p
 							style={{
-								backgroundColor: regularButtonStyle.backgroundColor,
-								border: regularButtonStyle.border,
-								height: "36px",
-								borderRadius: "8px",
-								width: "100%",
-								position: "relative",
-								cursor: regularButtonStyle.cursor,
-								opacity: regularButtonStyle.opacity,
-								flexShrink: 0,
-								transition: regularButtonStyle.transition,
+								fontFamily: "'Inter', sans-serif",
+								fontSize: "14px",
+								fontWeight: 500,
+								lineHeight: "20px",
+								color: regularButtonStyle.color,
+								textAlign: "center",
+								letterSpacing: "-0.1504px",
+								margin: 0,
+								whiteSpace: "nowrap",
 							}}
 						>
-							<p
-								style={{
-									fontFamily: "'Inter', sans-serif",
-									fontSize: "14px",
-									fontWeight: 500,
-									lineHeight: "20px",
-									color: regularButtonStyle.color,
-									textAlign: "center",
-									letterSpacing: "-0.1504px",
-									margin: 0,
-									position: "absolute",
-									left: "50%",
-									top: "8.5px",
-									transform: "translateX(-50%)",
-									whiteSpace: "nowrap",
-								}}
-							>
-								BUY TICKET
-							</p>
-						</button>
-					</div>
+							BUY TICKET
+						</p>
+					</button>
 				</div>
 			</div>
 		</div>

@@ -3,6 +3,7 @@ import { useCurrentAccount } from "@mysten/dapp-kit";
 import { TicketCard } from "../components/TicketCard";
 import { MOCK_TICKETS, type MockTicket } from "../mocks/tickets";
 import { toast } from "../lib/toast";
+import "../styles/TicketsPageResponsive.css";
 
 const REFRESH_ICON_URL = "https://www.figma.com/api/mcp/asset/3c0bd1f0-ca2b-4059-b9ed-c0b49ef0e814";
 
@@ -91,15 +92,12 @@ export function TicketsPage() {
 
 	return (
 		<div
+			className="tickets-page-container"
 			style={{
 				backgroundColor: "#18181b",
 				display: "flex",
 				flexDirection: "column",
 				gap: "24px",
-				paddingTop: "32px",
-				paddingLeft: "32px",
-				paddingRight: "32px",
-				paddingBottom: "32px",
 				width: "100%",
 				minHeight: "100%",
 				boxSizing: "border-box",
@@ -200,11 +198,18 @@ export function TicketsPage() {
 				</button>
 			</div>
 
-			{/* チケットグリッドコンテナ */}
+			{/* チケットグリッドコンテナ（レスポンシブ対応）
+			    - モバイル（〜767px）: 1カラム
+			    - タブレット（768〜1199px）: 2カラム
+			    - PC（1200px〜）: 3カラム
+
+			    repeat(auto-fit, minmax(320px, 1fr)) により、
+			    画面幅に応じて自動的にカラム数が調整されます。
+			*/}
 			<div
 				style={{
 					display: "grid",
-					gridTemplateColumns: "repeat(3, 1fr)",
+					gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
 					gap: "24px",
 					width: "100%",
 				}}
