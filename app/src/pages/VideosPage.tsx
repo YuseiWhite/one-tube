@@ -101,13 +101,13 @@ export function VideosPage() {
 	const handleFullVersionPlay = async () => {
 		if (hasPremiumTicket) {
 			// セッションキー取得開始
-			toast.info("セッションキーを取得中");
+			toast.info("Getting session key");
 
 			// セッションキー取得をシミュレート（1秒の遅延）
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			// セッション有効通知
-			toast.success("セッション有効 - 完全版の視聴ができます！");
+			toast.success("Session valid - Full version available!");
 
 			// 通知表示後に少し待ってから再生開始
 			await new Promise((resolve) => setTimeout(resolve, 500));
@@ -349,7 +349,7 @@ export function VideosPage() {
 											textAlign: "center",
 										}}
 									>
-										プレビュー再生
+										Play Preview
 									</p>
 								</button>
 
@@ -384,7 +384,7 @@ export function VideosPage() {
 											letterSpacing: "-0.1504px",
 										}}
 									>
-										完全版を視聴
+										Watch Full Version
 									</p>
 								</button>
 							</div>

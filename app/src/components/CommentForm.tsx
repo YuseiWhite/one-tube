@@ -52,7 +52,7 @@ export function CommentForm() {
 				<textarea
 					value={comment}
 					onChange={(e) => setComment(e.target.value)}
-					placeholder="コメントを入力..."
+					placeholder="Enter your comment..."
 					style={{
 						backgroundColor: "#18181b",
 						border: "1px solid #3f3f46",
@@ -102,7 +102,7 @@ export function CommentForm() {
 							letterSpacing: "-0.1504px",
 						}}
 					>
-						送信
+						Submit
 					</p>
 				</button>
 
@@ -129,7 +129,7 @@ export function CommentForm() {
 							top: "1px",
 						}}
 					>
-						※ コメント機能は開発中です
+						※ Comment feature is under development
 					</p>
 				</div>
 			</div>

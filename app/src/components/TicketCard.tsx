@@ -354,7 +354,7 @@ export function TicketCard({
 								margin: 0,
 							}}
 						>
-							物理チケット:
+							Physical Ticket:
 						</p>
 						<p
 							style={{
@@ -392,7 +392,7 @@ export function TicketCard({
 								margin: 0,
 							}}
 						>
-							プレミアム:
+							Premium:
 						</p>
 						<p
 							style={{
@@ -479,7 +479,7 @@ export function TicketCard({
 								whiteSpace: "nowrap",
 							}}
 						>
-							{isPurchasing ? "購入中..." : isPremiumOwned ? "OWNED" : "BUY PREMIUM TICKET"}
+							{isPurchasing ? "Purchasing..." : isPremiumOwned ? "OWNED" : "BUY PREMIUM TICKET"}
 						</p>
 					</button>
 

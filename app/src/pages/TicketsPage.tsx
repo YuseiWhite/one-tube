@@ -61,7 +61,7 @@ export function TicketsPage() {
 	const handlePurchase = async (ticketId: string) => {
 		// ログインチェック
 		if (!isLoggedIn) {
-			toast.info("チケットを購入するにはログインが必要です");
+			toast.info("Please log in to purchase tickets");
 			return;
 		}
 
@@ -87,7 +87,7 @@ export function TicketsPage() {
 		}
 
 		setPurchasing(null);
-		toast.success("購入が完了しました！");
+		toast.success("Purchase completed!");
 	};
 
 	return (
@@ -193,7 +193,7 @@ export function TicketsPage() {
 							whiteSpace: "nowrap",
 						}}
 					>
-						在庫を更新
+						Refresh
 					</p>
 				</button>
 			</div>
