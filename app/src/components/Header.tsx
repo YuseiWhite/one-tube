@@ -159,10 +159,10 @@ export function Header() {
 				// Enokiが初期化されていない場合は無視
 				console.log("[Header] Enoki logout skipped:", error);
 			}
-			toast.success("ログアウトしました");
+			toast.success("Logged out");
 		} catch (error) {
 			console.error("[Header] Logout error:", error);
-			toast.error("ログアウトに失敗しました");
+			toast.error("Logout failed");
 		}
 	};
 
@@ -337,7 +337,7 @@ export function Header() {
 									whiteSpace: "nowrap",
 								}}
 							>
-								ログアウト
+								Logout
 							</span>
 						</button>
 					</div>
@@ -371,7 +371,7 @@ export function Header() {
 								textAlign: "center",
 							}}
 						>
-							ログイン
+							Login
 						</span>
 					</button>
 				)}

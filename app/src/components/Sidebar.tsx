@@ -220,7 +220,7 @@ export function Sidebar({ currentPage }: SidebarProps) {
 							margin: 0,
 						}}
 					>
-						プレミアムチケットについて
+						About Premium Tickets
 					</p>
 				</div>
 
@@ -253,7 +253,7 @@ export function Sidebar({ currentPage }: SidebarProps) {
 								wordWrap: "break-word",
 							}}
 						>
-							プレミアムチケットを購入すると、1ヶ月間、過去試合が見放題！！！！
+							Purchase a Premium Ticket to watch unlimited past matches for 1 month!
 						</p>
 					</div>
 
@@ -277,7 +277,7 @@ export function Sidebar({ currentPage }: SidebarProps) {
 								wordWrap: "break-word",
 							}}
 						>
-							購入されたプレミアムチケットの70%相当額はプラットフォームを通して選手に支払われます！
+							70% of the Premium Ticket purchase goes to the athletes through the platform!
 						</p>
 					</div>
 
@@ -298,7 +298,7 @@ export function Sidebar({ currentPage }: SidebarProps) {
 								margin: 0,
 							}}
 						>
-							好きな選手を応援しよう！
+							Support your favorite athletes!
 						</p>
 					</div>
 				</div>

@@ -170,7 +170,7 @@ export function LoginModal({
 								"'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif",
 						}}
 					>
-						キャンセル
+						Cancel
 					</button>
 				</div>
 			</div>
