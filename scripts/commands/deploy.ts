@@ -622,6 +622,7 @@ export async function deployCommand(network: SupportedNetwork): Promise<void> {
 	console.log("\n📝 Updating frontend environment variables (VITE_*)...");
 	updateEnvFile({
 		VITE_PACKAGE_ID: publishResult.packageId,
+		VITE_SEAL_PACKAGE_ID: publishResult.packageId,
 	});
 
 	printBox(

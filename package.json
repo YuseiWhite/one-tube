@@ -31,8 +31,10 @@
 	"packageManager": "pnpm@10.23.0",
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.4",
+		"@mysten/seal": "^0.9.4",
 		"@mysten/sui": "^1.44.0",
 		"@types/node": "^24.10.1",
+		"axios": "^1.13.2",
 		"dotenv": "^17.2.3",
 		"tsx": "^4.20.6",
 		"typescript": "^5.9.3"
