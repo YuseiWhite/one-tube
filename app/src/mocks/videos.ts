@@ -23,8 +23,8 @@ export const MOCK_VIDEOS: MockVideo[] = [
 		title: generateTitleFromThumbnail("20251028-KiamrianAbbasov-vs-ChristianLee.png"),
 		description: "Full match between Kiamrian Abbasov and Christian Lee",
 		thumbnailUrl: "/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee.png",
-		previewUrl: "/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
-		fullVideoUrl: "/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		previewUrl: "/assets/videos/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		fullVideoUrl: "/assets/videos/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
 		requiresPremium: true,
 	},
 	{
@@ -32,8 +32,8 @@ export const MOCK_VIDEOS: MockVideo[] = [
 		title: generateTitleFromThumbnail("20250323-Superlek-vs-Kongthoranee.png"),
 		description: "Full match between Superlek and Kongthoranee",
 		thumbnailUrl: "/assets/thumbnails/20250323-Superlek-vs-Kongthoranee.png",
-		previewUrl: "/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
-		fullVideoUrl: "/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		previewUrl: "/assets/videos/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		fullVideoUrl: "/assets/videos/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
 		requiresPremium: true,
 	},
 	{
@@ -41,8 +41,8 @@ export const MOCK_VIDEOS: MockVideo[] = [
 		title: generateTitleFromThumbnail("20240906-Haggerty-vs-Mongkolpetch.png"),
 		description: "Full match between Haggerty and Mongkolpetch",
 		thumbnailUrl: "/assets/thumbnails/20240906-Haggerty-vs-Mongkolpetch.png",
-		previewUrl: "/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
-		fullVideoUrl: "/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		previewUrl: "/assets/videos/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
+		fullVideoUrl: "/assets/videos/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4",
 		requiresPremium: true,
 	},
 ];
