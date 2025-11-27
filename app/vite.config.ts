@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
 	plugins: [react()],
 	envDir: "../", // ルートディレクトリを環境変数の読み込み元に設定
+	publicDir: "public",
 	server: {
 		port: 3000,
 		proxy: {
