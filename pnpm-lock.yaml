@@ -12,7 +12,7 @@ importers:
         specifier: ^2.3.4
         version: 2.3.4
       '@mysten/sui':
-        specifier: ^1.44.0
+        specifier: ^1.45.0
         version: 1.45.0(typescript@5.9.3)
       '@types/node':
         specifier: ^24.10.1
