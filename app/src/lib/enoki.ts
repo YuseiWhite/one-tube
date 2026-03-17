@@ -74,11 +74,10 @@ export async function handleAuthCallback(): Promise<string | null> {
 			return null;
 		}
 
-		// デバッグ情報を出力（デバッグモードのみ）
-		// 本番環境では不要なため、削除
-		// デバッグが必要な場合は、ブラウザの開発者ツールで確認
+		logDebug("[Enoki] JWT取得完了");
 
 		// EnokiFlow.handleAuthCallback()を呼び出し
+		logDebug("[Enoki] Enoki SDK呼び出し");
 		const state = await enokiFlow.handleAuthCallback(hash);
 		logDebug("[Enoki] OAuthコールバック処理完了", { hasState: !!state });
 

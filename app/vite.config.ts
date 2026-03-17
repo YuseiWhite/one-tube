@@ -5,6 +5,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
 	plugins: [react()],
 	envDir: "../", // ルートディレクトリを環境変数の読み込み元に設定
+	publicDir: "public",
 	server: {
 		port: 3000,
 		proxy: {

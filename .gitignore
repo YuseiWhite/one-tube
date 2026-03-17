@@ -36,5 +36,3 @@ videos/encrypted/*.json
 
 # Configuration files with sensitive data
 app/src/config.json
-
-
