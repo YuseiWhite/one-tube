@@ -18,4 +18,3 @@ Object.defineProperty(window, "location", {
 		search: "",
 	},
 });
-

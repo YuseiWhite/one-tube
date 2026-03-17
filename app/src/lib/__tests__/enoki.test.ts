@@ -1,6 +1,6 @@
 /**
  * Enoki SDK ユニットテスト
- * 
+ *
  * Enoki SDKの基本機能とenoki.tsの関数をテスト
  * モックを使用したユニットテスト
  */
@@ -132,7 +132,9 @@ describe("Enoki SDK ユニットテスト", () => {
 					publicKey: "test-public-key",
 				};
 
-				vi.mocked(enokiFlow.$zkLoginState.get).mockReturnValue(mockState as any);
+				vi.mocked(enokiFlow.$zkLoginState.get).mockReturnValue(
+					mockState as any,
+				);
 
 				const state = enokiFlow.$zkLoginState.get();
 
@@ -155,9 +157,12 @@ describe("Enoki SDK ユニットテスト", () => {
 		describe("OAuth URL生成", () => {
 			it("Google OAuth URLを生成できる", async () => {
 				const enokiFlow = new EnokiFlow({ apiKey: "test-api-key" });
-				const mockAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?client_id=test&redirect_uri=http://localhost:3000";
+				const mockAuthUrl =
+					"https://accounts.google.com/o/oauth2/v2/auth?client_id=test&redirect_uri=http://localhost:3000";
 
-				vi.mocked(enokiFlow.createAuthorizationURL).mockResolvedValue(mockAuthUrl);
+				vi.mocked(enokiFlow.createAuthorizationURL).mockResolvedValue(
+					mockAuthUrl,
+				);
 
 				const authUrl = await enokiFlow.createAuthorizationURL({
 					provider: "google",
@@ -182,7 +187,9 @@ describe("Enoki SDK ユニットテスト", () => {
 				const mockAddress = "0x1234567890abcdef";
 				const hash = "#id_token=test-token";
 
-				vi.mocked(enokiFlow.handleAuthCallback).mockResolvedValue(mockAddress as any);
+				vi.mocked(enokiFlow.handleAuthCallback).mockResolvedValue(
+					mockAddress as any,
+				);
 
 				const address = await enokiFlow.handleAuthCallback(hash);
 
@@ -193,9 +200,13 @@ describe("Enoki SDK ユニットテスト", () => {
 			it("無効なhashの場合はエラーを返す", async () => {
 				const enokiFlow = new EnokiFlow({ apiKey: "test-api-key" });
 
-				vi.mocked(enokiFlow.handleAuthCallback).mockRejectedValue(new Error("Invalid hash"));
+				vi.mocked(enokiFlow.handleAuthCallback).mockRejectedValue(
+					new Error("Invalid hash"),
+				);
 
-				await expect(enokiFlow.handleAuthCallback("")).rejects.toThrow("Invalid hash");
+				await expect(enokiFlow.handleAuthCallback("")).rejects.toThrow(
+					"Invalid hash",
+				);
 			});
 		});
 
@@ -218,9 +229,13 @@ describe("Enoki SDK ユニットテスト", () => {
 			it("zk proofが存在しない場合はエラーを返す", async () => {
 				const enokiFlow = new EnokiFlow({ apiKey: "test-api-key" });
 
-				vi.mocked(enokiFlow.getProof).mockRejectedValue(new Error("Proof not found"));
+				vi.mocked(enokiFlow.getProof).mockRejectedValue(
+					new Error("Proof not found"),
+				);
 
-				await expect(enokiFlow.getProof({ network: "devnet" })).rejects.toThrow("Proof not found");
+				await expect(enokiFlow.getProof({ network: "devnet" })).rejects.toThrow(
+					"Proof not found",
+				);
 			});
 		});
 
@@ -238,7 +253,9 @@ describe("Enoki SDK ユニットテスト", () => {
 				const keypair = await enokiFlow.getKeypair({ network: "devnet" });
 
 				expect(keypair).toBeDefined();
-				expect(enokiFlow.getKeypair).toHaveBeenCalledWith({ network: "devnet" });
+				expect(enokiFlow.getKeypair).toHaveBeenCalledWith({
+					network: "devnet",
+				});
 			});
 		});
 
@@ -262,10 +279,13 @@ describe("Enoki SDK ユニットテスト", () => {
 	describe("enoki.ts関数", () => {
 		describe("loginWithGoogle", () => {
 			it("Google OAuth URLを生成してリダイレクトする", async () => {
-				const mockAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?client_id=test";
+				const mockAuthUrl =
+					"https://accounts.google.com/o/oauth2/v2/auth?client_id=test";
 				const mockEnokiFlow = await getMockEnokiFlow();
-				vi.mocked(mockEnokiFlow.createAuthorizationURL).mockResolvedValue(mockAuthUrl);
-				
+				vi.mocked(mockEnokiFlow.createAuthorizationURL).mockResolvedValue(
+					mockAuthUrl,
+				);
+
 				// window.location.hrefをモック
 				const originalHref = window.location.href;
 				Object.defineProperty(window, "location", {
@@ -280,7 +300,7 @@ describe("Enoki SDK ユニットテスト", () => {
 				await enokiModule.loginWithGoogle();
 
 				expect(mockEnokiFlow.createAuthorizationURL).toHaveBeenCalled();
-				
+
 				// リセット
 				Object.defineProperty(window, "location", {
 					writable: true,
@@ -294,7 +314,7 @@ describe("Enoki SDK ユニットテスト", () => {
 				const mockAddress = "0x1234567890abcdef";
 				const hash = "#id_token=test-token";
 				const mockEnokiFlow = await getMockEnokiFlow();
-				
+
 				Object.defineProperty(window, "location", {
 					writable: true,
 					value: {
@@ -303,11 +323,13 @@ describe("Enoki SDK ユニットテスト", () => {
 						pathname: "/",
 					},
 				});
-				
+
 				// window.history.replaceStateをモック
 				window.history.replaceState = vi.fn();
-				
-				vi.mocked(mockEnokiFlow.handleAuthCallback).mockResolvedValue({} as any);
+
+				vi.mocked(mockEnokiFlow.handleAuthCallback).mockResolvedValue(
+					{} as any,
+				);
 				vi.mocked(mockEnokiFlow.$zkLoginState.get).mockReturnValue({
 					address: mockAddress,
 				} as any);
@@ -381,7 +403,10 @@ describe("Enoki SDK ユニットテスト", () => {
 
 		describe("clearEnokiAccount", () => {
 			it("SessionStorageからEnokiアカウント情報をクリアできる", () => {
-				sessionStorage.setItem("enoki.account", JSON.stringify({ test: "data" }));
+				sessionStorage.setItem(
+					"enoki.account",
+					JSON.stringify({ test: "data" }),
+				);
 
 				enokiModule.clearEnokiAccount();
 
@@ -396,7 +421,7 @@ describe("Enoki SDK ユニットテスト", () => {
 					epoch: 50,
 				};
 				const mockEnokiFlow = await getMockEnokiFlow();
-				
+
 				vi.mocked(mockEnokiFlow.getProof).mockResolvedValue(mockProof as any);
 
 				await enokiModule.verifyZkProof();
@@ -406,7 +431,7 @@ describe("Enoki SDK ユニットテスト", () => {
 
 			it("zk proofが取得できない場合は警告を出力する", async () => {
 				const mockEnokiFlow = await getMockEnokiFlow();
-				
+
 				vi.mocked(mockEnokiFlow.getProof).mockResolvedValue(null as any);
 
 				await enokiModule.verifyZkProof();
@@ -416,10 +441,14 @@ describe("Enoki SDK ユニットテスト", () => {
 
 			it("zk proof取得エラーの場合はエラーをスローする", async () => {
 				const mockEnokiFlow = await getMockEnokiFlow();
-				
-				vi.mocked(mockEnokiFlow.getProof).mockRejectedValue(new Error("Proof error"));
 
-				await expect(enokiModule.verifyZkProof()).rejects.toThrow("Proof error");
+				vi.mocked(mockEnokiFlow.getProof).mockRejectedValue(
+					new Error("Proof error"),
+				);
+
+				await expect(enokiModule.verifyZkProof()).rejects.toThrow(
+					"Proof error",
+				);
 			});
 		});
 	});

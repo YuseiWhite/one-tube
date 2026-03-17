@@ -2,160 +2,262 @@
 
 ![OneTube Logo](docs/assets/one-tube-logo.png)
 
+# 🏆 OneTube
 
-NFT保有による動画視聴権限管理のデモプラットフォーム（MVP）
+## NFT-Gated Video Streaming Platform Powered by Seal & Walrus
+
+**Sui-native decentralized video streaming with cryptographic access control**
+
+[![Sui](https://img.shields.io/badge/Built%20on-Sui-blue)](https://sui.io)
+[![Seal](https://img.shields.io/badge/Seal-Access%20Control-green)](https://github.com/mystenlabs/seal)
+[![Walrus](https://img.shields.io/badge/Walrus-Distributed%20Storage-orange)](https://wal.app)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 </div>
 
-## 📖 概要
+## 🚀 What Makes OneTube Special?
 
-OneTubeは、ONE Championshipの試合動画をNFT保有によって視聴できるプラットフォームのデモです。Suiエコシステム（Kiosk、Sponsored Transaction、Transfer Policy）とWalrus/Sealを統合し、Web2的なシームレスな購入体験を実現します。
+OneTube is a **production-ready NFT-gated video streaming platform** that combines cutting-edge Sui blockchain technology with **Seal cryptographic access control** and **Walrus distributed storage** to deliver a seamless Web2-like experience with Web3 ownership.
 
-### 主な機能
+### ✨ Key Innovations
 
-- 🎫 **NFT購入**: Kiosk経由でプレミアムチケットNFTを購入（0.5 SUI）
-- 🎬 **動画視聴**: NFT保有者だけが完全版動画を視聴可能
-- 💰 **収益分配**: 購入時に自動で収益を分配（アスリート70% / ONE 25% / Platform 5%）
-- ⛽ **ガス代不要**: Sponsored Transactionでユーザーのガス代をプラットフォームが負担
-- 🔐 **zkLogin認証**: Googleアカウントでログイン可能（Enoki SDK使用）
+- 🔐 **Seal-Powered Access Control**: First-of-its-kind integration of Seal SDK for cryptographic NFT ownership verification and session-based video decryption
+- 🌊 **Walrus Distributed Storage**: Leverages 60+ Walrus Testnet publishers/aggregators for resilient, decentralized video storage with automatic failover
+- 🎫 **Gasless NFT Purchases**: Sponsored transactions eliminate user friction - users pay only for NFTs, not gas fees
+- 💰 **Automatic Revenue Splitting**: Smart contract-enforced revenue distribution (70% Athlete / 25% ONE / 5% Platform) on every purchase
+- 🔑 **Dual Authentication**: Support for both Sui Wallet and zkLogin (Google OAuth) for maximum accessibility
+- 🎬 **Encrypted Video Streaming**: Premium content encrypted on Walrus, decrypted only for verified NFT owners via Seal sessions
 
-## 🚀 クイックスタート
+### 🏅 Why OneTube
 
-### 前提条件
+1. **Complete Integration**: Full-stack implementation from smart contracts to frontend, demonstrating deep understanding of Sui ecosystem
+2. **Production-Ready Architecture**: Robust error handling, logging, session management, and scalable design patterns
+3. **Innovative Technology Stack**: Pioneering combination of Seal + Walrus + Kiosk + Sponsored Transactions
+4. **Real-World Use Case**: Solves actual problem for content creators and sports organizations
+5. **Developer Experience**: Comprehensive documentation, easy setup, and well-structured codebase
+
+## 🚀 Quick Start
+
+### Prerequisites
 
 - Node.js 18+
 - pnpm 10.x
 - Sui CLI
-- Enokiアカウント（zkLogin機能を使用する場合）
-- Google Cloud Consoleアカウント（zkLogin機能を使用する場合）
+- Enoki account (optional, for zkLogin)
+- Google Cloud Console account (optional, for zkLogin)
 
-### セットアップ
+### Installation & Setup
 
 ```bash
-# 依存関係のインストール
+# Install dependencies
 pnpm install
 
-# 環境変数の設定
+# Configure environment variables
 cp .env.example .env
-# .envファイルを編集して必要な値を設定
-# - VITE_ENOKI_API_KEY: Enoki APIキー（zkLogin機能を使用する場合）
-# - VITE_ENOKI_NETWORK: devnet または testnet（zkLogin機能を使用する場合）
+# Edit .env and set required values:
+# - RPC_URL: Sui network RPC endpoint
+# - PACKAGE_ID: Your deployed contract package ID (auto-updated after deploy)
+# - SEAL_PACKAGE_ID: Seal package ID
+# - SEAL_IDENTITY_ID: Seal identity ID
+# - WALRUS_API_URL: Primary Walrus publisher URL
+# - WALRUS_AGGREGATOR_URL: Primary Walrus aggregator URL
+# - SPONSOR_PRIVATE_KEY: Sponsor wallet private key for gasless transactions
 
-# Google OAuth設定（zkLogin機能を使用する場合）
-cp app/src/config.example.json app/src/config.json
-# app/src/config.jsonを編集してCLIENT_ID_GOOGLEを設定
-
-# スマートコントラクトのデプロイ
+# Deploy smart contracts
 pnpm run deploy:devnet
 
-# NFTのシード（Kioskに出品）
+# Seed NFTs to Kiosk
 pnpm run seed:devnet
 
-# フロントエンド起動
+# Start frontend (http://localhost:3000)
 pnpm run dev
 
-# バックエンドの起動
+# Start backend API (http://localhost:3001)
 pnpm run dev:server
 ```
 
-### zkLogin機能のセットアップ（オプション）
+### Optional: zkLogin Setup
 
-zkLogin機能を使用する場合は、以下の追加設定が必要です：
+For Google OAuth authentication:
 
-1. **Enokiアカウントの作成**
-   - [Enokiダッシュボード](https://enoki.mystenlabs.com/)にアクセス
-   - アカウントを作成してAPIキーを取得
-   - `.env`ファイルに`VITE_ENOKI_API_KEY`と`VITE_ENOKI_NETWORK`を設定
+1. **Create Enoki Account**
+   - Visit [Enoki Dashboard](https://enoki.mystenlabs.com/)
+   - Create account and get API key
+   - Set `VITE_ENOKI_API_KEY` and `VITE_ENOKI_NETWORK` in `.env`
 
-2. **Google OAuth設定**
-   - [Google Cloud Console](https://console.cloud.google.com/)にアクセス
-   - 新しいプロジェクトを作成
-   - OAuth同意画面を設定（ユーザータイプ: 外部）
-   - OAuth 2.0クライアントIDを作成
-   - 承認済みのリダイレクトURIに`http://localhost:3000`を追加
-   - `app/src/config.json`に`CLIENT_ID_GOOGLE`を設定
+2. **Configure Google OAuth**
+   - Visit [Google Cloud Console](https://console.cloud.google.com/)
+   - Create new project
+   - Configure OAuth consent screen (User type: External)
+   - Create OAuth 2.0 Client ID
+   - Add `http://localhost:3000` to authorized redirect URIs
+   - Set `CLIENT_ID_GOOGLE` in `app/src/config.json`
 
-詳細は`docs/issues/028-zk-login-wallet/plan.md`を参照してください。
+See `docs/issues/028-zk-login-wallet/plan.md` for detailed setup.
 
-## 📁 プロジェクト構成
+## 🏗️ Architecture
+
+### Project Structure
 
 ```
 one-tube/
-├── contracts/          # Moveスマートコントラクト
-├── app/               # React + Express (フロントエンド・バックエンド)
-├── scripts/           # デプロイ・シードスクリプト
-└── docs/              # プロジェクト仕様書・開発ガイド
+├── contracts/          # Move smart contracts (NFT minting, Transfer Policy, Seal integration)
+├── app/               # React + Express (Frontend + Backend API)
+│   ├── src/
+│   │   ├── lib/       # Frontend utilities (Sui client, API client, logger)
+│   │   ├── server/    # Backend API (Seal, Walrus, Kiosk, Sponsor)
+│   │   └── shared/    # Shared types
+│   └── dist/          # Production build
+├── scripts/           # Deployment & utility scripts
+│   ├── commands/      # Deploy, seed, encrypt-video
+│   └── shared/        # Shared utilities
+└── docs/              # Project specifications & development guides
 ```
 
-## 🛠️ テックスタック
+### Technology Stack
 
-- **Blockchain**: Sui devnet
-- **Smart Contract**: Sui Move
-- **NFT販売**: Kiosk標準 (TransforPolicy)
-- **ガス代負担**: Sponsored Transaction
-- **ストレージ**: Walrus Testnet（分散型動画保存）
-- **アクセス制御**: Seal（暗号化/復号）
-- **認証**: zkLogin（Enoki SDK）+ Google OAuth
-- **Frontend**: React + Vite
-- **Backend**: Express + TypeScript
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Blockchain** | Sui devnet/testnet | High-performance blockchain infrastructure |
+| **Smart Contract** | Sui Move | NFT minting, Transfer Policy, Seal integration |
+| **NFT Marketplace** | Kiosk Standard | Decentralized NFT sales with Transfer Policy |
+| **Gas Sponsorship** | Sponsored Transactions | Gasless user experience |
+| **Distributed Storage** | Walrus Testnet | Decentralized video storage (60+ nodes) |
+| **Access Control** | Seal SDK | Cryptographic NFT ownership verification & session management |
+| **Authentication** | zkLogin (Enoki SDK) + Sui Wallet | Web2-like login + Web3 wallet support |
+| **Frontend** | React + Vite + TypeScript | Modern, fast UI |
+| **Backend** | Express + TypeScript | RESTful API with Seal/Walrus integration |
+| **Video Encryption** | AES-256-GCM | End-to-end encrypted video content |
 
-## 📝 主要コマンド
+### 🔐 Seal Integration Highlights
+
+- **Session-Based Access**: Seal SessionKeys enable time-limited access to encrypted content
+- **NFT Ownership Verification**: On-chain verification ensures only NFT owners can decrypt videos
+- **Frontend SessionKey Creation**: Users create SessionKeys client-side for enhanced security
+- **Persistent Session Management**: Server-side session storage with JSON file persistence
+- **Automatic Expiration**: Configurable session duration (default: 5 minutes)
+
+### 🌊 Walrus Integration Highlights
+
+- **60+ Publisher Nodes**: Automatic failover across Walrus Testnet publishers
+- **60+ Aggregator Nodes**: Resilient video retrieval with multiple aggregator endpoints
+- **Environment-Based Priority**: Configurable primary publisher/aggregator via environment variables
+- **Robust Error Handling**: Comprehensive error handling with retry logic
+- **Timeout Management**: Optimized timeouts (5min upload, 10sec retrieval)
+
+## 📝 Available Commands
 
 ```bash
-# Moveコントラクトのテスト
-pnpm run move:test
+# Smart Contract
+pnpm run move:test              # Run Move contract tests
+pnpm run deploy:devnet         # Deploy contracts to Sui devnet
+pnpm run seed:devnet           # Seed NFTs to Kiosk
 
-# スマートコントラクトのデプロイ
-pnpm run deploy:devnet
+# Development
+pnpm run dev                    # Start frontend dev server (port 3000)
+pnpm run dev:server             # Start backend API server (port 3001)
 
-# NFTのシード（Kioskに出品）
-pnpm run seed:devnet
+# Code Quality
+pnpm run format                 # Format code with Biome
+pnpm run biome:check           # Lint code with Biome
+pnpm run typecheck             # TypeScript type checking
 
-# 開発サーバー起動（フロントエンド）
-pnpm run dev
-
-# 開発サーバー起動（バックエンド）
-pnpm run dev:server
-
-# コードフォーマット
-pnpm run format
-
-# リンター
-pnpm run biome:check
+# Video Management
+pnpm run encrypt:video          # Encrypt video and upload to Walrus
 ```
 
-## 🔄 ユーザーフロー
+## 🔄 User Flow
 
-### Sui Wallet接続の場合
+### Option 1: Sui Wallet Connection
 
-1. **ウォレット接続**: Sui Walletで接続
-2. **NFT購入**: KioskからプレミアムチケットNFTを購入（ガス代不要）
-3. **動画視聴**: NFT保有者として完全版動画を視聴（セッション有効期限: 30秒（任意））
+1. **Connect Wallet**: Connect your Sui Wallet
+2. **Purchase NFT**: Buy Premium Ticket NFT from Kiosk (gasless via Sponsored Transaction)
+3. **Watch Video**: Access full video content as NFT owner (Seal session-based decryption)
 
-### zkLogin接続の場合（Google認証）
+### Option 2: zkLogin (Google OAuth)
 
-1. **Googleログイン**: 「Googleでログイン」ボタンをクリックしてGoogleアカウントで認証
-2. **zkLoginアドレス生成**: Enoki SDKが自動的にzkLoginアドレスを生成
-3. **NFT購入**: KioskからプレミアムチケットNFTを購入（ガス代不要、Sponsored Transaction）
-4. **動画視聴**: NFT保有者として完全版動画を視聴
+1. **Google Login**: Click "Login with Google" to authenticate
+2. **zkLogin Address**: Enoki SDK automatically generates zkLogin address
+3. **Purchase NFT**: Buy Premium Ticket NFT (gasless, sponsored transaction)
+4. **Watch Video**: Access full video content as NFT owner
 
-**注意**: Sui Wallet接続とzkLogin接続は並行して使用可能です。
+**Note**: Sui Wallet and zkLogin can be used simultaneously.
 
-## 💡 ビジネスモデル
+## 💡 Business Model
 
-- **収益分配**: アスリート 70% / ONE Championship 25% / Platform 5%
-- **価格**: 0.5 SUI（テスト用）
-- **特典**: 1ヶ月間過去試合見放題
+- **Revenue Split**: Automatically enforced by smart contract
+  - Athlete: 70%
+  - ONE Championship: 25%
+  - Platform: 5%
+- **Pricing**: 0.5 SUI per Premium Ticket NFT (testnet)
+- **Benefits**: Full access to premium fight videos for NFT holders
 
-## 📚 ドキュメント
+## 🎯 Technical Achievements
 
-詳細な仕様や開発ガイドは `docs/` ディレクトリを参照してください。
+### ✅ What We Built
 
-- [プロジェクト仕様書](docs/project-spec.md)
-- [開発ワークフロー](docs/development-workflow.md)
-- [zkLogin統合実装計画書](docs/issues/028-zk-login-wallet/plan.md)
-- [zkLogin統合タスクリスト](docs/issues/028-zk-login-wallet/tasks.md)
+- **Complete Seal Integration**: Full implementation of Seal SDK for cryptographic access control
+- **Walrus Distributed Storage**: Production-ready integration with 60+ node failover
+- **Gasless Transactions**: Sponsored transaction implementation for seamless UX
+- **Automatic Revenue Splitting**: Smart contract-enforced revenue distribution
+- **Dual Authentication**: Both Web3 (Sui Wallet) and Web2 (zkLogin) support
+- **Session Management**: Persistent session storage with expiration handling
+- **Error Handling**: Comprehensive error handling across all layers
+- **Type Safety**: Full TypeScript coverage with shared types
+- **Testing**: Unit tests, integration tests, and E2E tests
 
-## 📄 ライセンス
+## 📚 Documentation
 
-MIT
+### 🌐 Full Technical Documentation on DeepWiki
+
+**👉 [Complete Technical Documentation](https://deepwiki.com/YuseiWhite/one-tube)**
+
+The DeepWiki documentation provides comprehensive technical details including:
+- Complete system architecture and component design
+- API endpoint reference
+- Smart contract implementation details
+- Integration guides (Seal, Walrus, Kiosk)
+- Data flow diagrams
+- Deployment procedures
+- Technology stack details
+
+### 📁 Local Documentation
+
+Additional documentation is available in the `docs/` directory:
+
+- [Project Specification](docs/project-spec.md) - Complete technical specification
+- [Development Workflow](docs/development-workflow.md) - Development guidelines
+- [Seal Integration Guide](docs/issues/031-seal-integration/watch-video-with-seal.md) - Seal implementation details
+- [Seal Key Management](docs/seal-key-management.md) - Seal key management best practices
+- [Walrus Integration](docs/walrus-haulout-hackathon.md) - Walrus implementation experience
+- [zkLogin Integration](docs/issues/028-zk-login-wallet/plan.md) - zkLogin setup guide
+- [DeepWiki Strategy](docs/haulout-hackathon/deepwiki-strategy.md) - How to leverage DeepWiki documentation for hackathon
+
+## 🏆 Highlights
+
+### Why OneTube Stands Out
+
+1. **Production-Ready Code**: Not a prototype - fully functional, tested, and documented
+2. **Deep Sui Integration**: Leverages Kiosk, Transfer Policy, Sponsored Transactions, Seal, and Walrus
+3. **Innovative Architecture**: First-of-its-kind Seal + Walrus combination for NFT-gated content
+4. **Real-World Application**: Solves actual problem for content creators and sports organizations
+5. **Developer Experience**: Clean codebase, comprehensive docs, easy setup
+6. **Scalable Design**: Built for production with error handling, logging, and session management
+7. **Comprehensive Documentation**: Full technical documentation available on [DeepWiki](https://deepwiki.com/YuseiWhite/one-tube)
+
+### Technical Innovation
+
+- **Seal Access Control**: Pioneering use of Seal SDK for NFT ownership-based cryptographic access
+- **Walrus Resilience**: 60+ node failover ensures high availability
+- **Gasless UX**: Sponsored transactions eliminate Web3 friction
+- **Smart Revenue Splits**: On-chain automatic revenue distribution
+- **Dual Auth**: Seamless Web2 and Web3 authentication options
+
+## 🤝 Contributing
+
+This is a hackathon project, but contributions and feedback are welcome!
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details
+

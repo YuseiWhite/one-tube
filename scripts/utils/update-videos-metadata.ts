@@ -8,7 +8,8 @@ import * as path from "node:path";
 
 // Site Object ID は ws-resources.json から取得（デプロイ時に生成される）
 // デフォルト値は最新のデプロイで生成された Site ID
-const DEFAULT_WALRUS_SITE_ID = "0x2178dea1386012d9e3dfbc99a05bb84ab2a104f152b5fb096a3b7530c3430cd9";
+const DEFAULT_WALRUS_SITE_ID =
+	"0x2178dea1386012d9e3dfbc99a05bb84ab2a104f152b5fb096a3b7530c3430cd9";
 const WALRUS_PORTAL_HOST = "localhost:3000"; // testnet portal (ローカル開発用)
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const WS_RESOURCES_PATH = path.join(PROJECT_ROOT, "app/dist/ws-resources.json");
@@ -95,15 +96,22 @@ function main() {
 	console.log(`✅ Loaded ws-resources.json`);
 	console.log(`   Site Object ID: ${wsResourcesData.object_id || "N/A"}`);
 	console.log(`   Site Name: ${wsResourcesData.site_name || "N/A"}`);
-	console.log(`\n⚠️  Note: ws-resources.json does not contain blob IDs directly.`);
-	console.log(`   Please update videos.json manually with blob IDs from deployment log.\n`);
+	console.log(
+		`\n⚠️  Note: ws-resources.json does not contain blob IDs directly.`,
+	);
+	console.log(
+		`   Please update videos.json manually with blob IDs from deployment log.\n`,
+	);
 
 	// デプロイログから取得した BLOB ID をマッピング
 	// これは手動で更新する必要がある
 	const blobIdMap: Record<string, string> = {
-		"/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4": "KmdAvDyXovSOO-vjXAqjOt70zg8aCC9CPS15w_SZg0c",
-		"/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4": "kPrrnRxWFXTlmbWvjH0XC5q4Wg5UdmMhA09_MMs_Wno",
-		"/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee..png": "-EpFgXNFPSzgi0qQy3Z1XoWJ959eza13hufwvJNYyCI",
+		"/assets/full-fight-20251028-KiamrianAbbasov-vs-ChristianLee.mp4":
+			"KmdAvDyXovSOO-vjXAqjOt70zg8aCC9CPS15w_SZg0c",
+		"/assets/preview-20251028-KiamrianAbbasov-vs-ChristianLee.mp4":
+			"kPrrnRxWFXTlmbWvjH0XC5q4Wg5UdmMhA09_MMs_Wno",
+		"/assets/thumbnails/20251028-KiamrianAbbasov-vs-ChristianLee..png":
+			"-EpFgXNFPSzgi0qQy3Z1XoWJ959eza13hufwvJNYyCI",
 	};
 
 	const wsResources: WSResources = {};
@@ -136,9 +144,7 @@ function main() {
 		const blobId = getBlobIdFromResources(wsResources, fullVideoPath);
 
 		if (!blobId) {
-			console.warn(
-				`   ⚠️  Warning: BLOB ID not found for ${fullVideoPath}`,
-			);
+			console.warn(`   ⚠️  Warning: BLOB ID not found for ${fullVideoPath}`);
 			console.warn(`   Skipping update for this video`);
 			continue;
 		}
@@ -163,12 +169,13 @@ function main() {
 	}
 
 	// 4. 更新後の videos.json を保存
-	const updatedContent = JSON.stringify(videosData, null, "\t") + "\n";
+	const updatedContent = `${JSON.stringify(videosData, null, "\t")}\n`;
 	fs.writeFileSync(VIDEOS_JSON_PATH, updatedContent, "utf-8");
 
-	console.log(`✅ Successfully updated ${updatedCount} video(s) in videos.json`);
+	console.log(
+		`✅ Successfully updated ${updatedCount} video(s) in videos.json`,
+	);
 	console.log(`📝 Saved to: ${VIDEOS_JSON_PATH}`);
 }
 
 main();
-

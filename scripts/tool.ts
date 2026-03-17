@@ -1,5 +1,6 @@
 import { deployCommand } from "./commands/deploy";
 import { seedCommand } from "./commands/seed";
+import { updateSharedVersionsCommand } from "./commands/update-shared-versions";
 import { getErrorMessage, getErrorStack, resolveNetwork } from "./shared/utils";
 
 /**
@@ -13,8 +14,11 @@ async function main(): Promise<void> {
 		console.error("Usage: tsx scripts/tool.ts <command> --network <network>");
 		console.error("");
 		console.error("Commands:");
-		console.error("  deploy  - Deploy contract to Sui network");
-		console.error("  seed    - Seed NFTs to Kiosk");
+		console.error("  deploy            - Deploy contract to Sui network");
+		console.error("  seed              - Seed NFTs to Kiosk");
+		console.error(
+			"  update-versions   - Update shared object versions in .env",
+		);
 		console.error("");
 		console.error("Options:");
 		console.error(
@@ -24,6 +28,7 @@ async function main(): Promise<void> {
 		console.error("Examples:");
 		console.error("  tsx scripts/tool.ts deploy --network devnet");
 		console.error("  tsx scripts/tool.ts seed --network devnet");
+		console.error("  tsx scripts/tool.ts update-versions --network devnet");
 		process.exit(1);
 	}
 
@@ -40,9 +45,12 @@ async function main(): Promise<void> {
 			case "seed":
 				await seedCommand(network);
 				break;
+			case "update-versions":
+				await updateSharedVersionsCommand(network);
+				break;
 			default:
 				console.error(`Unknown command: ${command}`);
-				console.error("Valid commands: deploy, seed");
+				console.error("Valid commands: deploy, seed, update-versions");
 				process.exit(1);
 		}
 	} catch (error: unknown) {

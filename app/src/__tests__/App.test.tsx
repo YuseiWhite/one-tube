@@ -100,7 +100,9 @@ describe("Appコンポーネント", () => {
 		);
 
 		// ボタン要素を取得（h2ではなくbutton要素）
-		const loginButton = screen.getByRole("button", { name: "Googleでログイン" });
+		const loginButton = screen.getByRole("button", {
+			name: "Googleでログイン",
+		});
 		expect(loginButton).toBeInTheDocument();
 	});
 
@@ -125,4 +127,3 @@ describe("Appコンポーネント", () => {
 	// 	// 実装は将来のissueで対応
 	// });
 });
-

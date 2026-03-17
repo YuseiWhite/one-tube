@@ -1,8 +1,8 @@
 /**
  * Enoki SDK 統合テスト
- * 
+ *
  * 実際のEnoki APIを呼び出すテスト（モックなし）
- * 
+ *
  * 注意: これらのテストは実際のEnoki APIを呼び出すため、
  * 環境変数（VITE_ENOKI_API_KEY）が設定されている必要があります
  */
@@ -18,7 +18,8 @@ const getEnvVar = (key: string): string => {
 
 describe("Enoki SDK 統合テスト", () => {
 	const apiKey = getEnvVar("VITE_ENOKI_API_KEY");
-	const network = (getEnvVar("VITE_ENOKI_NETWORK") as "devnet" | "testnet") || "devnet";
+	const network =
+		(getEnvVar("VITE_ENOKI_NETWORK") as "devnet" | "testnet") || "devnet";
 	const clientId = config.CLIENT_ID_GOOGLE;
 
 	beforeEach(() => {
@@ -102,4 +103,3 @@ describe("Enoki SDK 統合テスト", () => {
 		});
 	});
 });
-

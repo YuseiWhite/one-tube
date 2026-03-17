@@ -8,8 +8,9 @@ import type { SuiObjectChange } from "@mysten/sui/client";
 import * as dotenv from "dotenv";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
-import type { SupportedNetwork } from "../shared/utils";
+import type { SupportedNetwork } from "../shared/utils.js";
 import {
 	filterObjectChangesWithId,
 	findObjectChangeWithId,
@@ -20,7 +21,7 @@ import {
 	printBox,
 	sleep,
 	updateEnvFile,
-} from "../shared/utils";
+} from "../shared/utils.js";
 
 type OwnedObjectRef = {
 	objectId: string;
@@ -293,6 +294,8 @@ async function createAndPersistKiosk(
 		KIOSK_ID: kioskResult.kioskId,
 		KIOSK_CAP_ID: kioskResult.kioskCapId,
 		KIOSK_INITIAL_SHARED_VERSION: kioskResult.kioskInitialSharedVersion,
+		// フロントエンド用（VITE_プレフィックス）も同期更新
+		VITE_KIOSK_ID: kioskResult.kioskId,
 	});
 
 	return kioskResult;
@@ -486,10 +489,133 @@ async function kioskPlaceAndList(
 }
 
 /**
+ * NFTデータの型定義
+ */
+type NFTSeedData = {
+	id: string;
+	name: string;
+	description: string;
+	thumbnailBlobId: string; // サムネイル画像のBLOB ID
+	previewBlobId: string; // プレビュー動画のBLOB ID
+	fullBlobId: string; // 暗号化されたフル動画のBLOB ID（NFTのblob_idフィールドに設定される）
+	price: number; // MIST単位（1 SUI = 1_000_000_000 MIST）
+	count: number; // ミントするNFTの数
+};
+
+type SeedNFTsConfig = {
+	nfts: NFTSeedData[];
+};
+
+/**
+ * seed-nfts.jsonファイルを読み込む
+ * @param network - ネットワーク（devnet/testnet/mainnet）
+ * @returns NFTデータの配列
+ */
+function loadSeedNFTsConfig(network: SupportedNetwork): NFTSeedData[] {
+	const __filename = fileURLToPath(import.meta.url);
+	const __dirname = path.dirname(__filename);
+
+	// ネットワーク別のファイルを優先的に読み込む
+	const networkSpecificPath = path.join(
+		__dirname,
+		`../seed-nfts.${network}.json`,
+	);
+	const defaultPath = path.join(__dirname, "../seed-nfts.json");
+
+	let configPath: string;
+	if (fs.existsSync(networkSpecificPath)) {
+		configPath = networkSpecificPath;
+		console.log(`📋 Using network-specific config: seed-nfts.${network}.json`);
+	} else if (fs.existsSync(defaultPath)) {
+		configPath = defaultPath;
+		console.log(`📋 Using default config: seed-nfts.json`);
+	} else {
+		throw new Error(
+			`seed-nfts.json not found.\n` +
+				`  Checked: ${networkSpecificPath}\n` +
+				`  Checked: ${defaultPath}\n` +
+				`Solution: Create seed-nfts.json or seed-nfts.${network}.json in scripts/ directory`,
+		);
+	}
+
+	try {
+		const configData = fs.readFileSync(configPath, "utf-8");
+		const config = JSON.parse(configData) as SeedNFTsConfig;
+
+		if (!config.nfts || !Array.isArray(config.nfts)) {
+			throw new Error("Invalid config format: 'nfts' must be an array");
+		}
+
+		if (config.nfts.length === 0) {
+			throw new Error("No NFTs found in config file");
+		}
+
+		// バリデーション
+		for (const nft of config.nfts) {
+			if (
+				!nft.id ||
+				!nft.name ||
+				!nft.description ||
+				!nft.thumbnailBlobId ||
+				!nft.previewBlobId ||
+				!nft.fullBlobId
+			) {
+				throw new Error(
+					`Invalid NFT data: missing required fields (id, name, description, thumbnailBlobId, previewBlobId, fullBlobId)`,
+				);
+			}
+			if (typeof nft.price !== "number" || nft.price <= 0) {
+				throw new Error(
+					`Invalid NFT price for ${nft.id}: must be a positive number (MIST units)`,
+				);
+			}
+			if (typeof nft.count !== "number" || nft.count <= 0) {
+				throw new Error(
+					`Invalid NFT count for ${nft.id}: must be a positive integer`,
+				);
+			}
+			// fullBlobIdは必須（NFTのblob_idフィールドに設定される）
+			if (nft.fullBlobId === "TEMP_PLACEHOLDER" || !nft.fullBlobId.trim()) {
+				throw new Error(
+					`fullBlobId not set or still placeholder for ${nft.id}\n` +
+						`Solution: Set a valid fullBlobId (encrypted full video BLOB ID) in seed-nfts.json`,
+				);
+			}
+			// thumbnailBlobIdとpreviewBlobIdはオプション（TEMP_PLACEHOLDERでも可）
+			// ただし、警告を表示
+			if (
+				nft.thumbnailBlobId === "TEMP_PLACEHOLDER" ||
+				!nft.thumbnailBlobId.trim()
+			) {
+				console.warn(`⚠️  thumbnailBlobId is placeholder for ${nft.id}`);
+			}
+			if (
+				nft.previewBlobId === "TEMP_PLACEHOLDER" ||
+				!nft.previewBlobId.trim()
+			) {
+				console.warn(`⚠️  previewBlobId is placeholder for ${nft.id}`);
+			}
+		}
+
+		console.log(`✅ Loaded ${config.nfts.length} NFT(s) from config`);
+		return config.nfts;
+	} catch (error) {
+		if (error instanceof SyntaxError) {
+			throw new Error(
+				`Failed to parse seed-nfts.json: ${error.message}\n` +
+					`Solution: Check JSON syntax in ${configPath}`,
+			);
+		}
+		throw error;
+	}
+}
+
+/**
  * シードコマンドのメイン処理
- * 1. NFTをミント（10個のPremium Ticket）
- * 2. Kiosk作成（まだない場合のみ、.envに保存）
- * 3. NFTをKioskに配置して出品（0.5 SUI固定価格）
+ * 1. seed-nfts.jsonからNFTデータを読み込む
+ * 2. NFTをミント（各NFTのcount分）
+ * 3. Kiosk作成（まだない場合のみ、.envに保存）
+ * 4. NFTをKioskに配置して出品（各NFTのpriceで）
  *
  * @throws デプロイ未完了（PACKAGE_IDまたはADMIN_CAP_IDがない場合）
  * @throws NFTミント、Kiosk作成、または出品に失敗した場合
@@ -498,7 +624,6 @@ export async function seedCommand(network: SupportedNetwork): Promise<void> {
 	printBox("🌱 Seed NFTs to Kiosk");
 
 	console.log(`Network: ${network}`);
-	console.log("Minting 10 NFTs...");
 
 	// Load environment variables first
 	dotenv.config({ override: true });
@@ -515,62 +640,8 @@ export async function seedCommand(network: SupportedNetwork): Promise<void> {
 		);
 	}
 
-	// 1. videos.json から blobId を読み込む
-	const videosJsonPath = path.join(
-		__dirname,
-		"../../app/src/assets/videos.json",
-	);
-	if (!fs.existsSync(videosJsonPath)) {
-		throw new Error(
-			`videos.json not found at ${videosJsonPath}\n` +
-				"Solution: Ensure videos.json exists in app/src/assets/",
-		);
-	}
-
-	const videosData = JSON.parse(
-		fs.readFileSync(videosJsonPath, "utf-8"),
-	) as { videos: Array<{ id: string; blobId: string }> };
-
-	const video = videosData.videos.find((v) => v.id === "one-173-premium-ticket");
-	if (!video) {
-		throw new Error(
-			`Video with id "one-173-premium-ticket" not found in videos.json`,
-		);
-	}
-
-	if (!video.blobId || video.blobId === "TEMP_PLACEHOLDER") {
-		throw new Error(
-			`blobId not set or still placeholder in videos.json\n` +
-				`Current blobId: ${video.blobId}\n` +
-				"Solution: Run 'tsx scripts/utils/update-videos-metadata.ts' after Walrus deployment",
-		);
-	}
-
-	console.log(`✅ Using blobId from videos.json: ${video.blobId.substring(0, 20)}...`);
-
-	// 2. NFTミント
-	const premiumTicketDescription = [
-		"プレミアムチケット購入特典:",
-		"このチケットを購入することで One Tubeでこの試合の完全版を視聴できるだけでなく、一ヶ月間過去の全ての試合動画が見放題になります。",
-		"あなたが好きな選手を選択することによって、購入されたプレミアムチケットの70%相当額はプラットフォームを通してその選手に支払われます。",
-		"",
-		"VIPチケット購入特典:",
-		"- VIPパスと専用入場口のご利用",
-		"- 「ONE 173」大会記念品",
-		"- ファイトウィーク限定イベントへのご招待",
-		"- ONEホスピタリティラウンジへのアクセス権",
-	].join("\n");
-	const nftIds = await mintBatch(
-		client,
-		keypair,
-		config.packageId,
-		config.adminCapId,
-		10,
-		"ONE 173 Premium Ticket: Superbon vs. Noiri",
-		premiumTicketDescription,
-		video.blobId,
-	);
-	await waitForObjectsAvailable(client, nftIds);
+	// 1. seed-nfts.jsonからNFTデータを読み込む
+	const nftConfigs = loadSeedNFTsConfig(network);
 
 	// 2. Kiosk作成（まだない場合）
 	let kioskId = config.kioskId;
@@ -596,6 +667,8 @@ export async function seedCommand(network: SupportedNetwork): Promise<void> {
 				);
 				updateEnvFile({
 					KIOSK_INITIAL_SHARED_VERSION: kioskInitialSharedVersion,
+					// フロントエンド用（VITE_プレフィックス）も同期更新
+					VITE_KIOSK_ID: kioskId,
 				});
 			} catch (error: unknown) {
 				console.warn(
@@ -616,27 +689,58 @@ export async function seedCommand(network: SupportedNetwork): Promise<void> {
 
 	let kioskCapRef = await fetchOwnedObjectRef(client, kioskCapId);
 
-	// 3. NFTをKioskにデポジット & 出品
-	console.log("\n📦 Depositing and listing NFTs...");
-	const price = 500_000_000; // 0.5 SUI
+	// 3. 各NFTをミント・出品
+	console.log("\n📦 Minting and listing NFTs...");
+	const allNftIds: string[] = [];
 
-	for (let i = 0; i < nftIds.length; i++) {
-		kioskCapRef = await kioskPlaceAndList(
+	for (const nftConfig of nftConfigs) {
+		console.log(
+			`\n🎨 Processing NFT: ${nftConfig.name} (${nftConfig.count} items)`,
+		);
+		console.log(
+			`  Thumbnail Blob ID: ${nftConfig.thumbnailBlobId.substring(0, 20)}...`,
+		);
+		console.log(
+			`  Preview Blob ID: ${nftConfig.previewBlobId.substring(0, 20)}...`,
+		);
+		console.log(`  Full Blob ID: ${nftConfig.fullBlobId.substring(0, 20)}...`);
+		console.log(`  Price: ${nftConfig.price / 1_000_000_000} SUI`);
+
+		// NFTミント（fullBlobIdをNFTのblob_idフィールドに設定）
+		const nftIds = await mintBatch(
 			client,
 			keypair,
 			config.packageId,
-			kioskId,
-			kioskInitialSharedVersion,
-			kioskCapRef,
-			nftIds[i],
-			price,
+			config.adminCapId,
+			nftConfig.count,
+			nftConfig.name,
+			nftConfig.description,
+			nftConfig.fullBlobId, // 暗号化されたフル動画のBLOB IDをNFTのblob_idフィールドに設定
 		);
+		await waitForObjectsAvailable(client, nftIds);
+		allNftIds.push(...nftIds);
+
+		// NFTをKioskにデポジット & 出品
+		for (let i = 0; i < nftIds.length; i++) {
+			kioskCapRef = await kioskPlaceAndList(
+				client,
+				keypair,
+				config.packageId,
+				kioskId,
+				kioskInitialSharedVersion,
+				kioskCapRef,
+				nftIds[i],
+				nftConfig.price,
+			);
+		}
+
+		console.log(`✅ Listed ${nftIds.length} NFT(s) for ${nftConfig.name}`);
 	}
 
 	printBox(
 		"✅ Seed Complete!\n\n" +
 			`Kiosk ID: ${kioskId}\n` +
-			`NFTs listed: ${nftIds.length}\n` +
-			`Price: ${price / 1_000_000_000} SUI each`,
+			`Total NFTs listed: ${allNftIds.length}\n` +
+			`NFT types: ${nftConfigs.length}`,
 	);
 }
