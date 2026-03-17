@@ -43,7 +43,7 @@ export function PremiumTicketPrompt({ hasPremiumTicket = false }: PremiumTicketP
 						letterSpacing: "-0.3125px",
 					}}
 				>
-					💡 プレミアムチケットが必要です
+					💡 Premium Ticket Required
 				</p>
 			</div>
 
@@ -77,7 +77,7 @@ export function PremiumTicketPrompt({ hasPremiumTicket = false }: PremiumTicketP
 							letterSpacing: "-0.1504px",
 						}}
 					>
-						プレミアムチケットを持っていない場合、10秒間のプレビュー動画のみ視聴できます。
+						Without a Premium Ticket, you can only watch 10-second preview videos.
 					</p>
 				</div>
 				<div
@@ -101,7 +101,7 @@ export function PremiumTicketPrompt({ hasPremiumTicket = false }: PremiumTicketP
 							letterSpacing: "-0.1504px",
 						}}
 					>
-						好きな試合のチケットを購入すると、完全版を視聴できます。
+						Purchase a ticket for your favorite match to watch the full version.
 					</p>
 				</div>
 			</div>

@@ -1,0 +1,25 @@
+/**
+ * TicketsPage レスポンシブスタイル
+ *
+ * インラインスタイルではメディアクエリが使えないため、
+ * パディングなどのレスポンシブ調整はCSSファイルで管理
+ */
+
+/* デフォルト（PC）: 32px */
+.tickets-page-container {
+	padding: 32px;
+}
+
+/* タブレット（768px〜1199px）: 24px */
+@media (max-width: 1199px) and (min-width: 768px) {
+	.tickets-page-container {
+		padding: 24px;
+	}
+}
+
+/* モバイル（〜767px）: 16px */
+@media (max-width: 767px) {
+	.tickets-page-container {
+		padding: 16px;
+	}
+}

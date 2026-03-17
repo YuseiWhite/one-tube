@@ -165,7 +165,7 @@ export function VideoTitleSection({
 							</svg>
 						) : (
 							<img
-								alt="いいね"
+								alt="Like"
 								src={img}
 								style={{
 									width: "100%",
@@ -255,7 +255,7 @@ export function VideoTitleSection({
 							</svg>
 						) : (
 							<img
-								alt="プレミアムいいね"
+								alt="Premium Like"
 								src={img1}
 								style={{
 									width: "100%",
